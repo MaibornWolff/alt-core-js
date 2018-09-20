@@ -1,0 +1,14 @@
+type: REST
+service: my-service
+endpoint: /all
+method: GET
+headers:
+  Content-Type: application/json
+data:
+  param: value
+form:
+  file: 'example.xls'
+responseValidation:
+  - "res.a === true"
+variables:
+  user: testuser

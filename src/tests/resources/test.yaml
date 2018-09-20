@@ -1,0 +1,7 @@
+test: 'value'
+nested:
+  key: 'nestedValue'
+  number: 123
+data:
+  - 'string-1'
+  - 'string-2'

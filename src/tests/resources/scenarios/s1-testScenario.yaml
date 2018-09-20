@@ -1,0 +1,8 @@
+description: "test description"
+actions:
+  - name: do-something
+    method: POST
+    data:
+      userId: 22
+    responseValidation:
+    - "saved === true"
