@@ -1,7 +1,7 @@
 {
-  "name": "alt-core-js",
-  "version": "1.1.0",
-  "description": "",
+  "name": "@maibornwolff/alt-core-js",
+  "version": "1.1.1",
+  "description": "Simple test framework supporting execution of different `scenarios` based on `action` templates. The framework supports definition of different action types in an *yaml* format, including e.g. which endpoints have to be called with which parameters as well as defining validation rules to be applied on the responses. It also supports detailed report creation of the test results.",
   "main": "lib/index",
   "types": "lib/index",
   "scripts": {
@@ -10,8 +10,8 @@
     "test": "mocha -r ts-node/register src/**/*.spec.ts"
   },
   "keywords": [],
-  "author": "Bartosz Boron <bartosz.boron@maibornwolff.de>",
-  "homepage": "https://github.com/bboron86/yet-another-ALT-framework",
+  "author": "Bartosz Boron <www.github.com/bboron86>",
+  "homepage": "https://github.com/MaibornWolff/alt-core-js",
   "license": "MIT",
   "devDependencies": {
     "@types/chai": "^4.1.4",
@@ -42,5 +42,15 @@
     "typescript": "^2.6.2",
     "winston": "^3.0.0-rc1",
     "ws": "^4.0.0"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MaibornWolff/alt-core-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MaibornWolff/alt-core-js/issues"
   }
 }

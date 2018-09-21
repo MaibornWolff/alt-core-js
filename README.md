@@ -2,7 +2,7 @@
 
 ![GitHub](https://img.shields.io/github/license/MaibornWolff/alt-core-js.svg)
 ![GitHub package version](http://img.shields.io/github/package-json/v/MaibornWolff/alt-core-js.svg)
-[![Version](http://img.shields.io/npm/v/alt-core-js.svg)](https://www.npmjs.com/package/alt-core-js)
+[![Version](http://img.shields.io/npm/v/alt-core-js.svg)](https://www.npmjs.com/package/@maibornwolff/alt-core-js)
 
 Simple test framework supporting execution of different `scenarios` based on `action` templates. The framework supports
 definition of different action types in an *yaml* format, including e.g. which endpoints have to be called with which parameters
@@ -11,7 +11,7 @@ results.
 
 ## Get Started
 
-First of all, you have to define `actions` (see [Actions](https://github.com/bboron86/yet-another-ALT-framework/wiki/Actions)) which should be invoked. Let's say we want to test creation of new users in our system. 
+First of all, you have to define `actions` (see [Actions](todo)) which should be invoked. Let's say we want to test creation of new users in our system. 
 For that, we'd need two actions: one for creating new user and one for retrieving the created user and checking if the attributes
 were stored correctly:
 
@@ -43,7 +43,7 @@ responseValidation:
 ```
 
 In order to execute those `actions` we need a 'playbook' that defines which `action` should be executed in which order: 
-this is exactly what a `scenario` (see [Scenarios](https://github.com/bboron86/yet-another-ALT-framework/wiki/Scenarios)) is made for:
+this is exactly what a `scenario` (see [Scenarios](todo)) is made for:
 
 ### *src/scenarios/s1-my-first-scenario.yaml*
 
@@ -88,7 +88,7 @@ ALT.runScenario('src/scenarios/s1-my-first-scenario.yaml', 'src/actions');
 
 ### Docker
 
-There is special runner image available (see [Docker Hub](https://hub.docker.com/r/bboron86/alt-runner-image/)) which already
+There is special runner image available (see [Docker Hub](https://hub.docker.com/r/maibornwolff/alt-runner-image)) which already
 contains the core framwork and also an invokation script for running a particular scanario. You can either use it in raw or as
 `runner` image on CI platforms like e.g. GitLab.
 
