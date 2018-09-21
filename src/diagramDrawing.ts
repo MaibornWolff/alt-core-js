@@ -1,14 +1,14 @@
-const PLANTUML = require('node-plantuml');
-const FS = require('fs');
-const DIR = `out`;
+import PLANTUML = require('node-plantuml');
+import FS = require('fs');
+import { OUTPUT_DIR } from '.';
 
 
 function getInputFile(scenario: string) {
-    return `${DIR}/_${scenario}.input`;
+    return `${OUTPUT_DIR()}/_${scenario}.input`;
 }
 
 function getOutputFile(scenario: string) {
-    return `${DIR}/_${scenario}.png`;
+    return `${OUTPUT_DIR()}/_${scenario}.png`;
 }
 
 function extractPayload(dict: any) {
@@ -20,6 +20,7 @@ function currentTimestamp() {
 }
 
 export const initDiagramCreation = (scenarioId: string) => {
+    console.log('Writing to: ' + getInputFile(scenarioId));
     FS.writeFileSync(getInputFile(scenarioId), "");
     const initValues = [
         '@startuml',

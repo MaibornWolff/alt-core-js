@@ -7,14 +7,15 @@ import {loadAllScenarios, loadScenariosById} from "./scenarioLoading";
 import {TestResult} from "./model/TestResult";
 import {ActionType} from "./model/ActionType";
 import {generateSequenceDiagram, initDiagramCreation} from "./diagramDrawing";
-
-const pad = require('pad');
+import pad = require('pad');
 
 const RESULTS: Map<string, TestResult[]> = new Map();
 
 const NUM_PARALLEL_RUNS = 10;
 
-export const runScenario = (scenarioPath: string, actionDir: string, envConfigFile: string) => {
+let _OUT_DIR = '';
+
+export const runScenario = (scenarioPath: string, actionDir: string, outDir = 'out', envConfigFile: string) => {
     try {
         if (typeof scenarioPath === 'undefined' || scenarioPath === "") {
             getLogger("unknown").error("Please provide correct path to the SCENARIO file!");
@@ -24,8 +25,10 @@ export const runScenario = (scenarioPath: string, actionDir: string, envConfigFi
             getLogger("unknown").error("Please provide correct path to the ACTION files!");
             process.exit(1);
         }
-        getLogger("unknown").info(`Starting scenario: ${scenarioPath.toUpperCase()} (actions: ${actionDir}, envConfig: ${envConfigFile})`);
+        getLogger("unknown").info(`Starting scenario: ${scenarioPath} (actions: ${actionDir}, out: ${outDir}, envConfig: ${envConfigFile})`);
         
+        _OUT_DIR = outDir;
+
         const envConfig = envConfigFile ? loadYamlConfiguration(envConfigFile) : {};
         
         const actions: Action[] = loadAllActions(actionDir, envConfig);
@@ -144,3 +147,5 @@ async function stopProcessIfUnsuccessfulResults() {
     await Promise.all(diagrams);
     if (anyError) process.exit(1);
 }
+
+export const OUTPUT_DIR = () => _OUT_DIR;
