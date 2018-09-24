@@ -12,7 +12,7 @@ describe('Action loading', () => {
         const envConfig = {
             'my-service': 'localhost:8080'
         };
-        const result = loadAllActions(TEST_ACTION_PATH, envConfig);
+        const result = loadAllActions(TEST_ACTION_PATH, envConfig).filter(a => a.name === 'restAction');
         expect(result).to.have.lengthOf(1);
         expect(result[0].name).to.be.equal('restAction');
         expect(result[0].type).to.be.equal(ActionType.REST);
