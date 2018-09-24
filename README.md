@@ -2,7 +2,7 @@
 
 ![GitHub](https://img.shields.io/github/license/MaibornWolff/alt-core-js.svg)
 ![GitHub package version](http://img.shields.io/github/package-json/v/MaibornWolff/alt-core-js.svg)
-[![Version](http://img.shields.io/npm/v/alt-core-js.svg)](https://www.npmjs.com/package/@maibornwolff/alt-core-js)
+[![Version](http://img.shields.io/npm/v/@maibornwolff/alt-core-js.svg)](https://www.npmjs.com/package/@maibornwolff/alt-core-js)
 
 Simple test framework supporting execution of different `scenarios` based on `action` templates. The framework supports
 definition of different action types in an *yaml* format, including e.g. which endpoints have to be called with which parameters
