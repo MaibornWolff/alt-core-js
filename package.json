@@ -24,6 +24,7 @@
     "mqtt": "^2.17.0",
     "nodemon": "^1.14.11",
     "pad": "^2.0.3",
+    "protocol-buffers": "^4.1.0",
     "request": "^2.83.0",
     "requestretry": "^1.13.0",
     "ts-node": "^4.1.0",
