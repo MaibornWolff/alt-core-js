@@ -90,7 +90,7 @@ class MqttPublishAction implements Action {
                     getLogger(scenario.name).error(`Error while publishing to ${this.topic}: ${error}`, ctx);
                 } else {
                     getLogger(scenario.name).debug(`Successfully published message to '${this.topic}': ${payload}`, ctx);
-                    addMqttPublishMessage(scenario.name, this.topic, `{"payload":"${JSON.stringify(this.data)}"}`);
+                    addMqttPublishMessage(scenario.name, this.topic, `{"payload":${JSON.stringify(this.data)}}`);
                     client.end();
                 }
             });
