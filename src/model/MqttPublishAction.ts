@@ -83,7 +83,6 @@ class MqttPublishAction implements Action {
 
             // let payload = JSON.stringify(injectEvaluationToMap(this.data, ctx));
             let payload = this.protoFile ? this.encodeProtoPayload() : JSON.stringify(injectEvaluationToMap(this.data, ctx));
-            console.log(payload);
 
             client.publish(this.topic, payload, (error?: any, packet?: any) => {
                 if (error) {
