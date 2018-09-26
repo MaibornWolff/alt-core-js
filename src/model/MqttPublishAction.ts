@@ -6,6 +6,7 @@ import {ActionCallback} from "./ActionCallback";
 import {injectEvaluationToMap} from "../variableInjection";
 import {addMqttPublishMessage} from "../diagramDrawing";
 import {TextDecoder} from "util";
+import { encodeProto } from "../protoParsing";
 
 const Mqtt = require('mqtt');
 
@@ -18,10 +19,11 @@ class MqttPublishAction implements Action {
     password: string;
     topic: string;
     data: any;
-    isByte: boolean;
+    protoFile: string;
+    protoClass: string;
 
     constructor(name: string, mqttDefinition: any, url = mqttDefinition.url, username = mqttDefinition.username, password = mqttDefinition.password,
-                topic = mqttDefinition.topic, data = mqttDefinition.data, isByte = mqttDefinition.isByte
+                topic = mqttDefinition.topic, data = mqttDefinition.data, protoFile = mqttDefinition.protoFile, protoClass = mqttDefinition.protoClass
     ) {
         this.name = name;
         this.url = url;
@@ -29,7 +31,8 @@ class MqttPublishAction implements Action {
         this.password = password;
         this.topic = topic;
         this.data = data;
-        this.isByte = isByte ? isByte : false;
+        this.protoFile = protoFile;
+        this.protoClass = protoClass;
     }
 
     static fromTemplate(mqttDefinition: any, template: MqttPublishAction): MqttPublishAction {
@@ -47,9 +50,11 @@ class MqttPublishAction implements Action {
         return { promise, cancel: () => console.log("TODO") };
     }
 
-    invokeAsync(scenario: Scenario): void {
+    encodeProtoPayload(): string {
+        return encodeProto(this.protoFile, this.data, this.protoClass).toString('utf-8');
+    }
 
-        const binArrayToString = array => array.map(byte => String.fromCharCode(parseInt(byte, 2))).join('');
+    invokeAsync(scenario: Scenario): void {
 
         const logDebug = function (debugMessage: string) {
             getLogger(scenario.name).debug(debugMessage, ctx);
@@ -77,21 +82,14 @@ class MqttPublishAction implements Action {
             getLogger(scenario.name).debug(`MQTT connection to ${this.url} successfully opened`, ctx);
 
             // let payload = JSON.stringify(injectEvaluationToMap(this.data, ctx));
-            let payload = this.isByte ?
-                new TextDecoder('utf-8').decode(new Uint8Array(JSON.parse(this.data)))
-                :
-                JSON.stringify(injectEvaluationToMap(this.data, ctx));
+            let payload = this.protoFile ? this.encodeProtoPayload() : JSON.stringify(injectEvaluationToMap(this.data, ctx));
 
             client.publish(this.topic, payload, (error?: any, packet?: any) => {
                 if (error) {
                     getLogger(scenario.name).error(`Error while publishing to ${this.topic}: ${error}`, ctx);
                 } else {
                     getLogger(scenario.name).debug(`Successfully published message to '${this.topic}': ${payload}`, ctx);
-                    if (this.isByte) {
-                        addMqttPublishMessage(scenario.name, this.topic, `{"payload":"${this.data}"}`);
-                    } else {
-                        addMqttPublishMessage(scenario.name, this.topic, payload);
-                    }
+                    addMqttPublishMessage(scenario.name, this.topic, `{"payload":${JSON.stringify(this.data)}}`);
                     client.end();
                 }
             });

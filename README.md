@@ -9,9 +9,19 @@ definition of different action types in an *yaml* format, including e.g. which e
 as well as defining validation rules to be applied on the responses. It also supports detailed report creation of the test
 results.
 
+## Features
+
+- simple definition of reusable [REST](https://github.com/MaibornWolff/alt-core-js/wiki/REST), [MQTT](https://github.com/MaibornWolff/alt-core-js/wiki/MQTT-Publish), [WS](https://github.com/MaibornWolff/alt-core-js/wiki/Websocket), etc. action templates
+- ...
+- automatic retries of [REST](https://github.com/MaibornWolff/alt-core-js/wiki/REST) requests
+- automatic reconnections of [WS](https://github.com/MaibornWolff/alt-core-js/wiki/Websocket) sessions
+- ...
+- filtering on incomming [MQTT](todo) & [WS](https://github.com/MaibornWolff/alt-core-js/wiki/Websocket) messages
+- publishing & listening of [protobuf](https://developers.google.com/protocol-buffers/) messages on [MQTT](https://github.com/MaibornWolff/alt-core-js/wiki/MQTT-Publish) broker
+
 ## Get Started
 
-First of all, you have to define `actions` (see [Actions](todo)) which should be invoked. Let's say we want to test creation of new users in our system. 
+First of all, you have to define `actions` (see [Actions](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates)) which should be invoked. Let's say we want to test creation of new users in our system. 
 For that, we'd need two actions: one for creating new user and one for retrieving the created user and checking if the attributes
 were stored correctly:
 

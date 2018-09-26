@@ -5,6 +5,7 @@ import {Scenario} from "./Scenario";
 import {ActionCallback} from "./ActionCallback";
 import {injectVarsToString} from "../variableInjection";
 import {addMqttMessage} from "../diagramDrawing";
+import {decodeProto} from "../protoParsing";
 
 const Mqtt = require('mqtt');
 
@@ -20,10 +21,12 @@ class MqttAction implements Action {
     expectedNumberOfMessages: number;
     messageType: string;
     messageFilter: string[];
+    protoFile: string;
+    protoClass: string;
 
     constructor(name: string, mqttDefinition: any, url = mqttDefinition.url, username = mqttDefinition.username, password = mqttDefinition.password,
                 topic = mqttDefinition.topic, durationInSec = mqttDefinition.durationInSec, expectedNumberOfMessages = mqttDefinition.expectedNumberOfMessages,
-                messageType = mqttDefinition.messageType, messageFilter = mqttDefinition.messageFilter
+                messageType = mqttDefinition.messageType, messageFilter = mqttDefinition.messageFilter, protoFile = mqttDefinition.protoFile, protoClass = mqttDefinition.protoClass
     ) {
         this.name = name;
         this.url = url;
@@ -34,6 +37,8 @@ class MqttAction implements Action {
         this.expectedNumberOfMessages = expectedNumberOfMessages;
         this.messageType = messageType;
         this.messageFilter = messageFilter;
+        this.protoFile = protoFile;
+        this.protoClass = protoClass;
     }
 
     static fromTemplate(mqttDefinition: any, template: MqttAction): MqttAction {
@@ -51,6 +56,10 @@ class MqttAction implements Action {
         return { promise, cancel: () => console.log("TODO") };
     }
 
+    decodeProtoPayload(buffer: Buffer): any {
+        return decodeProto(this.protoFile, this.protoClass, buffer);
+    }
+
     invokeAsync(scenario: Scenario): void {
 
         const registeredMessageFilters = this.messageFilter;
@@ -64,21 +73,11 @@ class MqttAction implements Action {
             getLogger(scenario.name).error(errorMessage, ctx);
         };
 
-        const isMessageRelevant = function (message: any) {
+        const isMessageRelevant = function (msg: any) {
             if (registeredMessageFilters) {
-                return registeredMessageFilters.some(filter => {
-                    let msg: string;
-
-                    if (messageType === "json") {
-                        msg = JSON.parse(message.toString());
-                    } else {
-                        logError(`Filtering is not supported for message type '${messageType}'`);
-                        return false;
-                    }
-
+                return registeredMessageFilters.some(filter => { 
                     filter = injectVarsToString(filter, scenario.cache, ctx);
                     const filterResult: boolean = eval(filter);
-
                     logDebug(`Filter (${filter}): ${filterResult}`);
                     return filterResult;
                 });
@@ -115,12 +114,20 @@ class MqttAction implements Action {
         });
 
         client.on('message', (topic: any, message: any) => {
-            if(isMessageRelevant(message)) {
+            let msgObj = {};
+            
+            if (messageType === "json") {
+                msgObj = JSON.parse(message.toString());
+            } else if (messageType == "proto") {
+                msgObj = this.decodeProtoPayload(message);
+            }
+
+            if (isMessageRelevant(msgObj)) {
                 numberOfRetrievedMessages++;
-                logDebug(`Relevant MQTT update received (${numberOfRetrievedMessages}/${this.expectedNumberOfMessages}): ${message.toString()}`);
-                addMqttMessage(scenario.name, topic, message.toString());
+                logDebug(`Relevant MQTT update received (${numberOfRetrievedMessages}/${this.expectedNumberOfMessages}): ${JSON.stringify(msgObj)}`);
+                addMqttMessage(scenario.name, topic, msgObj);
             } else {
-                logDebug(`Irrelevant MQTT update received: ${message.toString()}`);
+                logDebug(`Irrelevant MQTT update received: ${JSON.stringify(msgObj)}`);
             }
         });
 

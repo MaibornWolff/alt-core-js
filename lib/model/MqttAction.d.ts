@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { Action } from "./Action";
 import { ActionType } from "./ActionType";
 import { Scenario } from "./Scenario";
@@ -13,9 +14,12 @@ declare class MqttAction implements Action {
     expectedNumberOfMessages: number;
     messageType: string;
     messageFilter: string[];
-    constructor(name: string, mqttDefinition: any, url?: any, username?: any, password?: any, topic?: any, durationInSec?: any, expectedNumberOfMessages?: any, messageType?: any, messageFilter?: any);
+    protoFile: string;
+    protoClass: string;
+    constructor(name: string, mqttDefinition: any, url?: any, username?: any, password?: any, topic?: any, durationInSec?: any, expectedNumberOfMessages?: any, messageType?: any, messageFilter?: any, protoFile?: any, protoClass?: any);
     static fromTemplate(mqttDefinition: any, template: MqttAction): MqttAction;
     invoke(scenario: Scenario): ActionCallback;
+    decodeProtoPayload(buffer: Buffer): any;
     invokeAsync(scenario: Scenario): void;
 }
 export { MqttAction };

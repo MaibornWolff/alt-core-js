@@ -1,6 +1,6 @@
 {
   "name": "@maibornwolff/alt-core-js",
-  "version": "1.1.1",
+  "version": "1.2.7",
   "description": "Simple test framework supporting execution of different `scenarios` based on `action` templates. The framework supports definition of different action types in an *yaml* format, including e.g. which endpoints have to be called with which parameters as well as defining validation rules to be applied on the responses. It also supports detailed report creation of the test results.",
   "main": "lib/index",
   "types": "lib/index",
@@ -24,6 +24,7 @@
     "mqtt": "^2.17.0",
     "nodemon": "^1.14.11",
     "pad": "^2.0.3",
+    "protocol-buffers": "^4.1.0",
     "request": "^2.83.0",
     "requestretry": "^1.13.0",
     "ts-node": "^4.1.0",
@@ -37,6 +38,7 @@
     "mqtt": "^2.17.0",
     "node-plantuml": "^0.6.2",
     "pad": "^2.0.3",
+    "protocol-buffers": "^4.1.0",
     "request": "^2.83.0",
     "requestretry": "^1.13.0",
     "typescript": "^2.6.2",
