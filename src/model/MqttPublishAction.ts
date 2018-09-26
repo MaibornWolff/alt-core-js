@@ -51,7 +51,7 @@ class MqttPublishAction implements Action {
     }
 
     encodeProtoPayload(): string {
-        return encodeProto(this.protoFile, this.data, this.protoClass);
+        return encodeProto(this.protoFile, this.data, this.protoClass).toString('utf-8');
     }
 
     invokeAsync(scenario: Scenario): void {

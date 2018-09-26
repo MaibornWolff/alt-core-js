@@ -20,7 +20,6 @@ function currentTimestamp() {
 }
 
 export const initDiagramCreation = (scenarioId: string) => {
-    console.log('Writing to: ' + getInputFile(scenarioId));
     FS.writeFileSync(getInputFile(scenarioId), "");
     const initValues = [
         '@startuml',
@@ -72,7 +71,7 @@ export const addWsMessage = (scenarioId: string, source: string, payload: any) =
 
 export const addMqttMessage = (scenarioId: string, topic: string, payload: any) => {
     FS.appendFileSync(getInputFile(scenarioId), `MQTT -[#green]->o YATF : ${topic}\n`);
-    let note = `note right #99FF99\n**${currentTimestamp()}**\n${extractPayload(JSON.parse(payload))}\nend note\n`;
+    let note = `note right #99FF99\n**${currentTimestamp()}**\n${extractPayload(payload)}\nend note\n`;
     FS.appendFileSync(getInputFile(scenarioId), note)
 };
 

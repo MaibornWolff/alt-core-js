@@ -1,15 +1,13 @@
 import 'mocha';
 import {expect} from 'chai';
 import {loadAllActions} from "../actionLoading";
-import {ActionType} from "../model/ActionType";
-import {RestAction} from "../model/RestAction";
 import { MqttPublishAction } from '../model/MqttPublishAction';
 
-describe('PROTO mqtt action loading', () => {
+describe('MQTT Publish action loading', () => {
     
     const TEST_ACTION_DIR = 'src/tests/resources/actions'
 
-    it('should be able to encode proto def correctly', () => {
+    it('should be able to encode proto messages', () => {
         const envConfig = {
             'my-service': 'localhost:8080'
         };
