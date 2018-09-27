@@ -1,6 +1,7 @@
 import 'mocha';
 import {expect} from 'chai';
-import {encodeProto, decodeProto} from "../protoParsing";
+import {encodeProto, decodeProto, resolveImportPath} from "../protoParsing";
+import path = require('path')
 
 describe('PROTO parsing', () => {
 
@@ -22,5 +23,10 @@ describe('PROTO parsing', () => {
         expect(result).to.have.property('text');
         expect(result.nested.nestedText).to.be.equal('hello');
         expect(result.text).to.be.equal('world');
+    })
+
+    it('can resolve relative import paths', () => {
+        const result = resolveImportPath(TEST_PROTO, "resources/proto/other.proto")
+        expect(result).to.be.equal(path.resolve("src/tests/resources/proto/other.proto"));
     })
 });

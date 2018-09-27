@@ -1,3 +1,5 @@
+import "proto/other.proto"; // test relative-to-root path resolution
+
 message Test {
     optional Nested nested = 1;
     required string text = 2;
