@@ -39,7 +39,6 @@
     "node-plantuml": "^0.6.2",
     "pad": "^2.0.3",
     "protocol-buffers": "^4.1.0",
-    "resolve-protobuf-schema": "^2.1.0",
     "request": "^2.83.0",
     "requestretry": "^1.13.0",
     "typescript": "^2.6.2",
