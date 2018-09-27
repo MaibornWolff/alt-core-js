@@ -13,6 +13,6 @@ describe('MQTT Publish action loading', () => {
         };
         let testAction: MqttPublishAction = loadAllActions(TEST_ACTION_DIR, envConfig).find(a => a.name === 'mqttPublishProtoAction') as MqttPublishAction;
         let result = testAction.encodeProtoPayload();
-        expect(result).to.be.equal('\n\u0007\n\u0005hello\u0012\u0005world');
+        expect(result).to.be.equal('\n\u0007\n\u0005hello\u001a\u0005world');
     });
 });
