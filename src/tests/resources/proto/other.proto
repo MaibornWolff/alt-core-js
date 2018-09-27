@@ -1,0 +1,3 @@
+message Other {
+    required string sometext = 1;
+}
