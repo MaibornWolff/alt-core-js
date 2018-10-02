@@ -86,13 +86,13 @@ Now to run our `scenarios`, we have basically two options: either using plain JS
 First of all we need to download the **ALT**'s dependency:
 
 ```bash
-npm i -s alt-core-js
+npm i -s @maibornwolff/alt-core-js
 ```
 
 And then simply call the `runScenario` main entrypoint providing the paths to our `scenarios`' and `actions` directory:
 
 ```javascript
-const ALT = require('alt-core-js');
+const ALT = require('@maibornwolff/alt-core-js');
 ALT.runScenario('src/scenarios/s1-my-first-scenario.yaml', 'src/actions');
 ```
 
