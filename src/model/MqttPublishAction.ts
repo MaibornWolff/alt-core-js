@@ -50,8 +50,8 @@ class MqttPublishAction implements Action {
         return { promise, cancel: () => console.log("TODO") };
     }
 
-    encodeProtoPayload(): string {
-        return encodeProto(this.protoFile, this.data, this.protoClass).toString('utf-8');
+    encodeProtoPayload(): any {
+        return encodeProto(this.protoFile, this.data, this.protoClass);
     }
 
     invokeAsync(scenario: Scenario): void {
