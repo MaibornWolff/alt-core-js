@@ -19,6 +19,10 @@ function currentTimestamp() {
     return new Date().toISOString();
 }
 
+function replaceDashes(str: string): string {
+    return str.replace(new RegExp("-","g"),"_");
+}
+
 export const initDiagramCreation = (scenarioId: string) => {
     FS.writeFileSync(getInputFile(scenarioId), "");
     const initValues = [
@@ -32,7 +36,7 @@ export const initDiagramCreation = (scenarioId: string) => {
 };
 
 export const addRequest = (scenarioId: string, target: string, url: string, data: any) => {
-    let _target = target.replace("-", "_");
+    let _target = replaceDashes(target);
     let _request = `YATF -> ${_target}: ${url}\nactivate ${_target}\n`;
     if (data) {
         _request += `note right\n**${currentTimestamp()}**\n${extractPayload(data)}\nend note\n`;
@@ -54,7 +58,7 @@ export const addFailedResponse = (scenarioId: string, source: string, status: st
 };
 
 const doAddResponse = (scenarioId: string, source: string, status: string, color: string) => {
-    let _source = source.replace("-", "_");
+    let _source = replaceDashes(source);
     FS.appendFileSync(getInputFile(scenarioId), `${_source} --> YATF: <color ${color}>${status}</color>\ndeactivate ${_source}\n`);
 };
 
@@ -63,7 +67,7 @@ export const addDelay = (scenarioId: string, durationInSec: number) => {
 };
 
 export const addWsMessage = (scenarioId: string, source: string, payload: any) => {
-    let _source = source.replace("-", "_");
+    let _source = replaceDashes(source);
     FS.appendFileSync(getInputFile(scenarioId), `${_source} -[#0000FF]->o YATF : [WS]\n`);
     let note = `note left #aqua\n**${currentTimestamp()}**\n${extractPayload(payload)}\nend note\n`;
     FS.appendFileSync(getInputFile(scenarioId), note)
