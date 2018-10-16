@@ -1,6 +1,6 @@
 {
   "name": "@maibornwolff/alt-core-js",
-  "version": "1.2.10",
+  "version": "1.2.11",
   "description": "Simple test framework supporting execution of different `scenarios` based on `action` templates. The framework supports definition of different action types in an *yaml* format, including e.g. which endpoints have to be called with which parameters as well as defining validation rules to be applied on the responses. It also supports detailed report creation of the test results.",
   "main": "lib/index",
   "types": "lib/index",

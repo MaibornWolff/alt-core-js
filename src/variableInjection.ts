@@ -43,7 +43,7 @@ function searchForMatchingStrings(regex: RegExp, str: string) {
 
 export const injectEvaluationToString = (str: string, ctx: any): string => {
 
-    const regex = /{{{([\w().+-\\*]*)}}}/g;
+    const regex = /{{{(.*)}}}/g;
 
     searchForMatchingStrings(regex, str).forEach(expression => {
         let replaceValue = eval(expression);
@@ -61,7 +61,7 @@ export const injectEvaluationToString = (str: string, ctx: any): string => {
 
 export const injectEvaluationToNumber = (str: string, ctx: any): string => {
 
-    const regex = /<<<([\w().+-\\*]*)>>>/g;
+    const regex = /<<<(.*)>>>/g;
 
     searchForMatchingStrings(regex, str).forEach(expression => {
         let replaceValue = eval(expression);

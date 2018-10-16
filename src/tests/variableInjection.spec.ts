@@ -40,7 +40,13 @@ describe('string injection', () => {
     it('should be able to inject method evaluation', () => {
         let now = Date.now();
         const result = injectEvaluationToString('{{{Date.now()}}}', {});  
-        expect(result.startsWith(now.toString().substr(0, 10))).to.equal(true);      
+        expect(result.substr(0, 10)).to.equal(now.toString().substr(0, 10));      
+    });
+    
+    it('should be able to evaluate expressions with spaces in them', () => {
+        let now = Date.now();
+        const result = injectEvaluationToString('{{{new Date().toISOString()}}}', {});  
+        expect(result.substr(0, 15)).to.equal(new Date().toISOString().substr(0, 15));      
     });
 
     it('should be able to inject arithmetic operations into strings', () => {
