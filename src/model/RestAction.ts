@@ -2,7 +2,7 @@ import {Action} from "./Action";
 import {Scenario} from "./Scenario";
 import {getLogger} from "../logging";
 import {ActionType} from "./ActionType";
-import {injectVarsToMap, injectVarsToString} from "../variableInjection";
+import {injectVarsToMap, injectVarsToString, injectEvaluationToMap} from "../variableInjection";
 import {isArray} from "util";
 import {ActionCallback} from "./ActionCallback";
 import {addFailedResponse, addRequest, addSuccessfulResponse} from "../diagramDrawing";
@@ -108,7 +108,7 @@ class RestAction implements Action {
         const promise = new Promise((resolve, reject) => {
             let requestHeaders = this.restHead ? injectVarsToMap(this.restHead, scenario.cache, ctx) : null;
             let requestBody = this.data ?
-                isArray(this.data) ? JSON.stringify(this.data) : JSON.stringify(injectVarsToMap(this.data, scenario.cache, ctx))
+                isArray(this.data) ? JSON.stringify(this.data) : JSON.stringify(injectVarsToMap(injectEvaluationToMap(this.data, ctx), scenario.cache, ctx))
                 :
                 null;
             let requestForm = this.form ? injectVarsToMap(this.form, scenario.cache, ctx) : null;

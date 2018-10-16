@@ -1,6 +1,6 @@
 import 'mocha';
 import {expect} from 'chai';
-import {injectVarsToMap, injectVarsToString, injectEvaluationToString, injectEvaluationToNumber} from "../variableInjection";
+import {injectVarsToMap, injectVarsToString, injectEvaluationToString, injectEvaluationToNumber, injectEvaluationToMap} from "../variableInjection";
 
 describe('string injection', () => {
 
@@ -53,12 +53,26 @@ describe('string injection', () => {
         const result = injectEvaluationToString('"{{{5+4-3*2}}}"', {});  
         expect(result).to.equal('"3"');      
     });
+
+    it('should be able to inject multiple expressions to map', () => {
+        let testMap = {
+            aString: "{{{new Date().toISOString().substr(0,10)}}}",
+            otherString: "{{{new Date().toISOString().substr(0,10)}}}",
+            aNumber: "<<< 1 + 2 >>>"
+        }
+        const result = injectEvaluationToMap(testMap, {});  
+        expect(result).to.eql({
+            aString: new Date().toISOString().substr(0,10),
+            otherString: new Date().toISOString().substr(0,10),
+            aNumber: 3
+        });      
+    });
 });
 
 describe('number injection', () => {
 
     it('should be able to evaulate arithmetic operations from string to number', () => {
-        const result = injectEvaluationToNumber('"<<<5+4-3*2>>>"', {});
+        const result = injectEvaluationToNumber('"<<< 5 + 4 - 3 * 2 >>>"', {});
         expect(result).to.equal('3');
     });
 });
