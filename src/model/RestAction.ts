@@ -132,7 +132,7 @@ class RestAction implements Action {
 
                     addRequest(scenario.name, targetService, `${response.request.method} ${response.request.path}`, JSON.parse(requestBody));
 
-                    if (response.statusCode === 200) {
+                    if (response.statusCode === 200 || response.statusCode === 201) {
                         logDebug(`Response: ${response.statusCode} (${response.statusMessage}): ${response.body}`);
 
                         let res: any;
@@ -158,7 +158,7 @@ class RestAction implements Action {
 
                         return resolve();
 
-                    } else if (response.statusCode === 201 || response.statusCode === 204) {
+                    } else if (response.statusCode === 204) {
                         logDebug(`Response: ${response.statusCode} (${response.statusMessage})`);
                         addSuccessfulResponse(scenario.name, targetService, `${response.statusMessage} (${response.statusCode})`, null);
                         resolve();
