@@ -50,8 +50,8 @@ class MqttPublishAction implements Action {
         return { promise, cancel: () => console.log("TODO") };
     }
 
-    encodeProtoPayload(ctx = {}): any {
-        let data = injectEvaluationToMap(this.data, ctx);
+    encodeProtoPayload(scenarioVariables: Map<string, string>, ctx = {}): any {
+        let data = injectEvaluationToMap(this.data, ctx, scenarioVariables);
         return encodeProto(this.protoFile, data, this.protoClass);
     }
 
@@ -83,7 +83,7 @@ class MqttPublishAction implements Action {
             getLogger(scenario.name).debug(`MQTT connection to ${this.url} successfully opened`, ctx);
 
             // let payload = JSON.stringify(injectEvaluationToMap(this.data, ctx));
-            let payload = this.protoFile ? this.encodeProtoPayload(ctx) : JSON.stringify(injectEvaluationToMap(this.data, ctx));
+            let payload = this.protoFile ? this.encodeProtoPayload(scenario.cache, ctx) : JSON.stringify(injectEvaluationToMap(this.data, ctx, scenario.cache));
 
             client.publish(this.topic, payload, (error?: any, packet?: any) => {
                 if (error) {
