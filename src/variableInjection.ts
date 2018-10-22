@@ -45,10 +45,10 @@ export const injectEvaluationToString = (str: string, ctx: any, vars: Map<string
     // the vars (scenario variable) should be left available here in order to access
     // and set them from within evaluated expressions
 
-    const regex = /{{{([\s\w().+-\\*]*)}}}/g;
+    const regex = /{{{(.*?)}}}/g;
 
     searchForMatchingStrings(regex, str).forEach(expression => {
-        let replaceValue = eval(expression);
+        let replaceValue = function() { return eval(expression); }.call(vars);
         if (replaceValue) {
             let searchValue = `{{{${expression}}}}`;
             getLogger(ctx.scenario).debug(`Replacing '${searchValue}' with '${replaceValue}'`, ctx);
@@ -65,10 +65,10 @@ export const injectEvaluationToNumber = (str: string, ctx: any, vars: Map<string
     // the vars (scenario variable) should be left available here in order to access
     // and set them from within evaluated expressions
 
-    const regex = /<<<([\s\w().+-\\*]*)>>>/g;
+    const regex = /<<<(.*?)>>>/g;
 
     searchForMatchingStrings(regex, str).forEach(expression => {
-        let replaceValue = eval(expression);
+        let replaceValue = function() { return eval(expression); }.call(vars);
         if (replaceValue) {
             let searchValue = `<<<${expression}>>>`;
             getLogger(ctx.scenario).debug(`Replacing '"${searchValue}"' with '${replaceValue}'`, ctx);
