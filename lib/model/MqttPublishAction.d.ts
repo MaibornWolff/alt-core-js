@@ -15,7 +15,7 @@ declare class MqttPublishAction implements Action {
     constructor(name: string, mqttDefinition: any, url?: any, username?: any, password?: any, topic?: any, data?: any, protoFile?: any, protoClass?: any);
     static fromTemplate(mqttDefinition: any, template: MqttPublishAction): MqttPublishAction;
     invoke(scenario: Scenario): ActionCallback;
-    encodeProtoPayload(): any;
+    encodeProtoPayload(ctx?: {}): any;
     invokeAsync(scenario: Scenario): void;
 }
 export { MqttPublishAction };

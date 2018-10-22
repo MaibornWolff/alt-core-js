@@ -18,8 +18,13 @@ export function encodeProto(protoDefPath: string, attributes: {}, outerClass: st
     root.resolvePath = resolveImportPath;
     root.loadSync(protoDefPath);
     let messageType = root.lookupType(outerClass);
-    let message = messageType.create(attributes);
-    messageType.verify(message);
+
+    let errMsg = messageType.verify(attributes);
+    if (errMsg) {
+        throw Error(errMsg);
+    }
+
+    let message = messageType.fromObject(attributes);
     let encoded = messageType.encode(message).finish();
 
     console.debug("\n-- Encoded proto data --");
@@ -36,6 +41,12 @@ export function decodeProto(protoDefPath: string, outerClass: string, buffer: Ui
     root.loadSync(protoDefPath);
     let messageType = root.lookupType(outerClass);
     let message = messageType.decode(buffer);
-    messageType.verify(message);
-    return messageType.toObject(message);
+    let messageObject = messageType.toObject(message);
+
+    let errMsg = messageType.verify(messageObject);
+    if (errMsg) {
+        throw Error(errMsg);
+    }
+
+    return messageObject;
 }

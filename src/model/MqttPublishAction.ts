@@ -50,8 +50,9 @@ class MqttPublishAction implements Action {
         return { promise, cancel: () => console.log("TODO") };
     }
 
-    encodeProtoPayload(): any {
-        return encodeProto(this.protoFile, this.data, this.protoClass);
+    encodeProtoPayload(ctx = {}): any {
+        let data = injectEvaluationToMap(this.data, ctx);
+        return encodeProto(this.protoFile, data, this.protoClass);
     }
 
     invokeAsync(scenario: Scenario): void {
@@ -82,7 +83,7 @@ class MqttPublishAction implements Action {
             getLogger(scenario.name).debug(`MQTT connection to ${this.url} successfully opened`, ctx);
 
             // let payload = JSON.stringify(injectEvaluationToMap(this.data, ctx));
-            let payload = this.protoFile ? this.encodeProtoPayload() : JSON.stringify(injectEvaluationToMap(this.data, ctx));
+            let payload = this.protoFile ? this.encodeProtoPayload(ctx) : JSON.stringify(injectEvaluationToMap(this.data, ctx));
 
             client.publish(this.topic, payload, (error?: any, packet?: any) => {
                 if (error) {
