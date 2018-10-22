@@ -12,12 +12,11 @@ describe('MQTT Subscribe action loading', () => {
             'my-service': 'localhost:8080'
         };
         let testAction: MqttAction = loadAllActions(TEST_ACTION_DIR, envConfig).find(a => a.name === 'mqttSubscribeProtoAction') as MqttAction;
-        let result = testAction.decodeProtoPayload(new Buffer('\n\u0007\n\u0005hello\u001a\u0005world', 'utf-8'));
+        let result = testAction.decodeProtoPayload(Buffer.from('\n\u0007\n\u0005hello\u001a\u0005world', 'utf-8'));
         expect(result).to.eql({
             nested: {
                 nestedText: 'hello'
             },
-            other: null,
             text: 'world'
         });
     });
