@@ -21,10 +21,10 @@ function injectVarsToString(str: string, scenarioVariables: Map<string, string>,
 export function injectEvalAndVarsToString(str: string, scenarioVariables: Map<string, string>, ctx: any): string|number {
     let afterEvalToString = injectEvaluationToString(str, ctx, scenarioVariables);
     let afterVarInjection = injectVarsToString(afterEvalToString, scenarioVariables, ctx);
-    let afterEvalToNumber = injectEvaluationToNumber(afterVarInjection, ctx, scenarioVariables);
+    let [afterEvalToNumber, foundNumericExpression] = injectEvaluationToNumber(afterVarInjection, ctx, scenarioVariables);
 
     // if the string contains only number description, that can be converted, then return a number, in other case return a string
-    if (+afterEvalToNumber === +afterEvalToNumber) {
+    if (foundNumericExpression && (+afterEvalToNumber === +afterEvalToNumber)) {
         return +afterEvalToNumber;
     } else {
         return afterEvalToNumber;
@@ -80,13 +80,15 @@ function injectEvaluationToString(str: string, ctx: any, vars: Map<string, strin
     return str;
 }
 
-function injectEvaluationToNumber(str: string, ctx: any, vars: Map<string, string>): string {
+function injectEvaluationToNumber(str: string, ctx: any, vars: Map<string, string>): [string, boolean] {
     // the vars (scenario variable) should be left available here in order to access
     // and set them from within evaluated expressions
 
     const regex = /<<<(.*?)>>>/g;
+    var foundNumericExpression = false;
 
     searchForMatchingStrings(regex, str).forEach(expression => {
+        foundNumericExpression = true;
         let replaceValue = function() { return eval(expression); }.call(vars);
         if (replaceValue) {
             let searchValue = `<<<${expression}>>>`;
@@ -97,5 +99,5 @@ function injectEvaluationToNumber(str: string, ctx: any, vars: Map<string, strin
         }
     });
 
-    return str;
+    return [str, foundNumericExpression];
 }

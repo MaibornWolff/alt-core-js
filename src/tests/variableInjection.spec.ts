@@ -51,7 +51,12 @@ describe('string injection', () => {
 
     it('should be able to inject arithmetic operations into strings', () => {
         const result = injectEvalAndVarsToString('"{{{5+4-3*2}}}"', new Map(), {});
-        expect(result).to.equal('"3"');      
+        expect(result).to.equal('"3"');
+    });
+
+    it('should not convert a digit-only string to a number if it does not contain a numeric-expression', () => {
+        const result = injectEvalAndVarsToString('99999999', new Map(), {});
+        expect(result).to.equal('99999999');
     });
 
     it('should be able to inject multiple expressions to map', () => {
