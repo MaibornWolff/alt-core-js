@@ -41,12 +41,14 @@ function searchForMatchingStrings(regex: RegExp, str: string) {
     return matchingStrings;
 }
 
-export const injectEvaluationToString = (str: string, ctx: any): string => {
+export const injectEvaluationToString = (str: string, ctx: any, vars: Map<string, string>): string => {
+    // the vars (scenario variable) should be left available here in order to access
+    // and set them from within evaluated expressions
 
-    const regex = /{{{([\s\w().+-\\*]*)}}}/g;
+    const regex = /{{{(.*?)}}}/g;
 
     searchForMatchingStrings(regex, str).forEach(expression => {
-        let replaceValue = eval(expression);
+        let replaceValue = function() { return eval(expression); }.call(vars);
         if (replaceValue) {
             let searchValue = `{{{${expression}}}}`;
             getLogger(ctx.scenario).debug(`Replacing '${searchValue}' with '${replaceValue}'`, ctx);
@@ -59,12 +61,14 @@ export const injectEvaluationToString = (str: string, ctx: any): string => {
     return str;
 };
 
-export const injectEvaluationToNumber = (str: string, ctx: any): string => {
+export const injectEvaluationToNumber = (str: string, ctx: any, vars: Map<string, string>): string => {
+    // the vars (scenario variable) should be left available here in order to access
+    // and set them from within evaluated expressions
 
-    const regex = /<<<([\s\w().+-\\*]*)>>>/g;
+    const regex = /<<<(.*?)>>>/g;
 
     searchForMatchingStrings(regex, str).forEach(expression => {
-        let replaceValue = eval(expression);
+        let replaceValue = function() { return eval(expression); }.call(vars);
         if (replaceValue) {
             let searchValue = `<<<${expression}>>>`;
             getLogger(ctx.scenario).debug(`Replacing '"${searchValue}"' with '${replaceValue}'`, ctx);
@@ -77,7 +81,8 @@ export const injectEvaluationToNumber = (str: string, ctx: any): string => {
     return str;
 };
 
-export const injectEvaluationToMap = (keyValueMap: any, loggingCtx: any): any => {
+export const injectEvaluationToMap = (keyValueMap: any, loggingCtx: any,
+                                      scenarioVariables: Map<string, string>): any => {
 
     // let copy: any = {};
     // Object.assign(copy, keyValueMap);
@@ -97,8 +102,8 @@ export const injectEvaluationToMap = (keyValueMap: any, loggingCtx: any): any =>
     // return copy;
 
     let asString = JSON.stringify(keyValueMap);
-    let replaced = injectEvaluationToString(asString, loggingCtx);
-    replaced = injectEvaluationToNumber(replaced, loggingCtx);
+    let replaced = injectEvaluationToString(asString, loggingCtx, scenarioVariables);
+    replaced = injectEvaluationToNumber(replaced, loggingCtx, scenarioVariables);
 
     return JSON.parse(replaced);
 };

@@ -39,18 +39,18 @@ describe('string injection', () => {
 
     it('should be able to inject method evaluation', () => {
         let now = Date.now();
-        const result = injectEvaluationToString('{{{Date.now()}}}', {});  
+        const result = injectEvaluationToString('{{{Date.now()}}}', {}, new Map());
         expect(result.substr(0, 10)).to.equal(now.toString().substr(0, 10));      
     });
     
     it('should be able to evaluate expressions with spaces in them', () => {
         let now = Date.now();
-        const result = injectEvaluationToString('{{{new Date().toISOString()}}}', {});  
+        const result = injectEvaluationToString('{{{new Date().toISOString()}}}', {}, new Map());
         expect(result.substr(0, 15)).to.equal(new Date().toISOString().substr(0, 15));      
     });
 
     it('should be able to inject arithmetic operations into strings', () => {
-        const result = injectEvaluationToString('"{{{5+4-3*2}}}"', {});  
+        const result = injectEvaluationToString('"{{{5+4-3*2}}}"', {}, new Map());
         expect(result).to.equal('"3"');      
     });
 
@@ -60,7 +60,7 @@ describe('string injection', () => {
             otherString: "{{{new Date().toISOString().substr(0,10)}}}",
             aNumber: "<<< 1 + 2 >>>"
         }
-        const result = injectEvaluationToMap(testMap, {});  
+        const result = injectEvaluationToMap(testMap, {}, new Map());
         expect(result).to.eql({
             aString: new Date().toISOString().substr(0,10),
             otherString: new Date().toISOString().substr(0,10),
@@ -72,7 +72,7 @@ describe('string injection', () => {
 describe('number injection', () => {
 
     it('should be able to evaulate arithmetic operations from string to number', () => {
-        const result = injectEvaluationToNumber('"<<< 5 + 4 - 3 * 2 >>>"', {});
+        const result = injectEvaluationToNumber('"<<< 5 + 4 - 3 * 2 >>>"', {}, new Map());
         expect(result).to.equal('3');
     });
 });

@@ -1,43 +1,52 @@
-import protobuf = require('protocol-buffers');
-import schema = require('protocol-buffers-schema')
-import fs = require('fs')
-import path = require('path')
+import protobuf = require('protobufjs');
+import fs = require('fs');
+import path = require('path');
+import hexdump = require("hexdump-nodejs");
 
-function merge(a, b) {
-  a.messages = a.messages.concat(b.messages)
-  a.enums = a.enums.concat(b.enums)
-  return a
-}
+export function resolveImportPath(origin: string, target: string): string {
+    let currentDir = path.dirname(origin);
 
-function readProtobuf(filename: string) {
-
-  var sch = schema(fs.readFileSync(filename, 'utf-8'))
-  var imports = [].concat(sch.imports || [])
-
-  imports.forEach(function(i) {
-    sch = merge(sch, readProtobuf(resolveImportPath(filename, i)))
-  })
-
-  return sch
-}
-
-export function resolveImportPath(filename: string, importPath: string): string {
-    let currentDir = path.dirname(filename)
-
-    while (!fs.existsSync(path.resolve(currentDir, importPath)) && (path.parse(currentDir).root !== currentDir)) {
+    while (!fs.existsSync(path.resolve(currentDir, target)) && (path.parse(currentDir).root !== currentDir)) {
         currentDir = path.resolve(currentDir, "..")
     }
 
-    return path.resolve(currentDir, importPath); 
+    return path.resolve(currentDir, target);
 }
 
-export function encodeProto(protoDefPath: string, attributes: {}, outerClass: string): Buffer {
-    let messages = protobuf(readProtobuf(protoDefPath));
-    let buffer = messages[outerClass].encode(attributes);
-    return buffer;
+export function encodeProto(protoDefPath: string, attributes: {}, outerClass: string): Uint8Array {
+    let root = new protobuf.Root();
+    root.resolvePath = resolveImportPath;
+    root.loadSync(protoDefPath);
+    let messageType = root.lookupType(outerClass);
+
+    let errMsg = messageType.verify(attributes);
+    if (errMsg) {
+        throw Error(errMsg);
+    }
+
+    let message = messageType.fromObject(attributes);
+    let encoded = messageType.encode(message).finish();
+
+    console.debug("\n-- Encoded proto data --");
+    console.debug("Base64: " + Buffer.from(encoded).toString('base64'));
+    console.debug("Hex:")
+    console.debug(hexdump(encoded));
+
+    return encoded;
 }
 
-export function decodeProto(protoDefPath: string, outerClass: string, buffer: Buffer) {
-    let protoMessages = protobuf(readProtobuf(protoDefPath));
-    return protoMessages[outerClass].decode(buffer);
+export function decodeProto(protoDefPath: string, outerClass: string, buffer: Uint8Array) {
+    let root = new protobuf.Root();
+    root.resolvePath = resolveImportPath;
+    root.loadSync(protoDefPath);
+    let messageType = root.lookupType(outerClass);
+    let message = messageType.decode(buffer);
+    let messageObject = messageType.toObject(message);
+
+    let errMsg = messageType.verify(messageObject);
+    if (errMsg) {
+        throw Error(errMsg);
+    }
+
+    return messageObject;
 }

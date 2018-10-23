@@ -108,7 +108,7 @@ class RestAction implements Action {
         const promise = new Promise((resolve, reject) => {
             let requestHeaders = this.restHead ? injectVarsToMap(this.restHead, scenario.cache, ctx) : null;
             let requestBody = this.data ?
-                isArray(this.data) ? JSON.stringify(this.data) : JSON.stringify(injectVarsToMap(injectEvaluationToMap(this.data, ctx), scenario.cache, ctx))
+                isArray(this.data) ? JSON.stringify(this.data) : JSON.stringify(injectVarsToMap(injectEvaluationToMap(this.data, ctx, scenario.cache), scenario.cache, ctx))
                 :
                 null;
             let requestForm = this.form ? injectVarsToMap(this.form, scenario.cache, ctx) : null;

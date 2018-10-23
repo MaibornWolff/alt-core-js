@@ -17,11 +17,11 @@ describe('PROTO parsing', () => {
             },
             text: 'world'
         }, 'Test');
-        expect(result.toString('utf-8')).to.be.equal('\n\u0007\n\u0005hello\u0012\u000b\n\tbeautiful\u001a\u0005world');
+        expect(result.toString()).to.be.equal('\n\u0007\n\u0005hello\u0012\u000b\n\tbeautiful\u001a\u0005world');
     });
 
     it('can decode proto messages into objects', () => {
-        const result = decodeProto(TEST_PROTO, 'Test', new Buffer('\n\u0007\n\u0005hello\u0012\u000b\n\tbeautiful\u001a\u0005world', 'utf-8'));
+        const result = decodeProto(TEST_PROTO, 'Test', Buffer.from('\n\u0007\n\u0005hello\u0012\u000b\n\tbeautiful\u001a\u0005world', 'utf-8'));
         expect(result).to.have.property('nested');
         expect(result).to.have.property('text');
         expect(result.nested.nestedText).to.be.equal('hello');
