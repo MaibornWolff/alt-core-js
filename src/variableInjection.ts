@@ -1,6 +1,6 @@
 import {getLogger} from "./logging";
 
-export const injectVarsToString = (str: string, scenarioVariables: Map<string, string>, ctx: any): string => {
+function injectVarsToString(str: string, scenarioVariables: Map<string, string>, ctx: any): string {
 
     const regex = /{{(\w*)}}/g;
 
@@ -16,19 +16,38 @@ export const injectVarsToString = (str: string, scenarioVariables: Map<string, s
     });
 
     return str;
-};
+}
 
-export const injectVarsToMap = (keyValueMap: any, scenarioVariables: Map<string, string>, loggingCtx: any): any => {
+export function injectEvalAndVarsToString(str: string, scenarioVariables: Map<string, string>, ctx: any): string|number {
+    let afterEvalToString = injectEvaluationToString(str, ctx, scenarioVariables);
+    let afterVarInjection = injectVarsToString(afterEvalToString, scenarioVariables, ctx);
+    let afterEvalToNumber = injectEvaluationToNumber(afterVarInjection, ctx, scenarioVariables);
+
+    // if the string contains only number description, that can be converted, then return a number, in other case return a string
+    if (+afterEvalToNumber === +afterEvalToNumber) {
+        return +afterEvalToNumber;
+    } else {
+        return afterEvalToNumber;
+    }
+}
+
+export function injectEvalAndVarsToMap(keyValueMap: any, scenarioVariables: Map<string, string>, loggingCtx: any): any {
 
     let copy: any = {};
     Object.assign(copy, keyValueMap);
     for (let mapEntry of Object.entries(copy)) {
         let key = mapEntry[0];
-        let value = mapEntry[1] as string;
-        copy[key] = injectVarsToString(value, scenarioVariables, loggingCtx);
+        let value = mapEntry[1];
+
+        if (value instanceof Object) {
+            // contains nested values
+            copy[key] = injectEvalAndVarsToMap(value, scenarioVariables, loggingCtx);
+        } else {
+            copy[key] = injectEvalAndVarsToString(value, scenarioVariables, loggingCtx);
+        }
     }
     return copy;
-};
+}
 
 function searchForMatchingStrings(regex: RegExp, str: string) {
     let m;
@@ -41,7 +60,7 @@ function searchForMatchingStrings(regex: RegExp, str: string) {
     return matchingStrings;
 }
 
-export const injectEvaluationToString = (str: string, ctx: any, vars: Map<string, string>): string => {
+function injectEvaluationToString(str: string, ctx: any, vars: Map<string, string>): string {
     // the vars (scenario variable) should be left available here in order to access
     // and set them from within evaluated expressions
 
@@ -59,9 +78,9 @@ export const injectEvaluationToString = (str: string, ctx: any, vars: Map<string
     });
 
     return str;
-};
+}
 
-export const injectEvaluationToNumber = (str: string, ctx: any, vars: Map<string, string>): string => {
+function injectEvaluationToNumber(str: string, ctx: any, vars: Map<string, string>): string {
     // the vars (scenario variable) should be left available here in order to access
     // and set them from within evaluated expressions
 
@@ -72,38 +91,11 @@ export const injectEvaluationToNumber = (str: string, ctx: any, vars: Map<string
         if (replaceValue) {
             let searchValue = `<<<${expression}>>>`;
             getLogger(ctx.scenario).debug(`Replacing '"${searchValue}"' with '${replaceValue}'`, ctx);
-            str = str.replace(`"${searchValue}"`, replaceValue)
+            str = str.replace(searchValue, replaceValue)
         } else {
             getLogger(ctx.scenario).debug(`Not able to replace {{{${expression}}}} !`, ctx);
         }
     });
 
     return str;
-};
-
-export const injectEvaluationToMap = (keyValueMap: any, loggingCtx: any,
-                                      scenarioVariables: Map<string, string>): any => {
-
-    // let copy: any = {};
-    // Object.assign(copy, keyValueMap);
-    // for (let mapEntry of Object.entries(copy)) {
-    //     let key = mapEntry[0];
-    //     let value = mapEntry[1] as string;
-    //     if (Array.isArray(value)) {
-    //         let arr = [];
-    //         value.forEach(v => arr.push(injectEvaluationToMap(v, loggingCtx)));
-    //         copy[key] = arr;
-    //     } else if (typeof value === 'object') {
-    //         copy[key] = injectEvaluationToMap(value, loggingCtx);
-    //     } else {
-    //         copy[key] = injectEvaluationToString(value, loggingCtx);
-    //     }
-    // }
-    // return copy;
-
-    let asString = JSON.stringify(keyValueMap);
-    let replaced = injectEvaluationToString(asString, loggingCtx, scenarioVariables);
-    replaced = injectEvaluationToNumber(replaced, loggingCtx, scenarioVariables);
-
-    return JSON.parse(replaced);
-};
+}

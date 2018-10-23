@@ -3,7 +3,7 @@ import {ActionType} from "./ActionType";
 import {getLogger} from "../logging";
 import {Scenario} from "./Scenario";
 import {ActionCallback} from "./ActionCallback";
-import {injectEvaluationToMap, injectVarsToString} from "../variableInjection";
+import {injectEvalAndVarsToMap, injectEvalAndVarsToString} from "../variableInjection";
 import {addMqttPublishMessage} from "../diagramDrawing";
 import {encodeProto} from "../protoParsing";
 import hexdump = require("hexdump-nodejs");
@@ -51,7 +51,7 @@ class MqttPublishAction implements Action {
     }
 
     encodeProtoPayload(scenarioVariables: Map<string, string>, ctx = {}): any {
-        let data = injectEvaluationToMap(this.data, ctx, scenarioVariables);
+        let data = injectEvalAndVarsToMap(this.data, scenarioVariables, ctx);
         return encodeProto(this.protoFile, data, this.protoClass);
     }
 
@@ -83,9 +83,9 @@ class MqttPublishAction implements Action {
             let log = getLogger(scenario.name);
             log.debug(`MQTT connection to ${this.url} successfully opened`, ctx);
 
-            let dataString = JSON.stringify(injectEvaluationToMap(this.data, ctx, scenario.cache));
+            let dataString = JSON.stringify(injectEvalAndVarsToMap(this.data, scenario.cache, ctx));
             let payload = this.protoFile ? this.encodeProtoPayload(scenario.cache, ctx) : dataString;
-            let topic = injectVarsToString(this.topic, scenario.cache, ctx);
+            let topic = injectEvalAndVarsToString(this.topic, scenario.cache, ctx).toString();
 
             client.publish(topic, payload, (error?: any, packet?: any) => {
                 if (error) {

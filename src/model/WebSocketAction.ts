@@ -3,8 +3,7 @@ import {ActionType} from "./ActionType";
 import {getLogger} from "../logging";
 import {Scenario} from "./Scenario";
 import {stringify} from "querystring";
-import {injectVarsToMap, injectVarsToString} from "../variableInjection";
-import {isArray} from "util";
+import {injectEvalAndVarsToMap, injectEvalAndVarsToString} from "../variableInjection";
 import {ActionCallback} from "./ActionCallback";
 import {addWsMessage} from "../diagramDrawing";
 
@@ -54,7 +53,7 @@ class WebSocketAction implements Action {
 
     private static loadData(template: WebSocketAction, actionDef: any) {
         if (template.data) {
-            if (isArray(template.data))
+            if (Array.isArray(template.data))
                 return template.data.concat(actionDef.data || []);
             else
                 return Object.assign(Object.assign({}, template.data), actionDef.data);
@@ -79,8 +78,8 @@ class WebSocketAction implements Action {
     invokeAsync(scenario: Scenario): void {
 
         let ctx = {scenario: scenario.name, action: this.name};
-        let resolvedUrl = injectVarsToString(this.url, scenario.cache, ctx);
-        let queryParams = injectVarsToMap(this.headers, scenario.cache, ctx);
+        let resolvedUrl = injectEvalAndVarsToString(this.url, scenario.cache, ctx);
+        let queryParams = injectEvalAndVarsToMap(this.headers, scenario.cache, ctx);
         const registeredMessageFilters = this.messageFilter;
 
         const logDebug = function (debugMessage: string) {
@@ -94,7 +93,7 @@ class WebSocketAction implements Action {
         const isMessageRelevant = function (msg: String) {
             if (registeredMessageFilters) {
                 return registeredMessageFilters.some(filter => {
-                    filter = injectVarsToString(filter, scenario.cache, ctx);
+                    filter = injectEvalAndVarsToString(filter, scenario.cache, ctx).toString();
                     const filterResult: boolean = eval(filter);
                     logDebug(`Filter (${filter}): ${filterResult}`);
                     return filterResult;

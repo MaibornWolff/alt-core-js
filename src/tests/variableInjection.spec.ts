@@ -1,6 +1,6 @@
 import 'mocha';
 import {expect} from 'chai';
-import {injectVarsToMap, injectVarsToString, injectEvaluationToString, injectEvaluationToNumber, injectEvaluationToMap} from "../variableInjection";
+import {injectEvalAndVarsToMap, injectEvalAndVarsToString} from "../variableInjection";
 
 describe('string injection', () => {
 
@@ -8,7 +8,7 @@ describe('string injection', () => {
         const variableMap = new Map();
         variableMap.set('key', 'value');
         variableMap.set('var', 'juice');
-        const result = injectVarsToString('/my/url/has/some/{{var}}', variableMap, {});
+        const result = injectEvalAndVarsToString('/my/url/has/some/{{var}}', variableMap, {});
 
         expect(result).to.equal('/my/url/has/some/juice');
     });
@@ -16,7 +16,7 @@ describe('string injection', () => {
     it('should be able to inject vars at the beginning', () => {
         const variableMap = new Map();
         variableMap.set('key', 'your');
-        const result = injectVarsToString('/{{key}}/url/has/some/juice', variableMap, {});
+        const result = injectEvalAndVarsToString('/{{key}}/url/has/some/juice', variableMap, {});
 
         expect(result).to.equal('/your/url/has/some/juice');
     });
@@ -25,32 +25,32 @@ describe('string injection', () => {
         const variableMap = new Map();
         variableMap.set('host', 'localhost');
         variableMap.set('live', 'true');
-        const result = injectVarsToString('http://{{host}}?live={{live}}', variableMap, {});
+        const result = injectEvalAndVarsToString('http://{{host}}?live={{live}}', variableMap, {});
 
         expect(result).to.equal('http://localhost?live=true');
     });
 
     it('should not inject unknown vars', () => {
         const variableMap = new Map();
-        const result = injectVarsToString('http://{{host}}', variableMap, {});
+        const result = injectEvalAndVarsToString('http://{{host}}', variableMap, {});
 
         expect(result).to.equal('http://{{host}}');
     });
 
     it('should be able to inject method evaluation', () => {
         let now = Date.now();
-        const result = injectEvaluationToString('{{{Date.now()}}}', {}, new Map());
+        const result = injectEvalAndVarsToString('{{{Date.now()}}}', new Map(), {}).toString();
         expect(result.substr(0, 10)).to.equal(now.toString().substr(0, 10));      
     });
     
     it('should be able to evaluate expressions with spaces in them', () => {
         let now = Date.now();
-        const result = injectEvaluationToString('{{{new Date().toISOString()}}}', {}, new Map());
+        const result = injectEvalAndVarsToString('{{{new Date().toISOString()}}}', new Map(), {}).toString();
         expect(result.substr(0, 15)).to.equal(new Date().toISOString().substr(0, 15));      
     });
 
     it('should be able to inject arithmetic operations into strings', () => {
-        const result = injectEvaluationToString('"{{{5+4-3*2}}}"', {}, new Map());
+        const result = injectEvalAndVarsToString('"{{{5+4-3*2}}}"', new Map(), {});
         expect(result).to.equal('"3"');      
     });
 
@@ -58,22 +58,30 @@ describe('string injection', () => {
         let testMap = {
             aString: "{{{new Date().toISOString().substr(0,10)}}}",
             otherString: "{{{new Date().toISOString().substr(0,10)}}}",
-            aNumber: "<<< 1 + 2 >>>"
-        }
-        const result = injectEvaluationToMap(testMap, {}, new Map());
+            aVariable: "{{myVariable}}",
+            aNumber: "<<< 1 + 2 >>>",
+            nested: {
+                aNestedNumber: "<<< 3 * 3 >>>"
+            }
+        };
+        const result = injectEvalAndVarsToMap(testMap, new Map(Object.entries({myVariable: "myVariableValue"})), {});
         expect(result).to.eql({
             aString: new Date().toISOString().substr(0,10),
             otherString: new Date().toISOString().substr(0,10),
-            aNumber: 3
-        });      
+            aVariable: "myVariableValue",
+            aNumber: 3,
+            nested: {
+                aNestedNumber: 9
+            }
+        });
     });
 });
 
 describe('number injection', () => {
 
     it('should be able to evaulate arithmetic operations from string to number', () => {
-        const result = injectEvaluationToNumber('"<<< 5 + 4 - 3 * 2 >>>"', {}, new Map());
-        expect(result).to.equal('3');
+        const result = injectEvalAndVarsToString('<<< 5 + 4 - 3 * 2 >>>', new Map(), {});
+        expect(result).to.equal(3);
     });
 });
 
@@ -82,7 +90,7 @@ describe('map injection', () => {
     it('should be able to replace simple key', () => {
         const variableMap = new Map();
         variableMap.set('host', 'localhost');
-        const result = injectVarsToMap({host: '{{host}}'}, variableMap, {});
+        const result = injectEvalAndVarsToMap({host: '{{host}}'}, variableMap, {});
 
         expect(result['host']).to.equal('localhost');
     });
@@ -90,7 +98,7 @@ describe('map injection', () => {
     it('should be able to replace multiple occupancies of a key', () => {
         const variableMap = new Map();
         variableMap.set('host', 'localhost');
-        const result = injectVarsToMap({host: '{{host}}', service: '{{host}}'}, variableMap, {});
+        const result = injectEvalAndVarsToMap({host: '{{host}}', service: '{{host}}'}, variableMap, {});
 
         expect(result['host']).to.equal('localhost');
         expect(result['service']).to.equal('localhost');
@@ -100,7 +108,7 @@ describe('map injection', () => {
         const variableMap = new Map();
         variableMap.set('host', 'localhost');
         variableMap.set('user', 'u123');
-        const result = injectVarsToMap({host: '{{host}}', data: 'user-{{user}}'}, variableMap, {});
+        const result = injectEvalAndVarsToMap({host: '{{host}}', data: 'user-{{user}}'}, variableMap, {});
 
         expect(result['host']).to.equal('localhost');
         expect(result['data']).to.equal('user-u123');
@@ -108,7 +116,7 @@ describe('map injection', () => {
 
     it('should not replace unknown key', () => {
         const variableMap = new Map();
-        const result = injectVarsToMap({host: '{{host}}'}, variableMap, {});
+        const result = injectEvalAndVarsToMap({host: '{{host}}'}, variableMap, {});
 
         expect(result['host']).to.equal('{{host}}');
     });
