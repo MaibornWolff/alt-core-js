@@ -50,7 +50,7 @@ class MqttPublishAction implements Action {
         return { promise, cancel: () => console.log("TODO") };
     }
 
-    encodeProtoPayload(scenarioVariables: Map<string, string>, ctx = {}): any {
+    encodeProtoPayload(scenarioVariables: Map<string, any>, ctx = {}): any {
         let data = injectEvalAndVarsToMap(this.data, scenarioVariables, ctx);
         return encodeProto(this.protoFile, data, this.protoClass);
     }

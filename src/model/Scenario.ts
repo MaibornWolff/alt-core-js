@@ -14,7 +14,7 @@ class Scenario {
     description: string;
     actions: Action[] = [];
     /* internal vars */
-    cache: Map<string, string>;
+    cache: Map<string, any>;
 
     constructor(fileName: string, yamlConfig: any, actionConfig: Action[]) {
         this.name = fileName;
@@ -47,7 +47,7 @@ class Scenario {
             }
         });
 
-        this.cache = new Map<string, string>([]);
+        this.cache = new Map<string, any>(yamlConfig.variables ? Object.entries(yamlConfig.variables) : []);
     }
 }
 
