@@ -122,6 +122,9 @@ function buildExpHelpers(vars: Map<string, any>) {
         },
         datePlusMinutesIso: function (minutes: number): string {
             return new Date(Date.now() + (minutes * 60e3)).toISOString();
+        },
+        timestampPlusMinutes: function (minutes: number): number {
+            return Date.now() + (minutes * 60e3);
         }
     }
 }
