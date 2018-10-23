@@ -59,6 +59,20 @@ describe('string injection', () => {
         expect(result).to.equal('99999999');
     });
 
+    it('should be able to inject use helper methods inside expressions', () => {
+        const variableMap = new Map();
+        variableMap.set('v', 3);
+
+        const resultSetGet = injectEvalAndVarsToString('<<< this.set("v", 4); this.get("v") >>>', variableMap, {});
+        expect(resultSetGet).to.equal(4);
+
+        const resultGetAndInc = injectEvalAndVarsToString('<<< this.getAndInc("v") >>>', variableMap, {});
+        expect(resultGetAndInc).to.equal(4);
+
+        const resultIncAndGet = injectEvalAndVarsToString('{{{ this.incAndGet("v") }}}', variableMap, {});
+        expect(resultIncAndGet).to.equal("6");
+    });
+
     it('should be able to inject multiple expressions to map', () => {
         let testMap = {
             aString: "{{{new Date().toISOString().substr(0,10)}}}",

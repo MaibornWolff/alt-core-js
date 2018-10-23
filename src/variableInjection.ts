@@ -1,6 +1,6 @@
 import {getLogger} from "./logging";
 
-function injectVarsToString(str: string, scenarioVariables: Map<string, string>, ctx: any): string {
+function injectVarsToString(str: string, scenarioVariables: Map<string, any>, ctx: any): string {
 
     const regex = /{{(\w*)}}/g;
 
@@ -18,7 +18,7 @@ function injectVarsToString(str: string, scenarioVariables: Map<string, string>,
     return str;
 }
 
-export function injectEvalAndVarsToString(str: string, scenarioVariables: Map<string, string>, ctx: any): string|number {
+export function injectEvalAndVarsToString(str: string, scenarioVariables: Map<string, any>, ctx: any): string|number {
     let afterEvalToString = injectEvaluationToString(str, ctx, scenarioVariables);
     let afterVarInjection = injectVarsToString(afterEvalToString, scenarioVariables, ctx);
     let [afterEvalToNumber, foundNumericExpression] = injectEvaluationToNumber(afterVarInjection, ctx, scenarioVariables);
@@ -31,7 +31,7 @@ export function injectEvalAndVarsToString(str: string, scenarioVariables: Map<st
     }
 }
 
-export function injectEvalAndVarsToMap(keyValueMap: any, scenarioVariables: Map<string, string>, loggingCtx: any): any {
+export function injectEvalAndVarsToMap(keyValueMap: any, scenarioVariables: Map<string, any>, loggingCtx: any): any {
 
     let copy: any = {};
     Object.assign(copy, keyValueMap);
@@ -60,14 +60,14 @@ function searchForMatchingStrings(regex: RegExp, str: string) {
     return matchingStrings;
 }
 
-function injectEvaluationToString(str: string, ctx: any, vars: Map<string, string>): string {
+function injectEvaluationToString(str: string, ctx: any, vars: Map<string, any>): string {
     // the vars (scenario variable) should be left available here in order to access
     // and set them from within evaluated expressions
 
     const regex = /{{{(.*?)}}}/g;
 
     searchForMatchingStrings(regex, str).forEach(expression => {
-        let replaceValue = function() { return eval(expression); }.call(vars);
+        let replaceValue = function() { return eval(expression); }.call(buildExpHelpers(vars));
         if (replaceValue) {
             let searchValue = `{{{${expression}}}}`;
             getLogger(ctx.scenario).debug(`Replacing '${searchValue}' with '${replaceValue}'`, ctx);
@@ -80,7 +80,7 @@ function injectEvaluationToString(str: string, ctx: any, vars: Map<string, strin
     return str;
 }
 
-function injectEvaluationToNumber(str: string, ctx: any, vars: Map<string, string>): [string, boolean] {
+function injectEvaluationToNumber(str: string, ctx: any, vars: Map<string, any>): [string, boolean] {
     // the vars (scenario variable) should be left available here in order to access
     // and set them from within evaluated expressions
 
@@ -89,7 +89,7 @@ function injectEvaluationToNumber(str: string, ctx: any, vars: Map<string, strin
 
     searchForMatchingStrings(regex, str).forEach(expression => {
         foundNumericExpression = true;
-        let replaceValue = function() { return eval(expression); }.call(vars);
+        let replaceValue = function() { return eval(expression); }.call(buildExpHelpers(vars));
         if (replaceValue) {
             let searchValue = `<<<${expression}>>>`;
             getLogger(ctx.scenario).debug(`Replacing '"${searchValue}"' with '${replaceValue}'`, ctx);
@@ -100,4 +100,28 @@ function injectEvaluationToNumber(str: string, ctx: any, vars: Map<string, strin
     });
 
     return [str, foundNumericExpression];
+}
+
+function buildExpHelpers(vars: Map<string, any>) {
+    return {
+        get: function (name: string): any {
+            return vars.get(name);
+        },
+        set: function (name: string, value: any) {
+            return vars.set(name, value);
+        },
+        getAndInc: function (name: string): number {
+            let currentValue = vars.get(name);
+            vars.set(name, currentValue + 1);
+            return currentValue;
+        },
+        incAndGet: function (name: string): number {
+            let targetValue = vars.get(name) + 1;
+            vars.set(name, targetValue);
+            return targetValue;
+        },
+        datePlusMinutesIso: function (minutes: number): string {
+            return new Date(Date.now() + (minutes * 60e3)).toISOString();
+        }
+    }
 }
