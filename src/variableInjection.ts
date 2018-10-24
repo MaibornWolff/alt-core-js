@@ -115,8 +115,18 @@ function buildExpHelpers(vars: Map<string, any>) {
             vars.set(name, currentValue + 1);
             return currentValue;
         },
+        getAndIncBy: function (name: string, howMuch: number): number {
+            let currentValue = vars.get(name);
+            vars.set(name, currentValue + howMuch);
+            return currentValue;
+        },
         incAndGet: function (name: string): number {
             let targetValue = vars.get(name) + 1;
+            vars.set(name, targetValue);
+            return targetValue;
+        },
+        incByAndGet: function (name: string, howMuch: number): number {
+            let targetValue = vars.get(name) + howMuch;
             vars.set(name, targetValue);
             return targetValue;
         },
