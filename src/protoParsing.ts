@@ -1,7 +1,6 @@
 import protobuf = require('protobufjs');
 import fs = require('fs');
 import path = require('path');
-import hexdump = require("hexdump-nodejs");
 
 export function resolveImportPath(origin: string, target: string): string {
     let currentDir = path.dirname(origin);
@@ -25,14 +24,7 @@ export function encodeProto(protoDefPath: string, attributes: {}, outerClass: st
     }
 
     let message = messageType.fromObject(attributes);
-    let encoded = messageType.encode(message).finish();
-
-    console.debug("\n-- Encoded proto data --");
-    console.debug("Base64: " + Buffer.from(encoded).toString('base64'));
-    console.debug("Hex:")
-    console.debug(hexdump(encoded));
-
-    return encoded;
+    return messageType.encode(message).finish();
 }
 
 export function decodeProto(protoDefPath: string, outerClass: string, buffer: Uint8Array) {
