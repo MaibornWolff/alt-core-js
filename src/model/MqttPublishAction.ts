@@ -3,10 +3,10 @@ import {ActionType} from "./ActionType";
 import {getLogger} from "../logging";
 import {Scenario} from "./Scenario";
 import {ActionCallback} from "./ActionCallback";
-import {injectEvaluationToMap} from "../variableInjection";
+import {injectEvalAndVarsToMap, injectEvalAndVarsToString} from "../variableInjection";
 import {addMqttPublishMessage} from "../diagramDrawing";
-import {TextDecoder} from "util";
-import { encodeProto } from "../protoParsing";
+import {encodeProto} from "../protoParsing";
+import hexdump = require("hexdump-nodejs");
 
 const Mqtt = require('mqtt');
 
@@ -50,8 +50,8 @@ class MqttPublishAction implements Action {
         return { promise, cancel: () => console.log("TODO") };
     }
 
-    encodeProtoPayload(scenarioVariables: Map<string, string>, ctx = {}): any {
-        let data = injectEvaluationToMap(this.data, ctx, scenarioVariables);
+    encodeProtoPayload(scenarioVariables: Map<string, any>, ctx = {}): any {
+        let data = injectEvalAndVarsToMap(this.data, scenarioVariables, ctx);
         return encodeProto(this.protoFile, data, this.protoClass);
     }
 
@@ -80,17 +80,28 @@ class MqttPublishAction implements Action {
         });
 
         client.on('connect', () => {
-            getLogger(scenario.name).debug(`MQTT connection to ${this.url} successfully opened`, ctx);
+            let log = getLogger(scenario.name);
+            log.debug(`MQTT connection to ${this.url} successfully opened`, ctx);
 
-            // let payload = JSON.stringify(injectEvaluationToMap(this.data, ctx));
-            let payload = this.protoFile ? this.encodeProtoPayload(scenario.cache, ctx) : JSON.stringify(injectEvaluationToMap(this.data, ctx, scenario.cache));
+            let dataString = JSON.stringify(injectEvalAndVarsToMap(this.data, scenario.cache, ctx));
+            let payload = this.protoFile ? this.encodeProtoPayload(scenario.cache, ctx) : dataString;
+            let topic = injectEvalAndVarsToString(this.topic, scenario.cache, ctx).toString();
 
-            client.publish(this.topic, payload, (error?: any, packet?: any) => {
+            client.publish(topic, payload, (error?: any, packet?: any) => {
                 if (error) {
-                    getLogger(scenario.name).error(`Error while publishing to ${this.topic}: ${error}`, ctx);
+                    log.error(`Error while publishing to ${topic}: ${error}`, ctx);
                 } else {
-                    getLogger(scenario.name).debug(`Successfully published message to '${this.topic}': ${payload}`, ctx);
-                    addMqttPublishMessage(scenario.name, this.topic, `{"payload":${JSON.stringify(this.data)}}`);
+                    log.debug(`Successfully published message to '${topic}': ${dataString}`, ctx);
+
+                    if (this.protoFile) {
+                        // log the hex dump of the sent proto payload
+                        log.debug("-- Encoded proto data --");
+                        log.debug("Base64: " + Buffer.from(payload).toString('base64'));
+                        log.debug("Hex:");
+                        log.debug(hexdump(payload));
+                    }
+
+                    addMqttPublishMessage(scenario.name, topic, `{"payload":${dataString}}`);
                     client.end();
                 }
             });

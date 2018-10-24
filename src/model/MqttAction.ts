@@ -3,7 +3,7 @@ import {ActionType} from "./ActionType";
 import {getLogger} from "../logging";
 import {Scenario} from "./Scenario";
 import {ActionCallback} from "./ActionCallback";
-import {injectVarsToString} from "../variableInjection";
+import {injectEvalAndVarsToString} from "../variableInjection";
 import {addMqttMessage} from "../diagramDrawing";
 import {decodeProto} from "../protoParsing";
 
@@ -76,7 +76,7 @@ class MqttAction implements Action {
         const isMessageRelevant = function (msg: any) {
             if (registeredMessageFilters) {
                 return registeredMessageFilters.some(filter => { 
-                    filter = injectVarsToString(filter, scenario.cache, ctx);
+                    filter = injectEvalAndVarsToString(filter, scenario.cache, ctx).toString();
                     const filterResult: boolean = eval(filter);
                     logDebug(`Filter (${filter}): ${filterResult}`);
                     return filterResult;

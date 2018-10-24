@@ -2,8 +2,7 @@ import {Action} from "./Action";
 import {Scenario} from "./Scenario";
 import {getLogger} from "../logging";
 import {ActionType} from "./ActionType";
-import {injectVarsToMap, injectVarsToString, injectEvaluationToMap} from "../variableInjection";
-import {isArray} from "util";
+import {injectEvalAndVarsToMap, injectEvalAndVarsToString} from "../variableInjection";
 import {ActionCallback} from "./ActionCallback";
 import {addFailedResponse, addRequest, addSuccessfulResponse} from "../diagramDrawing";
 
@@ -54,7 +53,7 @@ class RestAction implements Action {
 
     private static loadData(template: RestAction, actionDef: any) {
         if (template.data) {
-            if (isArray(template.data))
+            if (Array.isArray(template.data))
                 return template.data.concat(actionDef.data || []);
             else
                 return Object.assign(Object.assign({}, template.data), actionDef.data);
@@ -106,16 +105,16 @@ class RestAction implements Action {
         };
 
         const promise = new Promise((resolve, reject) => {
-            let requestHeaders = this.restHead ? injectVarsToMap(this.restHead, scenario.cache, ctx) : null;
+            let requestHeaders = this.restHead ? injectEvalAndVarsToMap(this.restHead, scenario.cache, ctx) : null;
             let requestBody = this.data ?
-                isArray(this.data) ? JSON.stringify(this.data) : JSON.stringify(injectVarsToMap(injectEvaluationToMap(this.data, ctx, scenario.cache), scenario.cache, ctx))
+                Array.isArray(this.data) ? JSON.stringify(this.data) : JSON.stringify(injectEvalAndVarsToMap(this.data, scenario.cache, ctx))
                 :
                 null;
-            let requestForm = this.form ? injectVarsToMap(this.form, scenario.cache, ctx) : null;
+            let requestForm = this.form ? injectEvalAndVarsToMap(this.form, scenario.cache, ctx) : null;
 
             request({
                 method:         this.method,
-                url:            injectVarsToString(this.url, scenario.cache, ctx),
+                url:            injectEvalAndVarsToString(this.url, scenario.cache, ctx),
                 headers:        requestHeaders,
                 body:           requestBody,
                 form:           requestForm,

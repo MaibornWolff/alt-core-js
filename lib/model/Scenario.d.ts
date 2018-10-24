@@ -3,7 +3,7 @@ declare class Scenario {
     name: string;
     description: string;
     actions: Action[];
-    cache: Map<string, string>;
+    cache: Map<string, any>;
     constructor(fileName: string, yamlConfig: any, actionConfig: Action[]);
 }
 export { Scenario };
