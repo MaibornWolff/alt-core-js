@@ -50,9 +50,9 @@ class MqttPublishAction implements Action {
         return { promise, cancel: () => console.log("TODO") };
     }
 
-    encodeProtoPayload(scenarioVariables: Map<string, any>, ctx = {}): any {
+    encodeProtoPayload(scenarioVariables: Map<string, any>, ctx = {}): [Uint8Array, string] {
         let data = injectEvalAndVarsToMap(this.data, scenarioVariables, ctx);
-        return encodeProto(this.protoFile, data, this.protoClass);
+        return [encodeProto(this.protoFile, data, this.protoClass), JSON.stringify(data)]
     }
 
     invokeAsync(scenario: Scenario): void {
@@ -83,8 +83,18 @@ class MqttPublishAction implements Action {
             let log = getLogger(scenario.name);
             log.debug(`MQTT connection to ${this.url} successfully opened`, ctx);
 
-            let dataString = JSON.stringify(injectEvalAndVarsToMap(this.data, scenario.cache, ctx));
-            let payload = this.protoFile ? this.encodeProtoPayload(scenario.cache, ctx) : dataString;
+            let dataString: string; // a JSON-string injected with read data, used for logging
+            let payload: string|Uint8Array; // JSON-string or binary payload
+
+            if (this.protoFile) {
+                // protobuf binary data
+                [payload, dataString] = this.encodeProtoPayload(scenario.cache, ctx);
+            } else {
+                // normal JSON data
+                payload = JSON.stringify(injectEvalAndVarsToMap(this.data, scenario.cache, ctx));
+                dataString = payload;
+            }
+
             let topic = injectEvalAndVarsToString(this.topic, scenario.cache, ctx).toString();
 
             client.publish(topic, payload, (error?: any, packet?: any) => {
@@ -96,7 +106,7 @@ class MqttPublishAction implements Action {
                     if (this.protoFile) {
                         // log the hex dump of the sent proto payload
                         log.debug("-- Encoded proto data --");
-                        log.debug("Base64: " + Buffer.from(payload).toString('base64'));
+                        log.debug("Base64: " + Buffer.from(payload as Uint8Array).toString('base64'));
                         log.debug("Hex:");
                         log.debug(hexdump(payload));
                     }

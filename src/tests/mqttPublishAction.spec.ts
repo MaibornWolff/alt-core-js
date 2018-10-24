@@ -12,7 +12,7 @@ describe('MQTT Publish action loading', () => {
             'my-service': 'localhost:8080'
         };
         let testAction: MqttPublishAction = loadAllActions(TEST_ACTION_DIR, envConfig).find(a => a.name === 'mqttPublishProtoAction') as MqttPublishAction;
-        let result = testAction.encodeProtoPayload(new Map());
-        expect(result.toString('utf-8')).to.be.equal('\n\u0007\n\u0005hello\u001a\u0005world');
+        let [result, ] = testAction.encodeProtoPayload(new Map());
+        expect(result.toString()).to.be.equal('\n\u0007\n\u0005hello\u001a\u0005world');
     });
 });
