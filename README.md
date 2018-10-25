@@ -11,13 +11,13 @@ results.
 
 ## Features
 
-- simple definition of reusable [REST](https://github.com/MaibornWolff/alt-core-js/wiki/REST), [MQTT](https://github.com/MaibornWolff/alt-core-js/wiki/MQTT-Publish), [WS](https://github.com/MaibornWolff/alt-core-js/wiki/Websocket), etc. action templates
+- simple definition of reusable [REST](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#rest), [MQTT](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#mqtt-subscribe), [WS](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#websocket), etc. action templates
 - ...
-- automatic retries of [REST](https://github.com/MaibornWolff/alt-core-js/wiki/REST) requests
-- automatic reconnections of [WS](https://github.com/MaibornWolff/alt-core-js/wiki/Websocket) sessions
+- automatic retries of [REST](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#rest) requests
+- automatic reconnections of [WS](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#websocket) sessions
 - ...
-- filtering on incomming [MQTT](todo) & [WS](https://github.com/MaibornWolff/alt-core-js/wiki/Websocket) messages
-- publishing & listening of [protobuf](https://developers.google.com/protocol-buffers/) messages on [MQTT](https://github.com/MaibornWolff/alt-core-js/wiki/MQTT-Publish) broker
+- filtering on incomming [MQTT](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#mqtt-subscribe) & [WS](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#websocket) messages
+- publishing & listening of [protobuf](https://developers.google.com/protocol-buffers/) messages on [MQTT](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#mqtt-publish) broker
 
 ## Get Started
 
