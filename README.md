@@ -1,7 +1,6 @@
 # Acceptance & Load Testing (ALT) Framework
 
 ![GitHub](https://img.shields.io/github/license/MaibornWolff/alt-core-js.svg)
-![GitHub package version](http://img.shields.io/github/package-json/v/MaibornWolff/alt-core-js.svg)
 [![Npm Version](http://img.shields.io/npm/v/@maibornwolff/alt-core-js.svg)](https://www.npmjs.com/package/@maibornwolff/alt-core-js)
 [![Docker Runner](https://img.shields.io/badge/Docker%20Runner-1.14-brightgreen.svg)](https://hub.docker.com/r/maibornwolff/alt-runner-image/tags/)
 
