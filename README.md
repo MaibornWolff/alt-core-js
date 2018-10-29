@@ -14,6 +14,7 @@ results.
 - simple definition of reusable [REST](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#rest), [MQTT](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#mqtt-subscribe), [WS](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#websocket), etc. action templates
 - ...
 - using [Variables](https://github.com/MaibornWolff/alt-core-js/wiki/Features#variables) across multiple actions
+- [validation](https://github.com/MaibornWolff/alt-core-js/wiki/Features#response-validation) of respone payload from a [REST](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#rest) action
 - ...
 - automatic retries of [REST](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#rest) requests
 - automatic reconnections of [WS](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#websocket) sessions
