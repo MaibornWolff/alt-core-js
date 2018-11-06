@@ -15,6 +15,9 @@ const NUM_PARALLEL_RUNS = 10;
 
 let _OUT_DIR = '';
 
+// increase the pixel-size (width/height) limit of PlantUML (the default is 4096 which is not enough for some diagrams)
+process.env.PLANTUML_LIMIT_SIZE = '16384';
+
 export const runScenario = (scenarioPath: string, actionDir: string, outDir = 'out', envConfigFile: string) => {
     try {
         if (typeof scenarioPath === 'undefined' || scenarioPath === "") {
