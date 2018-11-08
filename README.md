@@ -146,3 +146,4 @@ $ npm install
 $ tsc
 $ npm test
 ```
+...
