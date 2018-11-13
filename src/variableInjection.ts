@@ -33,7 +33,7 @@ export function injectEvalAndVarsToString(str: string, scenarioVariables: Map<st
 
 export function injectEvalAndVarsToMap(keyValueMap: any, scenarioVariables: Map<string, any>, loggingCtx: any): any {
 
-    let copy: any = {};
+    let copy: any = keyValueMap instanceof Array ? [] : {};
     Object.assign(copy, keyValueMap);
     for (let mapEntry of Object.entries(copy)) {
         let key = mapEntry[0];
