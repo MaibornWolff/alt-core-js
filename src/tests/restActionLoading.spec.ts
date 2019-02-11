@@ -20,6 +20,7 @@ describe('REST action loading', () => {
         expect((<RestAction>result).method).to.be.equal('GET');
         expect((<RestAction>result).restHead['Content-Type']).to.be.equal('application/json');
         expect((<RestAction>result).data['param']).to.be.equal('value');
+        expect((<RestAction>result).dataBinary).to.be.equal('../test.txt');
         expect((<RestAction>result).form['file']).to.be.equal('example.xls');
         expect((<RestAction>result).responseValidation).to.have.lengthOf(1);
         expect((<RestAction>result).responseValidation[0]).to.be.equal('res.a === true');
