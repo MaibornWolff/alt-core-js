@@ -122,7 +122,7 @@ class RestAction implements Action {
                 url:            injectEvalAndVarsToString(this.url, scenario.cache, ctx),
                 headers:        requestHeaders,
                 body:           requestBody || binaryData,
-                encoding:       binaryData ? null : 'string',
+                encoding:       binaryData ? null : undefined,
                 form:           requestForm,
                 maxAttempts:    3,
                 retryDelay:     1000,    // 1s
