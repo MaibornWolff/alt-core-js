@@ -5,6 +5,7 @@ import {ActionType} from "./ActionType";
 import {injectEvalAndVarsToMap, injectEvalAndVarsToString} from "../variableInjection";
 import {ActionCallback} from "./ActionCallback";
 import {addFailedResponse, addRequest, addSuccessfulResponse} from "../diagramDrawing";
+import { stringify } from "querystring";
 
 let request = require('requestretry');
 const FS = require('fs');
@@ -146,7 +147,7 @@ class RestAction implements Action {
                             if (contentType.startsWith('application/json')) {
                                 res = JSON.parse(response.body);
                             } else if (contentType.startsWith('text/plain')) {
-                                res = response.body;
+                                res = response.body.toString();
                             } else {
                                 let body = [];
                                 body.push(response.body);
