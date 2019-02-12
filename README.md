@@ -109,9 +109,9 @@ contains the core framwork and also an invokation script for running a particula
 
 ```bash
 docker run
-  -v /src:/src                                # mounting scenarios' & actions' root directory
+  -v `pwd`/src:/src                           # mounting scenarios' & actions' root directory
   -e ALT_SRC=/src                             # declaring the mounted path as resource directory
-  -v /output:/alt-runner-app/out              # output directory where .log files and diagrams will be saved after the execution
+  -v `pwd`/output:/alt-runner-app/out         # output directory where .log files and diagrams will be saved after the execution
   maibornwolff/alt-runner-image:latest
   runScenario s1-my-first-scenario.yaml       # run command with scenario-name as input param
 ```
