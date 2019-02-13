@@ -5,7 +5,6 @@ import {ActionType} from "./ActionType";
 import {injectEvalAndVarsToMap, injectEvalAndVarsToString} from "../variableInjection";
 import {ActionCallback} from "./ActionCallback";
 import {addFailedResponse, addRequest, addSuccessfulResponse} from "../diagramDrawing";
-import { stringify } from "querystring";
 
 let request = require('requestretry');
 const FS = require('fs');
