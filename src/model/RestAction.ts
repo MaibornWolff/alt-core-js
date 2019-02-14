@@ -7,6 +7,7 @@ import {ActionCallback} from "./ActionCallback";
 import {addFailedResponse, addRequest, addSuccessfulResponse} from "../diagramDrawing";
 
 let request = require('requestretry');
+const FS = require('fs');
 
 class RestAction implements Action {
 
@@ -17,12 +18,13 @@ class RestAction implements Action {
     method: string;
     restHead: any;
     data: Map<string, string>;
+    dataBinary: string;
     form: any;
     responseValidation: string[];
     variables: Map<string, string>;
 
     constructor(name: string, actionDef: any, url: string, serviceName: string, restMethod = actionDef.method, restHeaders = actionDef.headers,
-                restData = actionDef.data, restForm = actionDef.form, validators = actionDef.responseValidation,
+                restData = actionDef.data, restDataBinary = actionDef.dataBinary, restForm = actionDef.form, validators = actionDef.responseValidation,
                 vars = actionDef.variables) {
 
         this.name = name;
@@ -31,6 +33,7 @@ class RestAction implements Action {
         this.method = restMethod;
         this.restHead = restHeaders;
         this.data = restData;
+        this.dataBinary = restDataBinary;
         this.form = restForm;
         this.responseValidation = validators ? [].concat(validators) : [];
         this.variables = vars;
@@ -45,6 +48,7 @@ class RestAction implements Action {
             actionDef.method || template.method,
             template.restHead ? Object.assign(Object.assign({}, template.restHead), actionDef.headers) : actionDef.restHead,
             this.loadData(template, actionDef),
+            actionDef.dataBinary || template.dataBinary,
             template.form ? Object.assign(Object.assign({}, template.form), actionDef.form) : null,
             template.responseValidation ? template.responseValidation.concat(actionDef.responseValidation || []) : actionDef.responseValidation,
             template.variables ? Object.assign(template.variables, actionDef.variables) : actionDef.variables
@@ -111,12 +115,14 @@ class RestAction implements Action {
                 :
                 null;
             let requestForm = this.form ? injectEvalAndVarsToMap(this.form, scenario.cache, ctx) : null;
+            let binaryData = this.dataBinary ? FS.createReadStream(this.dataBinary) : null
 
             request({
                 method:         this.method,
                 url:            injectEvalAndVarsToString(this.url, scenario.cache, ctx),
                 headers:        requestHeaders,
-                body:           requestBody,
+                body:           requestBody || binaryData,
+                encoding:       binaryData ? null : undefined,
                 form:           requestForm,
                 maxAttempts:    3,
                 retryDelay:     1000,    // 1s
@@ -140,7 +146,7 @@ class RestAction implements Action {
                             if (contentType.startsWith('application/json')) {
                                 res = JSON.parse(response.body);
                             } else if (contentType.startsWith('text/plain')) {
-                                res = response.body;
+                                res = response.body.toString();
                             } else {
                                 let body = [];
                                 body.push(response.body);
