@@ -1,13 +1,13 @@
-import {Action} from "./Action";
-import {ActionType} from "./ActionType";
-import {getLogger} from "../logging";
-import {Scenario} from "./Scenario";
-import {stringify} from "querystring";
-import {injectEvalAndVarsToMap, injectEvalAndVarsToString} from "../variableInjection";
-import {ActionCallback} from "./ActionCallback";
-import {addWsMessage} from "../diagramDrawing";
+import { stringify } from 'querystring';
+import * as WebSocket from 'ws';
+import { addWsMessage } from '../diagramDrawing';
+import { getLogger } from '../logging';
+import { injectEvalAndVarsToMap, injectEvalAndVarsToString } from '../variableInjection';
+import { Action } from './Action';
+import { ActionCallback } from './ActionCallback';
+import { ActionType } from './ActionType';
+import { Scenario } from './Scenario';
 
-const WebSocket = require('ws');
 const MAX_RECONNECTIONS = 3;
 
 class WebSocketAction implements Action {
@@ -145,4 +145,5 @@ class WebSocketAction implements Action {
     }
 }
 
-export { WebSocketAction }
+export { WebSocketAction };
+

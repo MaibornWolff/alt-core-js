@@ -1,14 +1,13 @@
-import {Action} from "./Action";
-import {ActionType} from "./ActionType";
-import {getLogger} from "../logging";
-import {Scenario} from "./Scenario";
-import {ActionCallback} from "./ActionCallback";
-import {injectEvalAndVarsToMap, injectEvalAndVarsToString} from "../variableInjection";
-import {addMqttPublishMessage} from "../diagramDrawing";
-import {encodeProto} from "../protoParsing";
-import hexdump = require("hexdump-nodejs");
-
-const Mqtt = require('mqtt');
+import * as hexdump from 'hexdump-nodejs';
+import { connect } from 'mqtt';
+import { addMqttPublishMessage } from '../diagramDrawing';
+import { getLogger } from '../logging';
+import { encodeProto } from '../protoParsing';
+import { injectEvalAndVarsToMap, injectEvalAndVarsToString } from '../variableInjection';
+import { Action } from './Action';
+import { ActionCallback } from './ActionCallback';
+import { ActionType } from './ActionType';
+import { Scenario } from './Scenario';
 
 class MqttPublishAction implements Action {
 
@@ -47,10 +46,10 @@ class MqttPublishAction implements Action {
             this.invokeAsync(scenario);
             resolve();
         }));
-        return { promise, cancel: () => console.log("TODO") };
+        return { promise, cancel: () => console.log('TODO') };
     }
 
-    encodeProtoPayload(scenarioVariables: Map<string, any>, ctx = {}): [Uint8Array, string] {
+    encodeProtoPayload(scenarioVariables: Map<string, any>, ctx = {}): [Buffer, string] {
         let data = injectEvalAndVarsToMap(this.data, scenarioVariables, ctx);
         return [encodeProto(this.protoFile, data, this.protoClass), JSON.stringify(data)]
     }
@@ -68,7 +67,7 @@ class MqttPublishAction implements Action {
         let ctx = {scenario: scenario.name, action: this.topic};
 
         // https://www.npmjs.com/package/mqtt#client
-        const client = Mqtt.connect(this.url, {
+        const client = connect(this.url, {
             username: this.username,
             password: this.password,
             keepalive: 60,
@@ -84,7 +83,7 @@ class MqttPublishAction implements Action {
             log.debug(`MQTT connection to ${this.url} successfully opened`, ctx);
 
             let dataString: string; // a JSON-string injected with read data, used for logging
-            let payload: string|Uint8Array; // JSON-string or binary payload
+            let payload: string | Buffer; // JSON-string or binary payload
 
             if (this.protoFile) {
                 // protobuf binary data
@@ -105,13 +104,13 @@ class MqttPublishAction implements Action {
 
                     if (this.protoFile) {
                         // log the hex dump of the sent proto payload
-                        log.debug("-- Encoded proto data --");
-                        log.debug("Base64: " + Buffer.from(payload as Uint8Array).toString('base64'));
-                        log.debug("Hex:");
+                        log.debug('-- Encoded proto data --');
+                        log.debug('Base64: ' + Buffer.from(payload as Uint8Array).toString('base64'));
+                        log.debug('Hex:');
                         log.debug(hexdump(payload));
                     }
 
-                    addMqttPublishMessage(scenario.name, topic, `{"payload":${dataString}}`);
+                    addMqttPublishMessage(scenario.name, topic, `{'payload':${dataString}}`);
                     client.end();
                 }
             });
@@ -128,4 +127,5 @@ class MqttPublishAction implements Action {
     }
 }
 
-export { MqttPublishAction }
+export { MqttPublishAction };
+

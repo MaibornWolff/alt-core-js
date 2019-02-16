@@ -1,6 +1,6 @@
+import { expect } from 'chai';
 import 'mocha';
-import {expect} from 'chai';
-import {loadAllActions} from "../actionLoading";
+import { loadAllActions } from '../actionLoading';
 import { MqttPublishAction } from '../model/MqttPublishAction';
 
 describe('MQTT Publish action loading', () => {

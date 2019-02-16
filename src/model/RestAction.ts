@@ -1,13 +1,12 @@
-import {Action} from "./Action";
-import {Scenario} from "./Scenario";
-import {getLogger} from "../logging";
-import {ActionType} from "./ActionType";
-import {injectEvalAndVarsToMap, injectEvalAndVarsToString} from "../variableInjection";
-import {ActionCallback} from "./ActionCallback";
-import {addFailedResponse, addRequest, addSuccessfulResponse} from "../diagramDrawing";
-
-let request = require('requestretry');
-const FS = require('fs');
+import { createReadStream } from 'fs';
+import * as request from 'requestretry';
+import { addFailedResponse, addRequest, addSuccessfulResponse } from '../diagramDrawing';
+import { getLogger } from '../logging';
+import { injectEvalAndVarsToMap, injectEvalAndVarsToString } from '../variableInjection';
+import { Action } from './Action';
+import { ActionCallback } from './ActionCallback';
+import { ActionType } from './ActionType';
+import { Scenario } from './Scenario';
 
 class RestAction implements Action {
 
@@ -115,7 +114,7 @@ class RestAction implements Action {
                 :
                 null;
             let requestForm = this.form ? injectEvalAndVarsToMap(this.form, scenario.cache, ctx) : null;
-            let binaryData = this.dataBinary ? FS.createReadStream(this.dataBinary) : null
+            let binaryData = this.dataBinary ? createReadStream(this.dataBinary) : null
 
             request({
                 method:         this.method,
@@ -169,20 +168,21 @@ class RestAction implements Action {
                         resolve();
 
                     } else {
-                        logError("Response: " + response.statusCode + " (" + response.statusMessage + ")");
-                        logError("          " + response.body);
+                        logError('Response: ' + response.statusCode + ' (' + response.statusMessage + ')');
+                        logError('          ' + response.body);
                         addFailedResponse(scenario.name, targetService, `${response.statusMessage} (${response.statusCode})`, response.body);
                         reject();
                     }
                 })
                 .catch(error => {
-                    logError("Unexpected ERROR occurred: " + error);
+                    logError('Unexpected ERROR occurred: ' + error);
                     return reject();
                 })
         });
 
-        return { promise, cancel: () => console.log("TODO") };
+        return { promise, cancel: () => console.log('TODO') };
     }
 }
 
-export { RestAction }
+export { RestAction };
+

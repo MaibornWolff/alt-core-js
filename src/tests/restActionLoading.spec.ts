@@ -1,8 +1,8 @@
+import { expect } from 'chai';
 import 'mocha';
-import {expect} from 'chai';
-import {loadAllActions} from "../actionLoading";
-import {ActionType} from "../model/ActionType";
-import {RestAction} from "../model/RestAction";
+import { loadAllActions } from '../actionLoading';
+import { ActionType } from '../model/ActionType';
+import { RestAction } from '../model/RestAction';
 
 describe('REST action loading', () => {
     

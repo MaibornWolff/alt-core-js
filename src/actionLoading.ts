@@ -1,14 +1,13 @@
-import {loadYamlConfiguration, nameFromYamlConfig} from "./yamlParsing";
-import {ActionType} from "./model/ActionType";
-import {RestAction} from "./model/RestAction";
-import {TimerAction} from "./model/TimerAction";
-import {Action} from "./model/Action";
-import {getLogger} from "./logging";
-import {WebSocketAction} from "./model/WebSocketAction";
-import {MqttAction} from "./model/MqttAction";
-import {MqttPublishAction} from "./model/MqttPublishAction";
-
-const FS = require('fs');
+import { readdirSync } from 'fs';
+import { getLogger } from './logging';
+import { Action } from './model/Action';
+import { ActionType } from './model/ActionType';
+import { MqttAction } from './model/MqttAction';
+import { MqttPublishAction } from './model/MqttPublishAction';
+import { RestAction } from './model/RestAction';
+import { TimerAction } from './model/TimerAction';
+import { WebSocketAction } from './model/WebSocketAction';
+import { loadYamlConfiguration, nameFromYamlConfig } from './yamlParsing';
 
 let isRestAction = function (actionDef: any) {
     return actionDef && actionDef.type === ActionType[ActionType.REST];
@@ -35,7 +34,7 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
 
     let loadedActions: Action[] = [];
 
-    FS.readdirSync(actionDir).forEach((file: any) => {
+    readdirSync(actionDir).forEach((file: any) => {
         let actionDef = loadYamlConfiguration(`${actionDir}/${file}`);
 
         if (isRestAction(actionDef)) {
@@ -60,7 +59,7 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
             loadedActions.push(new MqttPublishAction(nameFromYamlConfig(file), actionDef));
 
         } else {
-            getLogger("unknown").error(`Unknown type of Action: ${actionDef.type}`);
+            getLogger('unknown').error(`Unknown type of Action: ${actionDef.type}`);
         }
     });
 

@@ -1,8 +1,8 @@
+import { expect } from 'chai';
 import 'mocha';
-import {expect} from 'chai';
-import {loadAllScenarios, loadScenariosById} from "../scenarioLoading";
-import {ActionType} from "../model/ActionType";
-import {RestAction} from "../model/RestAction";
+import { ActionType } from '../model/ActionType';
+import { RestAction } from '../model/RestAction';
+import { loadAllScenarios, loadScenariosById } from '../scenarioLoading';
 
 describe('Scenario loading', () => {
 
@@ -78,12 +78,12 @@ describe('Scenario loading', () => {
             name: 'do-something',
             type: ActionType.REST,
             invoke: null,
-            responseValidation: ["userId !== null"]
+            responseValidation: ['userId !== null']
         }];
         const result = loadAllScenarios(TEST_SCENARIO_PATH, testActionCatalog);
         expect(result[0].actions).to.have.lengthOf(1);
         expect((<RestAction>result[0].actions[0]).responseValidation).to.have.lengthOf(2);
-        expect((<RestAction>result[0].actions[0]).responseValidation).to.contain("saved === true");
-        expect((<RestAction>result[0].actions[0]).responseValidation).to.contain("userId !== null");
+        expect((<RestAction>result[0].actions[0]).responseValidation).to.contain('saved === true');
+        expect((<RestAction>result[0].actions[0]).responseValidation).to.contain('userId !== null');
     });
 });

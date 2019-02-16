@@ -1,6 +1,6 @@
+import { expect } from 'chai';
 import 'mocha';
-import {expect} from 'chai';
-import {loadYamlConfiguration} from "../yamlParsing";
+import { loadYamlConfiguration } from '../yamlParsing';
 
 describe('YAML parsing', () => {
 

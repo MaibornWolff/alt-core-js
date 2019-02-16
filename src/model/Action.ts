@@ -1,6 +1,6 @@
-import {Scenario} from "./Scenario";
-import {ActionType} from "./ActionType";
-import {ActionCallback} from "./ActionCallback";
+import { ActionCallback } from './ActionCallback';
+import { ActionType } from './ActionType';
+import { Scenario } from './Scenario';
 
 interface Action {
 
@@ -9,4 +9,4 @@ interface Action {
     invoke(scenario: Scenario): ActionCallback
 }
 
-export { Action }
+export { Action };

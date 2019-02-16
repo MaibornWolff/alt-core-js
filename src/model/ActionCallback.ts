@@ -6,4 +6,4 @@ interface ActionCallback {
     cancel(): void
 }
 
-export { ActionCallback }
+export { ActionCallback };

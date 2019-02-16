@@ -1,6 +1,6 @@
+import { expect } from 'chai';
 import 'mocha';
-import {expect} from 'chai';
-import {injectEvalAndVarsToMap, injectEvalAndVarsToString} from "../variableInjection";
+import { injectEvalAndVarsToMap, injectEvalAndVarsToString } from '../variableInjection';
 
 describe('string injection', () => {
 

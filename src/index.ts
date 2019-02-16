@@ -1,13 +1,13 @@
-import {Scenario} from "./model/Scenario";
-import {getLogger} from "./logging";
-import {Action} from "./model/Action";
-import {loadYamlConfiguration} from "./yamlParsing";
-import {loadAllActions} from "./actionLoading";
-import {loadAllScenarios, loadScenariosById} from "./scenarioLoading";
-import {TestResult} from "./model/TestResult";
-import {ActionType} from "./model/ActionType";
-import {generateSequenceDiagram, initDiagramCreation} from "./diagramDrawing";
-import pad = require('pad');
+import * as pad from 'pad';
+import { loadAllActions } from './actionLoading';
+import { generateSequenceDiagram, initDiagramCreation } from './diagramDrawing';
+import { getLogger } from './logging';
+import { Action } from './model/Action';
+import { ActionType } from './model/ActionType';
+import { Scenario } from './model/Scenario';
+import { TestResult } from './model/TestResult';
+import { loadAllScenarios, loadScenariosById } from './scenarioLoading';
+import { loadYamlConfiguration } from './yamlParsing';
 
 const RESULTS: Map<string, TestResult[]> = new Map();
 
@@ -20,15 +20,15 @@ process.env.PLANTUML_LIMIT_SIZE = '16384';
 
 export const runScenario = (scenarioPath: string, actionDir: string, outDir = 'out', envConfigFile: string) => {
     try {
-        if (typeof scenarioPath === 'undefined' || scenarioPath === "") {
-            getLogger("unknown").error("Please provide correct path to the SCENARIO file!");
+        if (typeof scenarioPath === 'undefined' || scenarioPath === '') {
+            getLogger('unknown').error('Please provide correct path to the SCENARIO file!');
             process.exit(1);
         }
-        if (typeof actionDir === 'undefined' || actionDir === "") {
-            getLogger("unknown").error("Please provide correct path to the ACTION files!");
+        if (typeof actionDir === 'undefined' || actionDir === '') {
+            getLogger('unknown').error('Please provide correct path to the ACTION files!');
             process.exit(1);
         }
-        getLogger("unknown").info(`Starting scenario: ${scenarioPath} (actions: ${actionDir}, out: ${outDir}, envConfig: ${envConfigFile})`);
+        getLogger('unknown').info(`Starting scenario: ${scenarioPath} (actions: ${actionDir}, out: ${outDir}, envConfig: ${envConfigFile})`);
         
         _OUT_DIR = outDir;
 
@@ -41,7 +41,7 @@ export const runScenario = (scenarioPath: string, actionDir: string, outDir = 'o
         processScenarios(scenarios);
         
     } catch (e) {
-        getLogger("unknown").error(e);
+        getLogger('unknown').error(e);
     }
 }
 

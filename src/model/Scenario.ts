@@ -1,11 +1,11 @@
-import {Action} from "./Action";
-import {getLogger} from "../logging";
-import {RestAction} from "./RestAction";
-import {ActionType} from "./ActionType";
-import {TimerAction} from "./TimerAction";
-import {WebSocketAction} from "./WebSocketAction";
-import {MqttAction} from "./MqttAction";
-import {MqttPublishAction} from "./MqttPublishAction";
+import { getLogger } from '../logging';
+import { Action } from './Action';
+import { ActionType } from './ActionType';
+import { MqttAction } from './MqttAction';
+import { MqttPublishAction } from './MqttPublishAction';
+import { RestAction } from './RestAction';
+import { TimerAction } from './TimerAction';
+import { WebSocketAction } from './WebSocketAction';
 
 class Scenario {
     /* retrieved from the file name */
@@ -43,7 +43,7 @@ class Scenario {
                 }
 
             } else {
-                getLogger(this.name).error("ERROR: Could not find any Action definition for: " + actionDef.name, { scenario: this.name });
+                getLogger(this.name).error('ERROR: Could not find any Action definition for: ' + actionDef.name, { scenario: this.name });
             }
         });
 
@@ -51,4 +51,5 @@ class Scenario {
     }
 }
 
-export { Scenario }
+export { Scenario };
+

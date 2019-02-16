@@ -1,13 +1,12 @@
-import {Action} from "./Action";
-import {ActionType} from "./ActionType";
-import {getLogger} from "../logging";
-import {Scenario} from "./Scenario";
-import {ActionCallback} from "./ActionCallback";
-import {injectEvalAndVarsToString} from "../variableInjection";
-import {addMqttMessage} from "../diagramDrawing";
-import {decodeProto} from "../protoParsing";
-
-const Mqtt = require('mqtt');
+import { connect } from 'mqtt';
+import { addMqttMessage } from '../diagramDrawing';
+import { getLogger } from '../logging';
+import { decodeProto } from '../protoParsing';
+import { injectEvalAndVarsToString } from '../variableInjection';
+import { Action } from './Action';
+import { ActionCallback } from './ActionCallback';
+import { ActionType } from './ActionType';
+import { Scenario } from './Scenario';
 
 class MqttAction implements Action {
 
@@ -53,7 +52,7 @@ class MqttAction implements Action {
             this.invokeAsync(scenario);
             resolve();
         }));
-        return { promise, cancel: () => console.log("TODO") };
+        return { promise, cancel: () => console.log('TODO') };
     }
 
     decodeProtoPayload(buffer: Buffer): any {
@@ -63,7 +62,7 @@ class MqttAction implements Action {
     invokeAsync(scenario: Scenario): void {
 
         const registeredMessageFilters = this.messageFilter;
-        const messageType = this.messageType || "json";
+        const messageType = this.messageType || 'json';
 
         const logDebug = function (debugMessage: string) {
             getLogger(scenario.name).debug(debugMessage, ctx);
@@ -89,7 +88,7 @@ class MqttAction implements Action {
         let numberOfRetrievedMessages = 0;
 
         // https://www.npmjs.com/package/mqtt#client
-        const client = Mqtt.connect(this.url, {
+        const client = connect(this.url, {
             username: this.username,
             password: this.password,
             keepalive: 60,
@@ -116,9 +115,9 @@ class MqttAction implements Action {
         client.on('message', (topic: any, message: any) => {
             let msgObj = {};
             
-            if (messageType === "json") {
+            if (messageType === 'json') {
                 msgObj = JSON.parse(message.toString());
-            } else if (messageType == "proto") {
+            } else if (messageType == 'proto') {
                 msgObj = this.decodeProtoPayload(message);
             }
 
@@ -148,4 +147,5 @@ class MqttAction implements Action {
     }
 }
 
-export { MqttAction }
+export { MqttAction };
+

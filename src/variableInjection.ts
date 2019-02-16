@@ -1,4 +1,4 @@
-import {getLogger} from "./logging";
+import { getLogger } from './logging';
 
 function injectVarsToString(str: string, scenarioVariables: Map<string, any>, ctx: any): string {
 
@@ -92,7 +92,7 @@ function injectEvaluationToNumber(str: string, ctx: any, vars: Map<string, any>)
         let replaceValue = function() { return eval(expression); }.call(buildExpHelpers(vars));
         if (replaceValue) {
             let searchValue = `<<<${expression}>>>`;
-            getLogger(ctx.scenario).debug(`Replacing '"${searchValue}"' with '${replaceValue}'`, ctx);
+            getLogger(ctx.scenario).debug(`Replacing '${searchValue}' with '${replaceValue}'`, ctx);
             str = str.replace(searchValue, replaceValue)
         } else {
             getLogger(ctx.scenario).debug(`Not able to replace {{{${expression}}}} !`, ctx);

@@ -10,4 +10,4 @@ class TestResult {
     }
 }
 
-export { TestResult }
+export { TestResult };

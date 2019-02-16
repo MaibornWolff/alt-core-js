@@ -1,9 +1,9 @@
-import {Action} from "./Action";
-import {Scenario} from "./Scenario";
-import {ActionType} from "./ActionType";
-import {getLogger} from "../logging";
-import {ActionCallback} from "./ActionCallback";
-import {addDelay} from "../diagramDrawing";
+import { addDelay } from '../diagramDrawing';
+import { getLogger } from '../logging';
+import { Action } from './Action';
+import { ActionCallback } from './ActionCallback';
+import { ActionType } from './ActionType';
+import { Scenario } from './Scenario';
 
 class TimerAction implements Action {
     name: string;
@@ -30,8 +30,8 @@ class TimerAction implements Action {
             }, this.duration * 1000);
         });
 
-        return { promise, cancel: () => console.log("TODO") };
+        return { promise, cancel: () => console.log('TODO') };
     }
 }
 
-export { TimerAction }
+export { TimerAction };
