@@ -10,7 +10,14 @@
   },
   "rules": {
     "import/prefer-default-export": "off",
-    "import/no-extraneous-dependencies": ["error", {"devDependencies": ["**/*.spec.ts"]}],
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": ["src/**/*.spec.ts"],
+        "optionalDependencies": false,
+        "peerDependencies": false
+      }
+    ],
     "arrow-body-style": ["warn", "as-needed"],
     "no-use-before-define": "off",
     "@typescript-eslint/no-use-before-define": "off"
@@ -18,15 +25,20 @@
   "settings": {
     "import/resolver": {
       "node": {
-        "extensions": [
-          ".js",
-          ".ts"
-        ]
+        "extensions": [".js", ".ts"]
       }
     }
   },
   "env": {
     "node": true,
     "browser": false
-  }
+  },
+  "overrides": [
+    {
+      "files": "src/**/*.spec.ts",
+      "env": {
+        "mocha": true
+      }
+    }
+  ]
 }
