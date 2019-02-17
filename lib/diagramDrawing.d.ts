@@ -1,9 +1,0 @@
-export declare const initDiagramCreation: (scenarioId: string) => void;
-export declare const addRequest: (scenarioId: string, target: string, url: string, data: any) => void;
-export declare const addSuccessfulResponse: (scenarioId: string, source: string, status: string, body: string) => void;
-export declare const addFailedResponse: (scenarioId: string, source: string, status: string, body: string) => void;
-export declare const addDelay: (scenarioId: string, durationInSec: number) => void;
-export declare const addWsMessage: (scenarioId: string, source: string, payload: any) => void;
-export declare const addMqttMessage: (scenarioId: string, topic: string, payload: any) => void;
-export declare const addMqttPublishMessage: (scenarioId: string, topic: string, payload: any) => void;
-export declare const generateSequenceDiagram: (scenarioId: string) => Promise<any>;
