@@ -59,8 +59,14 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - build
-      - test
+      - build:
+          filters:
+            tags:
+              only: /.*/
+      - test:
+          filters:
+            tags:
+              only: /.*/
       - publish:
           requires:
             - build
