@@ -1,20 +1,19 @@
-import { Action } from './Action';
-import { Scenario } from './Scenario';
-import { getLogger } from '../logging';
-import { ActionType } from './ActionType';
-import {
-    injectEvalAndVarsToMap,
-    injectEvalAndVarsToString,
-} from '../variableInjection';
-import { ActionCallback } from './ActionCallback';
+import { createReadStream } from 'fs';
+import * as request from 'requestretry';
 import {
     addFailedResponse,
     addRequest,
     addSuccessfulResponse,
 } from '../diagramDrawing';
-
-const request = require('requestretry');
-const FS = require('fs');
+import { getLogger } from '../logging';
+import {
+    injectEvalAndVarsToMap,
+    injectEvalAndVarsToString,
+} from '../variableInjection';
+import { Action } from './Action';
+import { ActionCallback } from './ActionCallback';
+import { ActionType } from './ActionType';
+import { Scenario } from './Scenario';
 
 class RestAction implements Action {
     serviceName: string;
@@ -178,7 +177,7 @@ class RestAction implements Action {
                 ? injectEvalAndVarsToMap(this.form, scenario.cache, ctx)
                 : null;
             const binaryData = this.dataBinary
-                ? FS.createReadStream(this.dataBinary)
+                ? createReadStream(this.dataBinary)
                 : null;
 
             request({

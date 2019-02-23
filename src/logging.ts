@@ -1,10 +1,8 @@
+import * as pad from 'pad';
+import { createLogger, format, transports } from 'winston';
 import { OUTPUT_DIR } from '.';
 
-import pad = require('pad');
-
-const { createLogger, format, transports } = require('winston');
-
-const { combine, timestamp, label, printf } = format;
+const { combine, timestamp, printf } = format;
 
 const myFormat = printf(
     (info: any) =>
@@ -21,7 +19,7 @@ export const getLogger = (scenario: string) =>
         level: 'debug',
         format: combine(timestamp(), myFormat),
         transports: [
-            new transports.Console({ colorize: true, level: 'info' }),
+            new transports.Console({ level: 'info' }),
             new transports.File({
                 filename: `${OUTPUT_DIR()}/${scenario}.log`,
                 level: 'debug',

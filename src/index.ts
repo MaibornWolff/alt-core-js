@@ -1,14 +1,13 @@
-import { Scenario } from './model/Scenario';
+import * as pad from 'pad';
+import { loadAllActions } from './actionLoading';
+import { generateSequenceDiagram, initDiagramCreation } from './diagramDrawing';
 import { getLogger } from './logging';
 import { Action } from './model/Action';
-import { loadYamlConfiguration } from './yamlParsing';
-import { loadAllActions } from './actionLoading';
-import { loadAllScenarios, loadScenariosById } from './scenarioLoading';
-import { TestResult } from './model/TestResult';
 import { ActionType } from './model/ActionType';
-import { generateSequenceDiagram, initDiagramCreation } from './diagramDrawing';
-
-import pad = require('pad');
+import { Scenario } from './model/Scenario';
+import { TestResult } from './model/TestResult';
+import { loadAllScenarios, loadScenariosById } from './scenarioLoading';
+import { loadYamlConfiguration } from './yamlParsing';
 
 const RESULTS: Map<string, TestResult[]> = new Map();
 

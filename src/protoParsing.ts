@@ -1,26 +1,26 @@
-import protobuf = require('protobufjs');
-import fs = require('fs');
-import path = require('path');
+import { existsSync } from 'fs';
+import { dirname, parse, resolve } from 'path';
+import { Root } from 'protobufjs';
 
 export function resolveImportPath(origin: string, target: string): string {
-    let currentDir = path.dirname(origin);
+    let currentDir = dirname(origin);
 
     while (
-        !fs.existsSync(path.resolve(currentDir, target)) &&
-        path.parse(currentDir).root !== currentDir
+        !existsSync(resolve(currentDir, target)) &&
+        parse(currentDir).root !== currentDir
     ) {
-        currentDir = path.resolve(currentDir, '..');
+        currentDir = resolve(currentDir, '..');
     }
 
-    return path.resolve(currentDir, target);
+    return resolve(currentDir, target);
 }
 
 export function encodeProto(
     protoDefPath: string,
     attributes: {},
     outerClass: string,
-): Uint8Array {
-    const root = new protobuf.Root();
+): Buffer {
+    const root = new Root();
     root.resolvePath = resolveImportPath;
     root.loadSync(protoDefPath);
     const messageType = root.lookupType(outerClass);
@@ -31,7 +31,7 @@ export function encodeProto(
     }
 
     const message = messageType.fromObject(attributes);
-    return messageType.encode(message).finish();
+    return Buffer.from(messageType.encode(message).finish());
 }
 
 export function decodeProto(
@@ -39,7 +39,7 @@ export function decodeProto(
     outerClass: string,
     buffer: Uint8Array,
 ) {
-    const root = new protobuf.Root();
+    const root = new Root();
     root.resolvePath = resolveImportPath;
     root.loadSync(protoDefPath);
     const messageType = root.lookupType(outerClass);
