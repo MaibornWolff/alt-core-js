@@ -1,14 +1,13 @@
-import { loadYamlConfiguration, nameFromYamlConfig } from './yamlParsing';
-import { ActionType } from './model/ActionType';
-import { RestAction } from './model/RestAction';
-import { TimerAction } from './model/TimerAction';
-import { Action } from './model/Action';
+import { readdirSync } from 'fs';
 import { getLogger } from './logging';
-import { WebSocketAction } from './model/WebSocketAction';
+import { Action } from './model/Action';
+import { ActionType } from './model/ActionType';
 import { MqttAction } from './model/MqttAction';
 import { MqttPublishAction } from './model/MqttPublishAction';
-
-const FS = require('fs');
+import { RestAction } from './model/RestAction';
+import { TimerAction } from './model/TimerAction';
+import { WebSocketAction } from './model/WebSocketAction';
+import { loadYamlConfiguration, nameFromYamlConfig } from './yamlParsing';
 
 const isRestAction = function(actionDef: any) {
     return actionDef && actionDef.type === ActionType[ActionType.REST];
@@ -34,7 +33,7 @@ const isMqttPublishAction = function(actionDef: any) {
 export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
     const loadedActions: Action[] = [];
 
-    FS.readdirSync(actionDir).forEach((file: any) => {
+    readdirSync(actionDir).forEach((file: any) => {
         const actionDef = loadYamlConfiguration(`${actionDir}/${file}`);
 
         if (isRestAction(actionDef)) {

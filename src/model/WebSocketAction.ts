@@ -1,16 +1,15 @@
 import { stringify } from 'querystring';
-import { Action } from './Action';
-import { ActionType } from './ActionType';
+import * as WebSocket from 'ws';
+import { addWsMessage } from '../diagramDrawing';
 import { getLogger } from '../logging';
-import { Scenario } from './Scenario';
 import {
     injectEvalAndVarsToMap,
     injectEvalAndVarsToString,
 } from '../variableInjection';
+import { Action } from './Action';
 import { ActionCallback } from './ActionCallback';
-import { addWsMessage } from '../diagramDrawing';
-
-const WebSocket = require('ws');
+import { ActionType } from './ActionType';
+import { Scenario } from './Scenario';
 
 const MAX_RECONNECTIONS = 3;
 

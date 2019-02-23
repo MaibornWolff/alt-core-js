@@ -1,13 +1,12 @@
+import { readFileSync } from 'fs';
+import { safeLoad } from 'js-yaml';
 import { getLogger } from './logging';
-
-const YAML = require('js-yaml');
-const FS = require('fs');
 
 const FILE_SUFFIX = '.yaml';
 
 export const loadYamlConfiguration = (pathToFile: string): any => {
     if (pathToFile && pathToFile.endsWith(FILE_SUFFIX)) {
-        const yamlConfig = YAML.safeLoad(FS.readFileSync(pathToFile, 'utf8'));
+        const yamlConfig = safeLoad(readFileSync(pathToFile, 'utf8'));
         getLogger('unknown').debug(
             `Successfully loaded YAML config: ${pathToFile}`,
         );

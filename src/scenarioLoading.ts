@@ -1,11 +1,10 @@
 // /<reference path="model/Scenario.ts"/>
+import { readdirSync } from 'fs';
 import { stringify } from 'querystring';
-import { loadYamlConfiguration, nameFromYamlConfig } from './yamlParsing';
-import { Scenario } from './model/Scenario';
-import { Action } from './model/Action';
 import { getLogger } from './logging';
-
-const FS = require('fs');
+import { Action } from './model/Action';
+import { Scenario } from './model/Scenario';
+import { loadYamlConfiguration, nameFromYamlConfig } from './yamlParsing';
 
 export const loadScenariosById = (
     path: string,
@@ -36,7 +35,7 @@ export const loadAllScenarios = (
 ): Scenario[] => {
     const loadedScenarios: Scenario[] = [];
 
-    FS.readdirSync(`${path}`).forEach((file: any) => {
+    readdirSync(`${path}`).forEach((file: any) => {
         const scenarioDef = loadYamlConfiguration(`${path}/${file}`);
         if (scenarioDef) {
             // split into multiple scenario instances

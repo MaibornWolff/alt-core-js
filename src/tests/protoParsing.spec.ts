@@ -1,8 +1,7 @@
-import 'mocha';
 import { expect } from 'chai';
-import { encodeProto, decodeProto, resolveImportPath } from '../protoParsing';
-
-import path = require('path');
+import 'mocha';
+import { resolve } from 'path';
+import { decodeProto, encodeProto, resolveImportPath } from '../protoParsing';
 
 describe('PROTO parsing', () => {
     const TEST_PROTO = 'src/tests/resources/proto/test.proto';
@@ -47,7 +46,7 @@ describe('PROTO parsing', () => {
             'resources/proto/other.proto',
         );
         expect(result).to.be.equal(
-            path.resolve('src/tests/resources/proto/other.proto'),
+            resolve('src/tests/resources/proto/other.proto'),
         );
     });
 });

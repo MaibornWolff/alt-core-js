@@ -1,13 +1,12 @@
-import { Action } from './Action';
-import { ActionType } from './ActionType';
-import { getLogger } from '../logging';
-import { Scenario } from './Scenario';
-import { ActionCallback } from './ActionCallback';
-import { injectEvalAndVarsToString } from '../variableInjection';
+import { connect } from 'mqtt';
 import { addMqttMessage } from '../diagramDrawing';
+import { getLogger } from '../logging';
 import { decodeProto } from '../protoParsing';
-
-const Mqtt = require('mqtt');
+import { injectEvalAndVarsToString } from '../variableInjection';
+import { Action } from './Action';
+import { ActionCallback } from './ActionCallback';
+import { ActionType } from './ActionType';
+import { Scenario } from './Scenario';
 
 class MqttAction implements Action {
     name: string;
@@ -112,20 +111,23 @@ class MqttAction implements Action {
         let numberOfRetrievedMessages = 0;
 
         // https://www.npmjs.com/package/mqtt#client
-        const client = Mqtt.connect(this.url, {
-            username: this.username,
-            password: this.password,
-            keepalive: 60,
-            clientId:
-                this.name +
-                Math.random()
-                    .toString(16)
-                    .substr(2, 8),
-            clean: true,
-            reconnectPeriod: 1000,
-            connectTimeout: 30000,
-            resubscribe: true,
-        });
+        const client = connect(
+            this.url,
+            {
+                username: this.username,
+                password: this.password,
+                keepalive: 60,
+                clientId:
+                    this.name +
+                    Math.random()
+                        .toString(16)
+                        .substr(2, 8),
+                clean: true,
+                reconnectPeriod: 1000,
+                connectTimeout: 30000,
+                resubscribe: true,
+            },
+        );
 
         client.on('connect', () => {
             getLogger(scenario.name).debug(

@@ -1,18 +1,16 @@
-import { Action } from './Action';
-import { ActionType } from './ActionType';
+import * as hexdump from 'hexdump-nodejs';
+import { connect } from 'mqtt';
+import { addMqttPublishMessage } from '../diagramDrawing';
 import { getLogger } from '../logging';
-import { Scenario } from './Scenario';
-import { ActionCallback } from './ActionCallback';
+import { encodeProto } from '../protoParsing';
 import {
     injectEvalAndVarsToMap,
     injectEvalAndVarsToString,
 } from '../variableInjection';
-import { addMqttPublishMessage } from '../diagramDrawing';
-import { encodeProto } from '../protoParsing';
-
-import hexdump = require('hexdump-nodejs');
-
-const Mqtt = require('mqtt');
+import { Action } from './Action';
+import { ActionCallback } from './ActionCallback';
+import { ActionType } from './ActionType';
+import { Scenario } from './Scenario';
 
 class MqttPublishAction implements Action {
     name: string;
@@ -72,15 +70,25 @@ class MqttPublishAction implements Action {
         return { promise, cancel: () => console.log('TODO') };
     }
 
-    encodeProtoPayload(
+    public encodeProtoPayload(
         scenarioVariables: Map<string, any>,
         ctx = {},
-    ): [Uint8Array, string] {
+    ): [Buffer, string] {
         const data = injectEvalAndVarsToMap(this.data, scenarioVariables, ctx);
         return [
             encodeProto(this.protoFile, data, this.protoClass),
             JSON.stringify(data),
         ];
+    }
+
+    private genrateJsonPayload(
+        scenarioVariables: Map<string, any>,
+        ctx = {},
+    ): [string, string] {
+        const payload = JSON.stringify(
+            injectEvalAndVarsToMap(this.data, scenarioVariables, ctx),
+        );
+        return [payload, payload];
     }
 
     invokeAsync(scenario: Scenario): void {
@@ -95,20 +103,23 @@ class MqttPublishAction implements Action {
         let ctx = { scenario: scenario.name, action: this.topic };
 
         // https://www.npmjs.com/package/mqtt#client
-        const client = Mqtt.connect(this.url, {
-            username: this.username,
-            password: this.password,
-            keepalive: 60,
-            clientId:
-                this.name +
-                Math.random()
-                    .toString(16)
-                    .substr(2, 8),
-            clean: true,
-            reconnectPeriod: 1000,
-            connectTimeout: 30000,
-            resubscribe: true,
-        });
+        const client = connect(
+            this.url,
+            {
+                username: this.username,
+                password: this.password,
+                keepalive: 60,
+                clientId:
+                    this.name +
+                    Math.random()
+                        .toString(16)
+                        .substr(2, 8),
+                clean: true,
+                reconnectPeriod: 1000,
+                connectTimeout: 30000,
+                resubscribe: true,
+            },
+        );
 
         client.on('connect', () => {
             const log = getLogger(scenario.name);
@@ -117,22 +128,9 @@ class MqttPublishAction implements Action {
                 ctx,
             );
 
-            let dataString: string; // a JSON-string injected with read data, used for logging
-            let payload: string | Uint8Array; // JSON-string or binary payload
-
-            if (this.protoFile) {
-                // protobuf binary data
-                [payload, dataString] = this.encodeProtoPayload(
-                    scenario.cache,
-                    ctx,
-                );
-            } else {
-                // normal JSON data
-                payload = JSON.stringify(
-                    injectEvalAndVarsToMap(this.data, scenario.cache, ctx),
-                );
-                dataString = payload;
-            }
+            const [payload, dataString] = this.protoFile
+                ? this.encodeProtoPayload(scenario.cache, ctx)
+                : this.genrateJsonPayload(scenario.cache, ctx);
 
             const topic = injectEvalAndVarsToString(
                 this.topic,

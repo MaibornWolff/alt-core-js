@@ -1,7 +1,6 @@
+import { appendFileSync, createWriteStream, writeFileSync } from 'fs';
+import { generate } from 'node-plantuml';
 import { OUTPUT_DIR } from '.';
-
-import PLANTUML = require('node-plantuml');
-import FS = require('fs');
 
 function getInputFile(scenario: string) {
     return `${OUTPUT_DIR()}/_${scenario}.input`;
@@ -24,7 +23,7 @@ function replaceDashes(str: string): string {
 }
 
 export const initDiagramCreation = (scenarioId: string) => {
-    FS.writeFileSync(getInputFile(scenarioId), '');
+    writeFileSync(getInputFile(scenarioId), '');
     const initValues = [
         '@startuml',
         'autonumber',
@@ -32,7 +31,7 @@ export const initDiagramCreation = (scenarioId: string) => {
         'control MQTT',
         'actor YATF #red\n',
     ];
-    FS.appendFileSync(getInputFile(scenarioId), initValues.join('\n'));
+    appendFileSync(getInputFile(scenarioId), initValues.join('\n'));
 };
 
 export const addRequest = (
@@ -48,7 +47,7 @@ export const addRequest = (
             data,
         )}\nend note\n`;
     }
-    FS.appendFileSync(getInputFile(scenarioId), _request);
+    appendFileSync(getInputFile(scenarioId), _request);
 };
 
 export const addSuccessfulResponse = (
@@ -62,7 +61,7 @@ export const addSuccessfulResponse = (
         const note = `note left\n**${currentTimestamp()}**\n${
             typeof body === 'object' ? extractPayload(body) : body.substr(0, 30)
         }\nend note\n`;
-        FS.appendFileSync(getInputFile(scenarioId), note);
+        appendFileSync(getInputFile(scenarioId), note);
     }
 };
 
@@ -73,7 +72,7 @@ export const addFailedResponse = (
     body: string,
 ) => {
     doAddResponse(scenarioId, source, status, 'red');
-    FS.appendFileSync(
+    appendFileSync(
         getInputFile(scenarioId),
         `note right:  <color red>${body}</color>\n||20||\n`,
     );
@@ -86,14 +85,14 @@ const doAddResponse = (
     color: string,
 ) => {
     const _source = replaceDashes(source);
-    FS.appendFileSync(
+    appendFileSync(
         getInputFile(scenarioId),
         `${_source} --> YATF: <color ${color}>${status}</color>\ndeactivate ${_source}\n`,
     );
 };
 
 export const addDelay = (scenarioId: string, durationInSec: number) => {
-    FS.appendFileSync(
+    appendFileSync(
         getInputFile(scenarioId),
         `\n...sleep ${durationInSec} s...\n`,
     );
@@ -105,14 +104,14 @@ export const addWsMessage = (
     payload: any,
 ) => {
     const _source = replaceDashes(source);
-    FS.appendFileSync(
+    appendFileSync(
         getInputFile(scenarioId),
         `${_source} -[#0000FF]->o YATF : [WS]\n`,
     );
     const note = `note left #aqua\n**${currentTimestamp()}**\n${extractPayload(
         payload,
     )}\nend note\n`;
-    FS.appendFileSync(getInputFile(scenarioId), note);
+    appendFileSync(getInputFile(scenarioId), note);
 };
 
 export const addMqttMessage = (
@@ -120,14 +119,14 @@ export const addMqttMessage = (
     topic: string,
     payload: any,
 ) => {
-    FS.appendFileSync(
+    appendFileSync(
         getInputFile(scenarioId),
         `MQTT -[#green]->o YATF : ${topic}\n`,
     );
     const note = `note right #99FF99\n**${currentTimestamp()}**\n${extractPayload(
         payload,
     )}\nend note\n`;
-    FS.appendFileSync(getInputFile(scenarioId), note);
+    appendFileSync(getInputFile(scenarioId), note);
 };
 
 export const addMqttPublishMessage = (
@@ -135,20 +134,20 @@ export const addMqttPublishMessage = (
     topic: string,
     payload: any,
 ) => {
-    FS.appendFileSync(
+    appendFileSync(
         getInputFile(scenarioId),
         `YATF -[#green]->o MQTT : ${topic}\n`,
     );
     const note = `note left #99FF99\n**${currentTimestamp()}**\n${extractPayload(
         JSON.parse(payload),
     )}\nend note\n`;
-    FS.appendFileSync(getInputFile(scenarioId), note);
+    appendFileSync(getInputFile(scenarioId), note);
 };
 
 export const generateSequenceDiagram = (scenarioId: string): Promise<any> =>
     new Promise<any>(resolve => {
-        FS.appendFileSync(getInputFile(scenarioId), '\n@enduml');
-        const gen = PLANTUML.generate(getInputFile(scenarioId));
-        gen.out.pipe(FS.createWriteStream(getOutputFile(scenarioId)));
+        appendFileSync(getInputFile(scenarioId), '\n@enduml');
+        const gen = generate(getInputFile(scenarioId));
+        gen.out.pipe(createWriteStream(getOutputFile(scenarioId)));
         gen.out.on('end', () => resolve());
     });
