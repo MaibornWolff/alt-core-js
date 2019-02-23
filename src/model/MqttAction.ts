@@ -11,16 +11,27 @@ const Mqtt = require('mqtt');
 
 class MqttAction implements Action {
     name: string;
+
     type = ActionType.MQTT;
+
     url: string;
+
     username: string;
+
     password: string;
+
     topic: string;
+
     durationInSec: number;
+
     expectedNumberOfMessages: number;
+
     messageType: string;
+
     messageFilter: string[];
+
     protoFile: string;
+
     protoClass: string;
 
     constructor(
@@ -58,7 +69,7 @@ class MqttAction implements Action {
     }
 
     invoke(scenario: Scenario): ActionCallback {
-        let promise = new Promise(resolve => {
+        const promise = new Promise(resolve => {
             this.invokeAsync(scenario);
             resolve();
         });

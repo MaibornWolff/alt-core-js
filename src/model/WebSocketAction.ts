@@ -1,8 +1,8 @@
+import { stringify } from 'querystring';
 import { Action } from './Action';
 import { ActionType } from './ActionType';
 import { getLogger } from '../logging';
 import { Scenario } from './Scenario';
-import { stringify } from 'querystring';
 import {
     injectEvalAndVarsToMap,
     injectEvalAndVarsToString,
@@ -11,19 +11,28 @@ import { ActionCallback } from './ActionCallback';
 import { addWsMessage } from '../diagramDrawing';
 
 const WebSocket = require('ws');
+
 const MAX_RECONNECTIONS = 3;
 
 class WebSocketAction implements Action {
     private wsInstance: any;
+
     private reconnected = 0;
 
     serviceName: string;
+
     name: string;
+
     type = ActionType.WEBSOCKET;
+
     url: string;
+
     headers: any;
+
     data: any;
+
     expectedNumberOfMessages: number;
+
     messageFilter: string[];
 
     private receivedMessages: Set<string>;
@@ -74,14 +83,12 @@ class WebSocketAction implements Action {
         if (template.data) {
             if (Array.isArray(template.data))
                 return template.data.concat(actionDef.data || []);
-            else
-                return Object.assign(
-                    Object.assign({}, template.data),
-                    actionDef.data,
-                );
-        } else {
-            return actionDef.data;
+            return Object.assign(
+                Object.assign({}, template.data),
+                actionDef.data,
+            );
         }
+        return actionDef.data;
     }
 
     invoke(scenario: Scenario): ActionCallback {
@@ -97,13 +104,13 @@ class WebSocketAction implements Action {
     }
 
     invokeAsync(scenario: Scenario): void {
-        let ctx = { scenario: scenario.name, action: this.name };
-        let resolvedUrl = injectEvalAndVarsToString(
+        const ctx = { scenario: scenario.name, action: this.name };
+        const resolvedUrl = injectEvalAndVarsToString(
             this.url,
             scenario.cache,
             ctx,
         );
-        let queryParams = injectEvalAndVarsToMap(
+        const queryParams = injectEvalAndVarsToMap(
             this.headers,
             scenario.cache,
             ctx,
@@ -118,7 +125,7 @@ class WebSocketAction implements Action {
             getLogger(scenario.name).error(errorMessage, ctx);
         };
 
-        const isMessageRelevant = function(msg: String) {
+        const isMessageRelevant = function(msg: string) {
             if (registeredMessageFilters) {
                 return registeredMessageFilters.some(filter => {
                     filter = injectEvalAndVarsToString(
@@ -142,14 +149,14 @@ class WebSocketAction implements Action {
             logDebug(`WebSocket to ${resolvedUrl} successfully opened!`);
 
             if (this.data && this.reconnected == 0) {
-                let payload = JSON.stringify(this.data);
+                const payload = JSON.stringify(this.data);
                 this.wsInstance.send(payload);
                 logDebug(`WS message sent: ${payload}`);
             }
         });
 
         this.wsInstance.on('message', (data: any) => {
-            let parsedMessage = JSON.parse(data.toString());
+            const parsedMessage = JSON.parse(data.toString());
             if (isMessageRelevant(parsedMessage)) {
                 this.receivedMessages.add(data);
                 logDebug(
@@ -167,7 +174,7 @@ class WebSocketAction implements Action {
                 this.reconnected++;
                 this.invokeAsync(scenario);
             } else {
-                logDebug('Successfully closed WS connection: ' + code);
+                logDebug(`Successfully closed WS connection: ${code}`);
                 if (
                     this.receivedMessages.size !== this.expectedNumberOfMessages
                 ) {
@@ -181,7 +188,7 @@ class WebSocketAction implements Action {
         });
 
         this.wsInstance.on('error', err => {
-            logError('' + err);
+            logError(`${err}`);
         });
     }
 }

@@ -7,7 +7,9 @@ import { addDelay } from '../diagramDrawing';
 
 class TimerAction implements Action {
     name: string;
+
     type = ActionType.TIMER;
+
     duration: number;
 
     constructor(
@@ -33,7 +35,7 @@ class TimerAction implements Action {
     invoke(scenario: Scenario): ActionCallback {
         const ctx = { scenario: scenario.name, action: this.name };
 
-        let promise = new Promise((resolve, reject) => {
+        const promise = new Promise((resolve, reject) => {
             setTimeout(() => {
                 getLogger(ctx.scenario).debug(
                     `Waited for ${this.duration} seconds!`,

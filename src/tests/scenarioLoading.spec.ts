@@ -19,7 +19,7 @@ describe('Scenario loading', () => {
     it('should be able to parse scenario by ID', () => {
         const testActionCatalog = [];
         const result = loadScenariosById(
-            TEST_SCENARIO_PATH + '/s1-testScenario.yaml',
+            `${TEST_SCENARIO_PATH}/s1-testScenario.yaml`,
             testActionCatalog,
         );
         expect(result).to.have.lengthOf(1);
@@ -31,7 +31,7 @@ describe('Scenario loading', () => {
     it('should be able to parse load scenarios by ID', () => {
         const testActionCatalog = [];
         const result = loadScenariosById(
-            TEST_SCENARIO_PATH + '/s2',
+            `${TEST_SCENARIO_PATH}/s2`,
             testActionCatalog,
         );
         expect(result).to.have.lengthOf(2);

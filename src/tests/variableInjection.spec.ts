@@ -56,7 +56,7 @@ describe('string injection', () => {
     });
 
     it('should be able to inject method evaluation', () => {
-        let now = Date.now();
+        const now = Date.now();
         const result = injectEvalAndVarsToString(
             '{{{Date.now()}}}',
             new Map(),
@@ -66,7 +66,7 @@ describe('string injection', () => {
     });
 
     it('should be able to evaluate expressions with spaces in them', () => {
-        let now = Date.now();
+        const now = Date.now();
         const result = injectEvalAndVarsToString(
             '{{{new Date().toISOString()}}}',
             new Map(),
@@ -118,7 +118,7 @@ describe('string injection', () => {
     });
 
     it('should be able to inject multiple expressions to map', () => {
-        let testMap = {
+        const testMap = {
             aString: '{{{new Date().toISOString().substr(0,10)}}}',
             otherString: '{{{new Date().toISOString().substr(0,10)}}}',
             aVariable: '{{myVariable}}',
@@ -165,7 +165,7 @@ describe('map injection', () => {
             {},
         );
 
-        expect(result['host']).to.equal('localhost');
+        expect(result.host).to.equal('localhost');
     });
 
     it('should be able to replace multiple occupancies of a key', () => {
@@ -177,8 +177,8 @@ describe('map injection', () => {
             {},
         );
 
-        expect(result['host']).to.equal('localhost');
-        expect(result['service']).to.equal('localhost');
+        expect(result.host).to.equal('localhost');
+        expect(result.service).to.equal('localhost');
     });
 
     it('should be able to replace multiple keys', () => {
@@ -191,8 +191,8 @@ describe('map injection', () => {
             {},
         );
 
-        expect(result['host']).to.equal('localhost');
-        expect(result['data']).to.equal('user-u123');
+        expect(result.host).to.equal('localhost');
+        expect(result.data).to.equal('user-u123');
     });
 
     it('should not replace unknown key', () => {
@@ -203,6 +203,6 @@ describe('map injection', () => {
             {},
         );
 
-        expect(result['host']).to.equal('{{host}}');
+        expect(result.host).to.equal('{{host}}');
     });
 });
