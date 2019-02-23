@@ -13,20 +13,30 @@ import {
     addSuccessfulResponse,
 } from '../diagramDrawing';
 
-let request = require('requestretry');
+const request = require('requestretry');
 const FS = require('fs');
 
 class RestAction implements Action {
     serviceName: string;
+
     name: string;
+
     type = ActionType.REST;
+
     url: string;
+
     method: string;
+
     restHead: any;
+
     data: Map<string, string>;
+
     dataBinary: string;
+
     form: any;
+
     responseValidation: string[];
+
     variables: Map<string, string>;
 
     constructor(
@@ -90,14 +100,12 @@ class RestAction implements Action {
         if (template.data) {
             if (Array.isArray(template.data))
                 return template.data.concat(actionDef.data || []);
-            else
-                return Object.assign(
-                    Object.assign({}, template.data),
-                    actionDef.data,
-                );
-        } else {
-            return actionDef.data;
+            return Object.assign(
+                Object.assign({}, template.data),
+                actionDef.data,
+            );
         }
+        return actionDef.data;
     }
 
     invoke(scenario: Scenario): ActionCallback {
@@ -106,18 +114,18 @@ class RestAction implements Action {
         const registeredValidations = this.responseValidation;
         const targetService = this.serviceName;
 
-        let logError = function(errorMessage: string) {
+        const logError = function(errorMessage: string) {
             getLogger(ctx.scenario).error(errorMessage, ctx);
         };
 
-        let logDebug = function(debugMessage: string) {
+        const logDebug = function(debugMessage: string) {
             getLogger(ctx.scenario).debug(debugMessage, ctx);
         };
 
-        let updateScenarioCache = function(res: any) {
+        const updateScenarioCache = function(res: any) {
             // `res` needed for the `eval()` call
             if (scenarioVariables) {
-                for (let pair of Object.entries(scenarioVariables)) {
+                for (const pair of Object.entries(scenarioVariables)) {
                     scenario.cache.set(pair[0], eval(pair[1]));
                     logDebug(
                         `Setting cache: ${pair[0]} = ${scenario.cache.get(
@@ -128,11 +136,11 @@ class RestAction implements Action {
             }
         };
 
-        let validateAssertions = function(res: any, reject: any) {
+        const validateAssertions = function(res: any, reject: any) {
             if (registeredValidations) {
                 registeredValidations.forEach(validation => {
                     try {
-                        let validationResult = eval(validation);
+                        const validationResult = eval(validation);
                         if (validationResult) {
                             logDebug(
                                 `Validation (${validation}): ${validationResult}`,
@@ -152,10 +160,10 @@ class RestAction implements Action {
         };
 
         const promise = new Promise((resolve, reject) => {
-            let requestHeaders = this.restHead
+            const requestHeaders = this.restHead
                 ? injectEvalAndVarsToMap(this.restHead, scenario.cache, ctx)
                 : null;
-            let requestBody = this.data
+            const requestBody = this.data
                 ? Array.isArray(this.data)
                     ? JSON.stringify(this.data)
                     : JSON.stringify(
@@ -166,10 +174,10 @@ class RestAction implements Action {
                           ),
                       )
                 : null;
-            let requestForm = this.form
+            const requestForm = this.form
                 ? injectEvalAndVarsToMap(this.form, scenario.cache, ctx)
                 : null;
-            let binaryData = this.dataBinary
+            const binaryData = this.dataBinary
                 ? FS.createReadStream(this.dataBinary)
                 : null;
 
@@ -221,14 +229,14 @@ class RestAction implements Action {
                         );
 
                         let res: any;
-                        let contentType = response.headers['content-type'];
+                        const contentType = response.headers['content-type'];
                         if (contentType != null) {
                             if (contentType.startsWith('application/json')) {
                                 res = JSON.parse(response.body);
                             } else if (contentType.startsWith('text/plain')) {
                                 res = response.body.toString();
                             } else {
-                                let body = [];
+                                const body = [];
                                 body.push(response.body);
                                 res = Buffer.concat(body).toString();
                             }
@@ -256,7 +264,8 @@ class RestAction implements Action {
                         }
 
                         return resolve();
-                    } else if (response.statusCode === 204) {
+                    }
+                    if (response.statusCode === 204) {
                         logDebug(
                             `Response: ${response.statusCode} (${
                                 response.statusMessage
@@ -273,13 +282,11 @@ class RestAction implements Action {
                         resolve();
                     } else {
                         logError(
-                            'Response: ' +
-                                response.statusCode +
-                                ' (' +
-                                response.statusMessage +
-                                ')',
+                            `Response: ${response.statusCode} (${
+                                response.statusMessage
+                            })`,
                         );
-                        logError('          ' + response.body);
+                        logError(`          ${response.body}`);
                         addFailedResponse(
                             scenario.name,
                             targetService,
@@ -292,7 +299,7 @@ class RestAction implements Action {
                     }
                 })
                 .catch(error => {
-                    logError('Unexpected ERROR occurred: ' + error);
+                    logError(`Unexpected ERROR occurred: ${error}`);
                     return reject();
                 });
         });

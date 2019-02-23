@@ -14,6 +14,9 @@ describe('REST action loading', () => {
         const result = loadAllActions(TEST_ACTION_DIR, envConfig).find(
             a => a.name === 'restAction',
         );
+        const param = 'param';
+        const user = 'user';
+        const file = 'file';
         expect(result.name).to.be.equal('restAction');
         expect(result.type).to.be.equal(ActionType.REST);
         expect((<RestAction>result).url).to.be.equal(
@@ -24,14 +27,14 @@ describe('REST action loading', () => {
         expect((<RestAction>result).restHead['Content-Type']).to.be.equal(
             'application/json',
         );
-        expect((<RestAction>result).data['param']).to.be.equal('value');
+        expect((<RestAction>result).data[param]).to.be.equal('value');
         expect((<RestAction>result).dataBinary).to.be.equal('../test.txt');
-        expect((<RestAction>result).form['file']).to.be.equal('example.xls');
+        expect((<RestAction>result).form[file]).to.be.equal('example.xls');
         expect((<RestAction>result).responseValidation).to.have.lengthOf(1);
         expect((<RestAction>result).responseValidation[0]).to.be.equal(
             'res.a === true',
         );
         expect((<RestAction>result).variables).to.have.property('user');
-        expect((<RestAction>result).variables['user']).to.be.equal('testuser');
+        expect((<RestAction>result).variables[user]).to.be.equal('testuser');
     });
 });

@@ -1,6 +1,7 @@
 import 'mocha';
 import { expect } from 'chai';
 import { encodeProto, decodeProto, resolveImportPath } from '../protoParsing';
+
 import path = require('path');
 
 describe('PROTO parsing', () => {

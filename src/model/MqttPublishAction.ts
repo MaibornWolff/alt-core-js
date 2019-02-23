@@ -9,19 +9,28 @@ import {
 } from '../variableInjection';
 import { addMqttPublishMessage } from '../diagramDrawing';
 import { encodeProto } from '../protoParsing';
+
 import hexdump = require('hexdump-nodejs');
 
 const Mqtt = require('mqtt');
 
 class MqttPublishAction implements Action {
     name: string;
+
     type = ActionType.MQTT_PUBLISH;
+
     url: string;
+
     username: string;
+
     password: string;
+
     topic: string;
+
     data: any;
+
     protoFile: string;
+
     protoClass: string;
 
     constructor(
@@ -56,7 +65,7 @@ class MqttPublishAction implements Action {
     }
 
     invoke(scenario: Scenario): ActionCallback {
-        let promise = new Promise(resolve => {
+        const promise = new Promise(resolve => {
             this.invokeAsync(scenario);
             resolve();
         });
@@ -67,7 +76,7 @@ class MqttPublishAction implements Action {
         scenarioVariables: Map<string, any>,
         ctx = {},
     ): [Uint8Array, string] {
-        let data = injectEvalAndVarsToMap(this.data, scenarioVariables, ctx);
+        const data = injectEvalAndVarsToMap(this.data, scenarioVariables, ctx);
         return [
             encodeProto(this.protoFile, data, this.protoClass),
             JSON.stringify(data),
@@ -102,7 +111,7 @@ class MqttPublishAction implements Action {
         });
 
         client.on('connect', () => {
-            let log = getLogger(scenario.name);
+            const log = getLogger(scenario.name);
             log.debug(
                 `MQTT connection to ${this.url} successfully opened`,
                 ctx,
@@ -125,7 +134,7 @@ class MqttPublishAction implements Action {
                 dataString = payload;
             }
 
-            let topic = injectEvalAndVarsToString(
+            const topic = injectEvalAndVarsToString(
                 this.topic,
                 scenario.cache,
                 ctx,
@@ -147,10 +156,9 @@ class MqttPublishAction implements Action {
                         // log the hex dump of the sent proto payload
                         log.debug('-- Encoded proto data --');
                         log.debug(
-                            'Base64: ' +
-                                Buffer.from(payload as Uint8Array).toString(
-                                    'base64',
-                                ),
+                            `Base64: ${Buffer.from(
+                                payload as Uint8Array,
+                            ).toString('base64')}`,
                         );
                         log.debug('Hex:');
                         log.debug(hexdump(payload));

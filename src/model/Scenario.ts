@@ -10,9 +10,12 @@ import { MqttPublishAction } from './MqttPublishAction';
 class Scenario {
     /* retrieved from the file name */
     name: string;
+
     /* retrieved from the YAML definition */
     description: string;
+
     actions: Action[] = [];
+
     /* internal vars */
     cache: Map<string, any>;
 
@@ -22,7 +25,7 @@ class Scenario {
         this.description = yamlConfig.description;
 
         yamlConfig.actions.forEach((actionDef: any) => {
-            let actionTemplate = actionConfig.find(
+            const actionTemplate = actionConfig.find(
                 c => c.name === actionDef.name,
             );
             if (actionTemplate) {
@@ -65,8 +68,9 @@ class Scenario {
                 }
             } else {
                 getLogger(this.name).error(
-                    'ERROR: Could not find any Action definition for: ' +
-                        actionDef.name,
+                    `ERROR: Could not find any Action definition for: ${
+                        actionDef.name
+                    }`,
                     { scenario: this.name },
                 );
             }
