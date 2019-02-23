@@ -20,17 +20,17 @@ export function encodeProto(
     attributes: {},
     outerClass: string,
 ): Uint8Array {
-    let root = new protobuf.Root();
+    const root = new protobuf.Root();
     root.resolvePath = resolveImportPath;
     root.loadSync(protoDefPath);
-    let messageType = root.lookupType(outerClass);
+    const messageType = root.lookupType(outerClass);
 
-    let errMsg = messageType.verify(attributes);
+    const errMsg = messageType.verify(attributes);
     if (errMsg) {
         throw Error(errMsg);
     }
 
-    let message = messageType.fromObject(attributes);
+    const message = messageType.fromObject(attributes);
     return messageType.encode(message).finish();
 }
 
@@ -39,14 +39,14 @@ export function decodeProto(
     outerClass: string,
     buffer: Uint8Array,
 ) {
-    let root = new protobuf.Root();
+    const root = new protobuf.Root();
     root.resolvePath = resolveImportPath;
     root.loadSync(protoDefPath);
-    let messageType = root.lookupType(outerClass);
-    let message = messageType.decode(buffer);
-    let messageObject = messageType.toObject(message);
+    const messageType = root.lookupType(outerClass);
+    const message = messageType.decode(buffer);
+    const messageObject = messageType.toObject(message);
 
-    let errMsg = messageType.verify(messageObject);
+    const errMsg = messageType.verify(messageObject);
     if (errMsg) {
         throw Error(errMsg);
     }

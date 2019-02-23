@@ -8,9 +8,9 @@ function injectVarsToString(
     const regex = /{{(\w*)}}/g;
 
     searchForMatchingStrings(regex, str).forEach(variable => {
-        let replaceValue = scenarioVariables.get(variable);
+        const replaceValue = scenarioVariables.get(variable);
         if (replaceValue) {
-            let searchValue = `{{${variable}}}`;
+            const searchValue = `{{${variable}}}`;
             getLogger(ctx.scenario).debug(
                 `Replacing '${searchValue}' with '${replaceValue}'`,
                 ctx,
@@ -32,28 +32,26 @@ export function injectEvalAndVarsToString(
     scenarioVariables: Map<string, any>,
     ctx: any,
 ): string | number {
-    let afterEvalToString = injectEvaluationToString(
+    const afterEvalToString = injectEvaluationToString(
         str,
         ctx,
         scenarioVariables,
     );
-    let afterVarInjection = injectVarsToString(
+    const afterVarInjection = injectVarsToString(
         afterEvalToString,
         scenarioVariables,
         ctx,
     );
-    let [afterEvalToNumber, foundNumericExpression] = injectEvaluationToNumber(
-        afterVarInjection,
-        ctx,
-        scenarioVariables,
-    );
+    const [
+        afterEvalToNumber,
+        foundNumericExpression,
+    ] = injectEvaluationToNumber(afterVarInjection, ctx, scenarioVariables);
 
     // if the string contains only number description, that can be converted, then return a number, in other case return a string
     if (foundNumericExpression && +afterEvalToNumber === +afterEvalToNumber) {
         return +afterEvalToNumber;
-    } else {
-        return afterEvalToNumber;
     }
+    return afterEvalToNumber;
 }
 
 export function injectEvalAndVarsToMap(
@@ -61,11 +59,11 @@ export function injectEvalAndVarsToMap(
     scenarioVariables: Map<string, any>,
     loggingCtx: any,
 ): any {
-    let copy: any = keyValueMap instanceof Array ? [] : {};
+    const copy: any = keyValueMap instanceof Array ? [] : {};
     Object.assign(copy, keyValueMap);
-    for (let mapEntry of Object.entries(copy)) {
-        let key = mapEntry[0];
-        let value = mapEntry[1];
+    for (const mapEntry of Object.entries(copy)) {
+        const key = mapEntry[0];
+        const value = mapEntry[1];
 
         if (value instanceof Object) {
             // contains nested values
@@ -87,7 +85,7 @@ export function injectEvalAndVarsToMap(
 
 function searchForMatchingStrings(regex: RegExp, str: string) {
     let m;
-    let matchingStrings: string[] = [];
+    const matchingStrings: string[] = [];
     while ((m = regex.exec(str)) !== null) {
         if (m.index === regex.lastIndex) regex.lastIndex++;
         matchingStrings.push(m[1]);
@@ -106,11 +104,11 @@ function injectEvaluationToString(
     const regex = /{{{(.*?)}}}/g;
 
     searchForMatchingStrings(regex, str).forEach(expression => {
-        let replaceValue = function() {
+        const replaceValue = function() {
             return eval(expression);
         }.call(buildExpHelpers(vars));
         if (replaceValue) {
-            let searchValue = `{{{${expression}}}}`;
+            const searchValue = `{{{${expression}}}}`;
             getLogger(ctx.scenario).debug(
                 `Replacing '${searchValue}' with '${replaceValue}'`,
                 ctx,
@@ -136,15 +134,15 @@ function injectEvaluationToNumber(
     // and set them from within evaluated expressions
 
     const regex = /<<<(.*?)>>>/g;
-    var foundNumericExpression = false;
+    let foundNumericExpression = false;
 
     searchForMatchingStrings(regex, str).forEach(expression => {
         foundNumericExpression = true;
-        let replaceValue = function() {
+        const replaceValue = function() {
             return eval(expression);
         }.call(buildExpHelpers(vars));
         if (replaceValue) {
-            let searchValue = `<<<${expression}>>>`;
+            const searchValue = `<<<${expression}>>>`;
             getLogger(ctx.scenario).debug(
                 `Replacing '"${searchValue}"' with '${replaceValue}'`,
                 ctx,
@@ -163,36 +161,36 @@ function injectEvaluationToNumber(
 
 function buildExpHelpers(vars: Map<string, any>) {
     return {
-        get: function(name: string): any {
+        get(name: string): any {
             return vars.get(name);
         },
-        set: function(name: string, value: any) {
+        set(name: string, value: any) {
             return vars.set(name, value);
         },
-        getAndInc: function(name: string): number {
-            let currentValue = vars.get(name);
+        getAndInc(name: string): number {
+            const currentValue = vars.get(name);
             vars.set(name, currentValue + 1);
             return currentValue;
         },
-        getAndIncBy: function(name: string, howMuch: number): number {
-            let currentValue = vars.get(name);
+        getAndIncBy(name: string, howMuch: number): number {
+            const currentValue = vars.get(name);
             vars.set(name, currentValue + howMuch);
             return currentValue;
         },
-        incAndGet: function(name: string): number {
-            let targetValue = vars.get(name) + 1;
+        incAndGet(name: string): number {
+            const targetValue = vars.get(name) + 1;
             vars.set(name, targetValue);
             return targetValue;
         },
-        incByAndGet: function(name: string, howMuch: number): number {
-            let targetValue = vars.get(name) + howMuch;
+        incByAndGet(name: string, howMuch: number): number {
+            const targetValue = vars.get(name) + howMuch;
             vars.set(name, targetValue);
             return targetValue;
         },
-        datePlusMinutesIso: function(minutes: number): string {
+        datePlusMinutesIso(minutes: number): string {
             return new Date(Date.now() + minutes * 60e3).toISOString();
         },
-        timestampPlusMinutes: function(minutes: number): number {
+        timestampPlusMinutes(minutes: number): number {
             return Date.now() + minutes * 60e3;
         },
     };

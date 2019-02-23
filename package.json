@@ -11,7 +11,7 @@
     "test": "mocha -r ts-node/register src/**/*.spec.ts",
     "format": "prettier-eslint --write \"src/**/*.ts\"",
     "check-format": "prettier --list-different \"src/**/*.ts\"",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint \"src/**/*.ts\""
   },
   "keywords": [],
   "author": "Bartosz Boron <www.github.com/bboron86>",

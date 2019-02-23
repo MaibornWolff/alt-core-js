@@ -10,41 +10,41 @@ import { MqttPublishAction } from './model/MqttPublishAction';
 
 const FS = require('fs');
 
-let isRestAction = function(actionDef: any) {
+const isRestAction = function(actionDef: any) {
     return actionDef && actionDef.type === ActionType[ActionType.REST];
 };
 
-let isTimerAction = function(actionDef: any) {
+const isTimerAction = function(actionDef: any) {
     return actionDef && actionDef.type === ActionType[ActionType.TIMER];
 };
 
-let isWebsocketAction = function(actionDef: any) {
+const isWebsocketAction = function(actionDef: any) {
     return actionDef && actionDef.type === ActionType[ActionType.WEBSOCKET];
 };
 
-let isMqttAction = function(actionDef: any) {
+const isMqttAction = function(actionDef: any) {
     return actionDef && actionDef.type === ActionType[ActionType.MQTT];
 };
 
-let isMqttPublishAction = function(actionDef: any) {
+const isMqttPublishAction = function(actionDef: any) {
     return actionDef && actionDef.type === ActionType[ActionType.MQTT_PUBLISH];
 };
 
 /* TODO */
 export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
-    let loadedActions: Action[] = [];
+    const loadedActions: Action[] = [];
 
     FS.readdirSync(actionDir).forEach((file: any) => {
-        let actionDef = loadYamlConfiguration(`${actionDir}/${file}`);
+        const actionDef = loadYamlConfiguration(`${actionDir}/${file}`);
 
         if (isRestAction(actionDef)) {
             // the host is either declared directly in the action template or will be loaded from evn-config file
-            let host = actionDef.service.startsWith('http')
+            const host = actionDef.service.startsWith('http')
                 ? actionDef.service
                 : // if not defined 'https' will be prepended automatically
                 envConfig[actionDef.service].startsWith('http')
                 ? envConfig[actionDef.service]
-                : 'https://' + envConfig[actionDef.service];
+                : `https://${envConfig[actionDef.service]}`;
             loadedActions.push(
                 new RestAction(
                     nameFromYamlConfig(file),
@@ -63,9 +63,9 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
                     nameFromYamlConfig(file),
                     actionDef,
                     actionDef.service,
-                    'wss://' +
-                        envConfig[actionDef.service] +
-                        actionDef.endpoint,
+                    `wss://${envConfig[actionDef.service]}${
+                        actionDef.endpoint
+                    }`,
                 ),
             );
         } else if (isMqttAction(actionDef)) {
