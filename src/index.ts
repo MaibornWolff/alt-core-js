@@ -7,6 +7,7 @@ import { loadAllScenarios, loadScenariosById } from './scenarioLoading';
 import { TestResult } from './model/TestResult';
 import { ActionType } from './model/ActionType';
 import { generateSequenceDiagram, initDiagramCreation } from './diagramDrawing';
+
 import pad = require('pad');
 
 const RESULTS: Map<string, TestResult[]> = new Map();
@@ -72,10 +73,10 @@ async function processScenarios(scenarios: Scenario[]) {
 }
 
 async function invokeActionsSynchronously(scenario: Scenario) {
-    let scenarioName = scenario.name;
+    const scenarioName = scenario.name;
     RESULTS.set(scenarioName, []);
 
-    let ctx = { scenario: scenarioName };
+    const ctx = { scenario: scenarioName };
     const MSG_WIDTH = 100;
 
     getLogger(scenarioName).debug(pad(MSG_WIDTH, '#', '#'), ctx);
@@ -90,21 +91,21 @@ async function invokeActionsSynchronously(scenario: Scenario) {
     getLogger(scenarioName).debug(pad(MSG_WIDTH, '#', '#'), ctx);
     initDiagramCreation(scenarioName);
 
-    let timeDiffInMs = function(stop: [number, number]) {
+    const timeDiffInMs = function(stop: [number, number]) {
         return (stop[0] * 1e9 + stop[1]) * 1e-6;
     };
 
     let successful = true;
-    let ASYNC_ACTIONS = [];
+    const ASYNC_ACTIONS = [];
 
-    for (let action of scenario.actions) {
+    for (const action of scenario.actions) {
         Object.assign(ctx, { action: action.name });
 
         getLogger(scenarioName).info(
             pad(`#### (A): ${action.name} `, MSG_WIDTH, '#'),
             ctx,
         );
-        let start = process.hrtime();
+        const start = process.hrtime();
 
         const actionCallback = action.invoke(scenario);
         if (action.type == ActionType.WEBSOCKET) {
@@ -113,9 +114,9 @@ async function invokeActionsSynchronously(scenario: Scenario) {
 
         await actionCallback.promise
             .then(result => {
-                let duration = timeDiffInMs(process.hrtime(start)).toFixed(2);
+                const duration = timeDiffInMs(process.hrtime(start)).toFixed(2);
 
-                let scenarioResults = RESULTS.get(scenarioName);
+                const scenarioResults = RESULTS.get(scenarioName);
                 if (scenarioResults)
                     scenarioResults.push(
                         new TestResult(action.name, duration, true),
@@ -129,9 +130,9 @@ async function invokeActionsSynchronously(scenario: Scenario) {
                 );
             })
             .catch(reason => {
-                let duration = timeDiffInMs(process.hrtime(start)).toFixed(2);
+                const duration = timeDiffInMs(process.hrtime(start)).toFixed(2);
 
-                let scenarioResults = RESULTS.get(scenarioName);
+                const scenarioResults = RESULTS.get(scenarioName);
                 if (scenarioResults)
                     scenarioResults.push(
                         new TestResult(action.name, duration, false),
@@ -159,7 +160,7 @@ async function invokeActionsSynchronously(scenario: Scenario) {
 
 function printResults(): any {
     RESULTS.forEach((result, scenario) => {
-        let ctx = { scenario: scenario };
+        const ctx = { scenario };
         const MSG_WIDTH = 60;
 
         getLogger(scenario).info(
@@ -186,7 +187,7 @@ function printResults(): any {
 
 async function stopProcessIfUnsuccessfulResults() {
     let anyError = false;
-    let diagrams = [];
+    const diagrams = [];
     RESULTS.forEach((res, scenario) => {
         diagrams.push(generateSequenceDiagram(scenario));
         if (res.some(t => t.successful === false)) {

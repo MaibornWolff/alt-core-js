@@ -1,6 +1,7 @@
+import { OUTPUT_DIR } from '.';
+
 import PLANTUML = require('node-plantuml');
 import FS = require('fs');
-import { OUTPUT_DIR } from '.';
 
 function getInputFile(scenario: string) {
     return `${OUTPUT_DIR()}/_${scenario}.input`;
@@ -40,7 +41,7 @@ export const addRequest = (
     url: string,
     data: any,
 ) => {
-    let _target = replaceDashes(target);
+    const _target = replaceDashes(target);
     let _request = `YATF -> ${_target}: ${url}\nactivate ${_target}\n`;
     if (data) {
         _request += `note right\n**${currentTimestamp()}**\n${extractPayload(
@@ -58,8 +59,8 @@ export const addSuccessfulResponse = (
 ) => {
     doAddResponse(scenarioId, source, status, 'green');
     if (body) {
-        let note = `note left\n**${currentTimestamp()}**\n${
-            typeof body == 'object' ? extractPayload(body) : body.substr(0, 30)
+        const note = `note left\n**${currentTimestamp()}**\n${
+            typeof body === 'object' ? extractPayload(body) : body.substr(0, 30)
         }\nend note\n`;
         FS.appendFileSync(getInputFile(scenarioId), note);
     }
@@ -84,7 +85,7 @@ const doAddResponse = (
     status: string,
     color: string,
 ) => {
-    let _source = replaceDashes(source);
+    const _source = replaceDashes(source);
     FS.appendFileSync(
         getInputFile(scenarioId),
         `${_source} --> YATF: <color ${color}>${status}</color>\ndeactivate ${_source}\n`,
@@ -103,12 +104,12 @@ export const addWsMessage = (
     source: string,
     payload: any,
 ) => {
-    let _source = replaceDashes(source);
+    const _source = replaceDashes(source);
     FS.appendFileSync(
         getInputFile(scenarioId),
         `${_source} -[#0000FF]->o YATF : [WS]\n`,
     );
-    let note = `note left #aqua\n**${currentTimestamp()}**\n${extractPayload(
+    const note = `note left #aqua\n**${currentTimestamp()}**\n${extractPayload(
         payload,
     )}\nend note\n`;
     FS.appendFileSync(getInputFile(scenarioId), note);
@@ -123,7 +124,7 @@ export const addMqttMessage = (
         getInputFile(scenarioId),
         `MQTT -[#green]->o YATF : ${topic}\n`,
     );
-    let note = `note right #99FF99\n**${currentTimestamp()}**\n${extractPayload(
+    const note = `note right #99FF99\n**${currentTimestamp()}**\n${extractPayload(
         payload,
     )}\nend note\n`;
     FS.appendFileSync(getInputFile(scenarioId), note);
@@ -138,17 +139,16 @@ export const addMqttPublishMessage = (
         getInputFile(scenarioId),
         `YATF -[#green]->o MQTT : ${topic}\n`,
     );
-    let note = `note left #99FF99\n**${currentTimestamp()}**\n${extractPayload(
+    const note = `note left #99FF99\n**${currentTimestamp()}**\n${extractPayload(
         JSON.parse(payload),
     )}\nend note\n`;
     FS.appendFileSync(getInputFile(scenarioId), note);
 };
 
-export const generateSequenceDiagram = (scenarioId: string): Promise<any> => {
-    return new Promise<any>(resolve => {
+export const generateSequenceDiagram = (scenarioId: string): Promise<any> =>
+    new Promise<any>(resolve => {
         FS.appendFileSync(getInputFile(scenarioId), '\n@enduml');
         const gen = PLANTUML.generate(getInputFile(scenarioId));
         gen.out.pipe(FS.createWriteStream(getOutputFile(scenarioId)));
         gen.out.on('end', () => resolve());
     });
-};

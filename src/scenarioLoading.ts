@@ -1,9 +1,9 @@
-///<reference path="model/Scenario.ts"/>
+// /<reference path="model/Scenario.ts"/>
+import { stringify } from 'querystring';
 import { loadYamlConfiguration, nameFromYamlConfig } from './yamlParsing';
 import { Scenario } from './model/Scenario';
 import { Action } from './model/Action';
 import { getLogger } from './logging';
-import { stringify } from 'querystring';
 
 const FS = require('fs');
 
@@ -11,8 +11,8 @@ export const loadScenariosById = (
     path: string,
     actionCatalog: Action[],
 ): Scenario[] => {
-    let resultList: Scenario[] = [];
-    let scenarioName = path
+    const resultList: Scenario[] = [];
+    const scenarioName = path
         .split('/')
         .pop()
         .replace('.yaml', '');
@@ -23,31 +23,31 @@ export const loadScenariosById = (
 
     if (resultList.length > 0) {
         return resultList;
-    } else {
-        getLogger('unknown').error(
-            `Scenario '${scenarioName}' not found in the directory!`,
-        );
-        process.exit(1);
     }
+    getLogger('unknown').error(
+        `Scenario '${scenarioName}' not found in the directory!`,
+    );
+    process.exit(1);
 };
 
 export const loadAllScenarios = (
     path: string,
     actionCatalog: Action[],
 ): Scenario[] => {
-    let loadedScenarios: Scenario[] = [];
+    const loadedScenarios: Scenario[] = [];
 
     FS.readdirSync(`${path}`).forEach((file: any) => {
-        let scenarioDef = loadYamlConfiguration(`${path}/${file}`);
+        const scenarioDef = loadYamlConfiguration(`${path}/${file}`);
         if (scenarioDef) {
             // split into multiple scenario instances
             if (scenarioDef.loadFactor) {
                 for (let _i = 0; _i < scenarioDef.loadFactor; _i++) {
-                    let scenarioNameWithIdx =
-                        nameFromYamlConfig(file) + '-' + _i;
-                    let ctx = { scenario: scenarioNameWithIdx };
+                    const scenarioNameWithIdx = `${nameFromYamlConfig(
+                        file,
+                    )}-${_i}`;
+                    const ctx = { scenario: scenarioNameWithIdx };
 
-                    let actionCatalogWithReplacedLoadVariables: Action[] = [];
+                    const actionCatalogWithReplacedLoadVariables: Action[] = [];
                     Object.assign(
                         actionCatalogWithReplacedLoadVariables,
                         actionCatalog,
@@ -55,20 +55,20 @@ export const loadAllScenarios = (
 
                     // inject loadVariables[_i] into the action definitions
                     if (scenarioDef.loadVariables) {
-                        let currentLoadVariables = getLoadVariableTreeForLoadIdx(
+                        const currentLoadVariables = getLoadVariableTreeForLoadIdx(
                             scenarioDef.loadVariables,
                             _i,
                         );
-                        for (let _current of Object.entries(
+                        for (const _current of Object.entries(
                             currentLoadVariables,
                         )) {
-                            let currentLoad = _current[1];
+                            const currentLoad = _current[1];
 
-                            let actionToBeReplaced: any = actionCatalogWithReplacedLoadVariables.find(
+                            const actionToBeReplaced: any = actionCatalogWithReplacedLoadVariables.find(
                                 a => a.name === (currentLoad as any).name,
                             );
                             if (actionToBeReplaced) {
-                                for (let key of Object.keys(currentLoad)) {
+                                for (const key of Object.keys(currentLoad)) {
                                     if (key !== 'name') {
                                         if (
                                             actionToBeReplaced[key] &&
@@ -140,26 +140,26 @@ export const loadAllScenarios = (
 };
 
 function getLoadVariableTreeForLoadIdx(rootObject: any, idx: number): any {
-    let res = {};
+    const res = {};
     Object.assign(res, rootObject);
 
-    for (let propEntry of Object.entries(rootObject)) {
+    for (const propEntry of Object.entries(rootObject)) {
         if (propEntry[0] == 'name') continue;
 
         if (Array.isArray(propEntry[1])) {
-            let loadVars = propEntry[1] as string[];
+            const loadVars = propEntry[1] as string[];
             if (loadVars.length == 1 && loadVars[0].indexOf('...') >= 0) {
-                let stringPrefix = loadVars[0].substr(
+                const stringPrefix = loadVars[0].substr(
                     0,
                     loadVars[0].indexOf('$$'),
                 );
-                let numberRange = loadVars[0]
+                const numberRange = loadVars[0]
                     .replace('$$', '')
                     .substring(stringPrefix.length);
-                let limits = numberRange.split('...');
-                let minValue = Number.parseInt(limits[0]);
-                let maxValue = Number.parseInt(limits[1]);
-                let offset =
+                const limits = numberRange.split('...');
+                const minValue = Number.parseInt(limits[0]);
+                const maxValue = Number.parseInt(limits[1]);
+                const offset =
                     minValue + idx <= maxValue
                         ? idx
                         : minValue + idx - maxValue;
