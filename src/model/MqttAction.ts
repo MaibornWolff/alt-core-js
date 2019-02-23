@@ -1,16 +1,15 @@
-import {Action} from "./Action";
-import {ActionType} from "./ActionType";
-import {getLogger} from "../logging";
-import {Scenario} from "./Scenario";
-import {ActionCallback} from "./ActionCallback";
-import {injectEvalAndVarsToString} from "../variableInjection";
-import {addMqttMessage} from "../diagramDrawing";
-import {decodeProto} from "../protoParsing";
+import { Action } from './Action';
+import { ActionType } from './ActionType';
+import { getLogger } from '../logging';
+import { Scenario } from './Scenario';
+import { ActionCallback } from './ActionCallback';
+import { injectEvalAndVarsToString } from '../variableInjection';
+import { addMqttMessage } from '../diagramDrawing';
+import { decodeProto } from '../protoParsing';
 
 const Mqtt = require('mqtt');
 
 class MqttAction implements Action {
-
     name: string;
     type = ActionType.MQTT;
     url: string;
@@ -24,9 +23,19 @@ class MqttAction implements Action {
     protoFile: string;
     protoClass: string;
 
-    constructor(name: string, mqttDefinition: any, url = mqttDefinition.url, username = mqttDefinition.username, password = mqttDefinition.password,
-                topic = mqttDefinition.topic, durationInSec = mqttDefinition.durationInSec, expectedNumberOfMessages = mqttDefinition.expectedNumberOfMessages,
-                messageType = mqttDefinition.messageType, messageFilter = mqttDefinition.messageFilter, protoFile = mqttDefinition.protoFile, protoClass = mqttDefinition.protoClass
+    constructor(
+        name: string,
+        mqttDefinition: any,
+        url = mqttDefinition.url,
+        username = mqttDefinition.username,
+        password = mqttDefinition.password,
+        topic = mqttDefinition.topic,
+        durationInSec = mqttDefinition.durationInSec,
+        expectedNumberOfMessages = mqttDefinition.expectedNumberOfMessages,
+        messageType = mqttDefinition.messageType,
+        messageFilter = mqttDefinition.messageFilter,
+        protoFile = mqttDefinition.protoFile,
+        protoClass = mqttDefinition.protoClass,
     ) {
         this.name = name;
         this.url = url;
@@ -44,16 +53,16 @@ class MqttAction implements Action {
     static fromTemplate(mqttDefinition: any, template: MqttAction): MqttAction {
         return new MqttAction(
             template.name,
-            Object.assign(Object.assign({}, template), mqttDefinition)
+            Object.assign(Object.assign({}, template), mqttDefinition),
         );
     }
 
     invoke(scenario: Scenario): ActionCallback {
-        let promise = new Promise((resolve => {
+        let promise = new Promise(resolve => {
             this.invokeAsync(scenario);
             resolve();
-        }));
-        return { promise, cancel: () => console.log("TODO") };
+        });
+        return { promise, cancel: () => console.log('TODO') };
     }
 
     decodeProtoPayload(buffer: Buffer): any {
@@ -61,22 +70,25 @@ class MqttAction implements Action {
     }
 
     invokeAsync(scenario: Scenario): void {
-
         const registeredMessageFilters = this.messageFilter;
-        const messageType = this.messageType || "json";
+        const messageType = this.messageType || 'json';
 
-        const logDebug = function (debugMessage: string) {
+        const logDebug = function(debugMessage: string) {
             getLogger(scenario.name).debug(debugMessage, ctx);
         };
 
-        const logError = function (errorMessage: string) {
+        const logError = function(errorMessage: string) {
             getLogger(scenario.name).error(errorMessage, ctx);
         };
 
-        const isMessageRelevant = function (msg: any) {
+        const isMessageRelevant = function(msg: any) {
             if (registeredMessageFilters) {
-                return registeredMessageFilters.some(filter => { 
-                    filter = injectEvalAndVarsToString(filter, scenario.cache, ctx).toString();
+                return registeredMessageFilters.some(filter => {
+                    filter = injectEvalAndVarsToString(
+                        filter,
+                        scenario.cache,
+                        ctx,
+                    ).toString();
                     const filterResult: boolean = eval(filter);
                     logDebug(`Filter (${filter}): ${filterResult}`);
                     return filterResult;
@@ -85,7 +97,7 @@ class MqttAction implements Action {
             return true;
         };
 
-        let ctx = {scenario: scenario.name, action: this.topic};
+        let ctx = { scenario: scenario.name, action: this.topic };
         let numberOfRetrievedMessages = 0;
 
         // https://www.npmjs.com/package/mqtt#client
@@ -93,20 +105,37 @@ class MqttAction implements Action {
             username: this.username,
             password: this.password,
             keepalive: 60,
-            clientId: this.name + Math.random().toString(16).substr(2, 8),
+            clientId:
+                this.name +
+                Math.random()
+                    .toString(16)
+                    .substr(2, 8),
             clean: true,
             reconnectPeriod: 1000,
             connectTimeout: 30000,
-            resubscribe: true
+            resubscribe: true,
         });
 
         client.on('connect', () => {
-            getLogger(scenario.name).debug(`MQTT connection to ${this.url} successfully opened for ${this.durationInSec}s`, ctx);
+            getLogger(scenario.name).debug(
+                `MQTT connection to ${this.url} successfully opened for ${
+                    this.durationInSec
+                }s`,
+                ctx,
+            );
             client.subscribe(this.topic, (error: any, granted: any) => {
                 if (error) {
-                    getLogger(scenario.name).error(`Error while subscribing to ${this.topic}: ${error}`, ctx);
+                    getLogger(scenario.name).error(
+                        `Error while subscribing to ${this.topic}: ${error}`,
+                        ctx,
+                    );
                 } else {
-                    getLogger(scenario.name).debug(`Successfully subscribed to '${granted[0].topic}' (qos: ${granted[0].qos})`, ctx);
+                    getLogger(scenario.name).debug(
+                        `Successfully subscribed to '${
+                            granted[0].topic
+                        }' (qos: ${granted[0].qos})`,
+                        ctx,
+                    );
                 }
             });
 
@@ -115,19 +144,27 @@ class MqttAction implements Action {
 
         client.on('message', (topic: any, message: any) => {
             let msgObj = {};
-            
-            if (messageType === "json") {
+
+            if (messageType === 'json') {
                 msgObj = JSON.parse(message.toString());
-            } else if (messageType == "proto") {
+            } else if (messageType == 'proto') {
                 msgObj = this.decodeProtoPayload(message);
             }
 
             if (isMessageRelevant(msgObj)) {
                 numberOfRetrievedMessages++;
-                logDebug(`Relevant MQTT update received (${numberOfRetrievedMessages}/${this.expectedNumberOfMessages}): ${JSON.stringify(msgObj)}`);
+                logDebug(
+                    `Relevant MQTT update received (${numberOfRetrievedMessages}/${
+                        this.expectedNumberOfMessages
+                    }): ${JSON.stringify(msgObj)}`,
+                );
                 addMqttMessage(scenario.name, topic, msgObj);
             } else {
-                logDebug(`Irrelevant MQTT update received: ${JSON.stringify(msgObj)}`);
+                logDebug(
+                    `Irrelevant MQTT update received: ${JSON.stringify(
+                        msgObj,
+                    )}`,
+                );
             }
         });
 
@@ -138,14 +175,22 @@ class MqttAction implements Action {
         client.on('close', () => {
             getLogger(scenario.name).debug(`MQTT connection closed!`, ctx);
             if (numberOfRetrievedMessages !== this.expectedNumberOfMessages) {
-                getLogger(scenario.name).error(`Unexpected number of MQTT updates retrieved: ${numberOfRetrievedMessages} (expected: ${this.expectedNumberOfMessages})`, ctx)
+                getLogger(scenario.name).error(
+                    `Unexpected number of MQTT updates retrieved: ${numberOfRetrievedMessages} (expected: ${
+                        this.expectedNumberOfMessages
+                    })`,
+                    ctx,
+                );
             }
         });
 
         client.on('error', (error: any) => {
-            getLogger(scenario.name).error(`Error during connection: ${error}`, ctx);
+            getLogger(scenario.name).error(
+                `Error during connection: ${error}`,
+                ctx,
+            );
         });
     }
 }
 
-export { MqttAction }
+export { MqttAction };
