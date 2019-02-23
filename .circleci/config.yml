@@ -1,8 +1,13 @@
 version: 2
+
+defaults: &defaults
+  working_directory: ~/project
+  docker:
+    - image: circleci/node:10
+
 jobs:
   build:
-    docker:
-      - image: circleci/node:10
+    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -17,9 +22,12 @@ jobs:
       - run:
           name: Build
           command: npm run build
+      - persist_to_workspace:
+          root: ~/project
+          paths: .
+
   test:
-    docker:
-      - image: circleci/node:10
+    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -34,10 +42,37 @@ jobs:
       - run:
           name: Run tests
           command: npm test
+
+  publish:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Authenticate with npm registry
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/project/.npmrc
+      - run:
+          name: Publish package
+          command: npm publish
+
 workflows:
   version: 2
   build_and_test:
     jobs:
-      - build
-      - test
-
+      - build:
+          filters:
+            tags:
+              only: /.*/
+      - test:
+          filters:
+            tags:
+              only: /.*/
+      - publish:
+          requires:
+            - build
+            - test
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
