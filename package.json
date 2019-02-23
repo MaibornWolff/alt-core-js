@@ -10,6 +10,7 @@
     "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/index.ts",
     "test": "mocha -r ts-node/register src/**/*.spec.ts",
     "format": "prettier-eslint --write \"src/**/*.ts\"",
+    "format:files": "prettier-eslint --write",
     "check-format": "prettier --list-different \"src/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\""
   },
@@ -30,6 +31,8 @@
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-config-prettier": "^4.0.0",
     "eslint-plugin-import": "^2.16.0",
+    "husky": "^1.3.1",
+    "lint-staged": "^8.1.4",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.7",
     "prettier": "^1.16.4",
@@ -59,5 +62,18 @@
   },
   "bugs": {
     "url": "https://github.com/MaibornWolff/alt-core-js/issues"
+  },
+  "lint-staged": {
+    "linters": {
+      "*.ts": [
+        "npm run format:files",
+        "git add"
+      ]
+    }
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }
