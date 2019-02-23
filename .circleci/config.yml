@@ -58,7 +58,7 @@ jobs:
             - ./node_modules
       - run:
           name: Check format
-          command: npm check-format
+          command: npm run check-format
 
   publish:
     <<: *defaults
