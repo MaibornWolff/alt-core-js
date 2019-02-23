@@ -43,6 +43,23 @@ jobs:
           name: Run tests
           command: npm test
 
+  check-format:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: Install dependencies
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: Check format
+          command: npm check-format
+
   publish:
     <<: *defaults
     steps:
@@ -67,10 +84,15 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - check-format:
+          filters:
+            tags:
+              only: /.*/
       - publish:
           requires:
             - build
             - test
+            - check-format
           filters:
             tags:
               only: /^v.*/
