@@ -1,22 +1,33 @@
-import {Action} from "./Action";
-import {Scenario} from "./Scenario";
-import {ActionType} from "./ActionType";
-import {getLogger} from "../logging";
-import {ActionCallback} from "./ActionCallback";
-import {addDelay} from "../diagramDrawing";
+import { Action } from './Action';
+import { Scenario } from './Scenario';
+import { ActionType } from './ActionType';
+import { getLogger } from '../logging';
+import { ActionCallback } from './ActionCallback';
+import { addDelay } from '../diagramDrawing';
 
 class TimerAction implements Action {
     name: string;
     type = ActionType.TIMER;
     duration: number;
 
-    constructor(name: string, timerDefinition: any, duration = timerDefinition.durationInSec) {
+    constructor(
+        name: string,
+        timerDefinition: any,
+        duration = timerDefinition.durationInSec,
+    ) {
         this.name = name;
         this.duration = duration;
     }
 
-    static fromTemplate(timerDefinition: any, template: TimerAction): TimerAction {
-        return new TimerAction(template.name, timerDefinition, timerDefinition.durationInSec || template.duration);
+    static fromTemplate(
+        timerDefinition: any,
+        template: TimerAction,
+    ): TimerAction {
+        return new TimerAction(
+            template.name,
+            timerDefinition,
+            timerDefinition.durationInSec || template.duration,
+        );
     }
 
     invoke(scenario: Scenario): ActionCallback {
@@ -24,14 +35,17 @@ class TimerAction implements Action {
 
         let promise = new Promise((resolve, reject) => {
             setTimeout(() => {
-                getLogger(ctx.scenario).debug(`Waited for ${this.duration} seconds!`, ctx);
+                getLogger(ctx.scenario).debug(
+                    `Waited for ${this.duration} seconds!`,
+                    ctx,
+                );
                 addDelay(scenario.name, this.duration);
                 resolve('Success');
             }, this.duration * 1000);
         });
 
-        return { promise, cancel: () => console.log("TODO") };
+        return { promise, cancel: () => console.log('TODO') };
     }
 }
 
-export { TimerAction }
+export { TimerAction };
