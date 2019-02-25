@@ -16,12 +16,13 @@ class TimerAction implements Action {
 
     constructor(
         name: string,
+        desc = name,
         timerDefinition: any,
         duration = timerDefinition.durationInSec,
     ) {
         this.name = name;
-        this.description = name;
         this.duration = duration;
+        this.description = desc;
     }
 
     static fromTemplate(
@@ -30,6 +31,7 @@ class TimerAction implements Action {
     ): TimerAction {
         return new TimerAction(
             template.name,
+            timerDefinition.description || timerDefinition.name,
             timerDefinition,
             timerDefinition.durationInSec || template.duration,
         );

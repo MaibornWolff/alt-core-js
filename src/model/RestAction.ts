@@ -42,6 +42,7 @@ class RestAction implements Action {
 
     constructor(
         name: string,
+        desc = name,
         actionDef: any,
         url: string,
         serviceName: string,
@@ -52,7 +53,6 @@ class RestAction implements Action {
         restForm = actionDef.form,
         validators = actionDef.responseValidation,
         vars = actionDef.variables,
-        desc = name,
     ) {
         this.name = name;
         this.description = desc;
@@ -70,6 +70,7 @@ class RestAction implements Action {
     static fromTemplate(actionDef: any, template: RestAction): RestAction {
         return new RestAction(
             actionDef.name,
+            actionDef.description || actionDef.name,
             actionDef,
             template.url,
             template.serviceName,
@@ -96,7 +97,6 @@ class RestAction implements Action {
             template.variables
                 ? Object.assign(template.variables, actionDef.variables)
                 : actionDef.variables,
-            actionDef.description || actionDef.name,
         );
     }
 

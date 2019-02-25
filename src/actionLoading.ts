@@ -47,6 +47,7 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
             loadedActions.push(
                 new RestAction(
                     nameFromYamlConfig(file),
+                    null,
                     actionDef,
                     host + actionDef.endpoint,
                     actionDef.service,
@@ -54,12 +55,13 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
             );
         } else if (isTimerAction(actionDef)) {
             loadedActions.push(
-                new TimerAction(nameFromYamlConfig(file), actionDef),
+                new TimerAction(nameFromYamlConfig(file), null, actionDef),
             );
         } else if (isWebsocketAction(actionDef)) {
             loadedActions.push(
                 new WebSocketAction(
                     nameFromYamlConfig(file),
+                    null,
                     actionDef,
                     actionDef.service,
                     `wss://${envConfig[actionDef.service]}${
@@ -69,11 +71,15 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
             );
         } else if (isMqttAction(actionDef)) {
             loadedActions.push(
-                new MqttAction(nameFromYamlConfig(file), actionDef),
+                new MqttAction(nameFromYamlConfig(file), null, actionDef),
             );
         } else if (isMqttPublishAction(actionDef)) {
             loadedActions.push(
-                new MqttPublishAction(nameFromYamlConfig(file), actionDef),
+                new MqttPublishAction(
+                    nameFromYamlConfig(file),
+                    null,
+                    actionDef,
+                ),
             );
         } else {
             getLogger('unknown').error(
