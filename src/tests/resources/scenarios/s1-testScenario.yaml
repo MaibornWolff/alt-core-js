@@ -1,6 +1,7 @@
 description: "test description"
 actions:
   - name: do-something
+    description: "test something"
     method: POST
     data:
       userId: 22

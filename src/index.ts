@@ -118,7 +118,7 @@ async function invokeActionsSynchronously(scenario: Scenario) {
                 const scenarioResults = RESULTS.get(scenarioName);
                 if (scenarioResults)
                     scenarioResults.push(
-                        new TestResult(action.name, duration, true),
+                        new TestResult(action.description, duration, true),
                     );
 
                 if (result)

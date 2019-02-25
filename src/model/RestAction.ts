@@ -52,9 +52,10 @@ class RestAction implements Action {
         restForm = actionDef.form,
         validators = actionDef.responseValidation,
         vars = actionDef.variables,
+        desc = name,
     ) {
         this.name = name;
-        this.description = name;
+        this.description = desc;
         this.url = url;
         this.serviceName = serviceName;
         this.method = restMethod;
@@ -95,6 +96,7 @@ class RestAction implements Action {
             template.variables
                 ? Object.assign(template.variables, actionDef.variables)
                 : actionDef.variables,
+            actionDef.description || actionDef.name,
         );
     }
 

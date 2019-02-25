@@ -4,7 +4,7 @@ import { ActionCallback } from './ActionCallback';
 
 interface Action {
     name: string;
-    description: string;
+    description: string | null;
     type: ActionType;
     invoke(scenario: Scenario): ActionCallback;
 }
