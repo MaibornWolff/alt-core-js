@@ -11,6 +11,8 @@ import { Scenario } from './Scenario';
 class MqttAction implements Action {
     name: string;
 
+    description: string;
+
     type = ActionType.MQTT;
 
     url: string;
@@ -48,6 +50,7 @@ class MqttAction implements Action {
         protoClass = mqttDefinition.protoClass,
     ) {
         this.name = name;
+        this.description = name;
         this.url = url;
         this.username = username;
         this.password = password;

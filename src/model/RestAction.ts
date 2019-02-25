@@ -20,6 +20,8 @@ class RestAction implements Action {
 
     name: string;
 
+    description: string;
+
     type = ActionType.REST;
 
     url: string;
@@ -52,6 +54,7 @@ class RestAction implements Action {
         vars = actionDef.variables,
     ) {
         this.name = name;
+        this.description = name;
         this.url = url;
         this.serviceName = serviceName;
         this.method = restMethod;

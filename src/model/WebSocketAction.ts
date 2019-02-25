@@ -22,6 +22,8 @@ class WebSocketAction implements Action {
 
     name: string;
 
+    description: string;
+
     type = ActionType.WEBSOCKET;
 
     url: string;
@@ -47,6 +49,7 @@ class WebSocketAction implements Action {
         messageFilter = wsDefinition.messageFilter,
     ) {
         this.name = name;
+        this.description = name;
         this.serviceName = serviceName;
         this.url = url;
         this.headers = headers;

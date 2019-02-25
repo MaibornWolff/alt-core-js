@@ -8,6 +8,8 @@ import { addDelay } from '../diagramDrawing';
 class TimerAction implements Action {
     name: string;
 
+    description: string;
+
     type = ActionType.TIMER;
 
     duration: number;
@@ -18,6 +20,7 @@ class TimerAction implements Action {
         duration = timerDefinition.durationInSec,
     ) {
         this.name = name;
+        this.description = name;
         this.duration = duration;
     }
 

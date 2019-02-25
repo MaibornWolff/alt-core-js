@@ -15,6 +15,7 @@ describe('Action loading', () => {
         );
         expect(result).to.have.lengthOf(1);
         expect(result[0].name).to.be.equal('restAction');
+        expect(result[0].description).to.be.equal('restAction');
         expect(result[0].type).to.be.equal(ActionType.REST);
         expect(result[0]).to.have.property('url');
         expect(result[0]).to.have.property('method');

@@ -15,6 +15,8 @@ import { Scenario } from './Scenario';
 class MqttPublishAction implements Action {
     name: string;
 
+    description: string;
+
     type = ActionType.MQTT_PUBLISH;
 
     url: string;
@@ -43,6 +45,7 @@ class MqttPublishAction implements Action {
         protoClass = mqttDefinition.protoClass,
     ) {
         this.name = name;
+        this.description = name;
         this.url = url;
         this.username = username;
         this.password = password;
