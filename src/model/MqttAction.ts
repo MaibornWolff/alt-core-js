@@ -11,6 +11,8 @@ import { Scenario } from './Scenario';
 class MqttAction implements Action {
     name: string;
 
+    description: string;
+
     type = ActionType.MQTT;
 
     url: string;
@@ -35,6 +37,7 @@ class MqttAction implements Action {
 
     constructor(
         name: string,
+        desc = name,
         mqttDefinition: any,
         url = mqttDefinition.url,
         username = mqttDefinition.username,
@@ -58,11 +61,13 @@ class MqttAction implements Action {
         this.messageFilter = messageFilter;
         this.protoFile = protoFile;
         this.protoClass = protoClass;
+        this.description = desc;
     }
 
     static fromTemplate(mqttDefinition: any, template: MqttAction): MqttAction {
         return new MqttAction(
             template.name,
+            mqttDefinition.description || mqttDefinition.name,
             Object.assign(Object.assign({}, template), mqttDefinition),
         );
     }

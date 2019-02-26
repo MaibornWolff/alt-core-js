@@ -15,6 +15,8 @@ import { Scenario } from './Scenario';
 class MqttPublishAction implements Action {
     name: string;
 
+    description: string;
+
     type = ActionType.MQTT_PUBLISH;
 
     url: string;
@@ -33,6 +35,7 @@ class MqttPublishAction implements Action {
 
     constructor(
         name: string,
+        desc = name,
         mqttDefinition: any,
         url = mqttDefinition.url,
         username = mqttDefinition.username,
@@ -50,6 +53,7 @@ class MqttPublishAction implements Action {
         this.data = data;
         this.protoFile = protoFile;
         this.protoClass = protoClass;
+        this.description = desc;
     }
 
     static fromTemplate(
@@ -58,6 +62,7 @@ class MqttPublishAction implements Action {
     ): MqttPublishAction {
         return new MqttPublishAction(
             template.name,
+            mqttDefinition.description || mqttDefinition.name,
             Object.assign(Object.assign({}, template), mqttDefinition),
         );
     }

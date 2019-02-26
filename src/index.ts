@@ -101,7 +101,7 @@ async function invokeActionsSynchronously(scenario: Scenario) {
         Object.assign(ctx, { action: action.name });
 
         getLogger(scenarioName).info(
-            pad(`#### (A): ${action.name} `, MSG_WIDTH, '#'),
+            pad(`#### (A): ${action.description} `, MSG_WIDTH, '#'),
             ctx,
         );
         const start = process.hrtime();
@@ -118,7 +118,7 @@ async function invokeActionsSynchronously(scenario: Scenario) {
                 const scenarioResults = RESULTS.get(scenarioName);
                 if (scenarioResults)
                     scenarioResults.push(
-                        new TestResult(action.name, duration, true),
+                        new TestResult(action.description, duration, true),
                     );
 
                 if (result)
@@ -134,7 +134,7 @@ async function invokeActionsSynchronously(scenario: Scenario) {
                 const scenarioResults = RESULTS.get(scenarioName);
                 if (scenarioResults)
                     scenarioResults.push(
-                        new TestResult(action.name, duration, false),
+                        new TestResult(action.description, duration, false),
                     );
 
                 if (reason)
@@ -160,7 +160,7 @@ async function invokeActionsSynchronously(scenario: Scenario) {
 function printResults(): any {
     RESULTS.forEach((result, scenario) => {
         const ctx = { scenario };
-        const MSG_WIDTH = 60;
+        const MSG_WIDTH = 100;
 
         getLogger(scenario).info(
             pad(`#### SUMMARY: ${scenario} `, MSG_WIDTH, '#'),
@@ -170,12 +170,12 @@ function printResults(): any {
         result.forEach((res: TestResult) => {
             if (res.successful)
                 getLogger(scenario).info(
-                    ` OK: ${pad(res.action, 30)} ${res.duration} ms`,
+                    ` OK: ${pad(res.action, 50)} ${res.duration} ms`,
                     ctx,
                 );
             else
                 getLogger(scenario).info(
-                    `NOK: ${pad(res.action, 30)} ${res.duration} ms`,
+                    `NOK: ${pad(res.action, 50)} ${res.duration} ms`,
                     ctx,
                 );
         });

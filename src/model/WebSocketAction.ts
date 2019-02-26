@@ -22,6 +22,8 @@ class WebSocketAction implements Action {
 
     name: string;
 
+    description: string;
+
     type = ActionType.WEBSOCKET;
 
     url: string;
@@ -38,6 +40,7 @@ class WebSocketAction implements Action {
 
     constructor(
         name: string,
+        desc = name,
         wsDefinition: any,
         serviceName: string,
         url = wsDefinition.url,
@@ -53,6 +56,7 @@ class WebSocketAction implements Action {
         this.data = data;
         this.expectedNumberOfMessages = expectedNumberOfMessages;
         this.messageFilter = messageFilter;
+        this.description = desc;
 
         this.receivedMessages = new Set<string>();
     }
@@ -63,6 +67,7 @@ class WebSocketAction implements Action {
     ): WebSocketAction {
         return new WebSocketAction(
             template.name,
+            wsDefinition.description || wsDefinition.name,
             wsDefinition,
             template.serviceName,
             template.url,

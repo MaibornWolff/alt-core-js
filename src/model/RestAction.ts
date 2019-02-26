@@ -20,6 +20,8 @@ class RestAction implements Action {
 
     name: string;
 
+    description: string;
+
     type = ActionType.REST;
 
     url: string;
@@ -40,6 +42,7 @@ class RestAction implements Action {
 
     constructor(
         name: string,
+        desc = name,
         actionDef: any,
         url: string,
         serviceName: string,
@@ -52,6 +55,7 @@ class RestAction implements Action {
         vars = actionDef.variables,
     ) {
         this.name = name;
+        this.description = desc;
         this.url = url;
         this.serviceName = serviceName;
         this.method = restMethod;
@@ -66,6 +70,7 @@ class RestAction implements Action {
     static fromTemplate(actionDef: any, template: RestAction): RestAction {
         return new RestAction(
             actionDef.name,
+            actionDef.description || actionDef.name,
             actionDef,
             template.url,
             template.serviceName,

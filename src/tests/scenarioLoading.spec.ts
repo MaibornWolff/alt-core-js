@@ -47,7 +47,12 @@ describe('Scenario loading', () => {
 
     it('should be able to parse scenario actions', () => {
         const testActionCatalog = [
-            { name: 'do-something', type: ActionType.REST, invoke: null },
+            {
+                name: 'do-something',
+                description: null,
+                type: ActionType.REST,
+                invoke: null,
+            },
         ];
         const result = loadAllScenarios(TEST_SCENARIO_PATH, testActionCatalog);
         expect(result[0].actions).to.have.lengthOf(1);
@@ -58,6 +63,7 @@ describe('Scenario loading', () => {
         const testActionCatalog = [
             {
                 name: 'do-something',
+                description: null,
                 type: ActionType.REST,
                 invoke: null,
                 method: 'GET',
@@ -72,6 +78,7 @@ describe('Scenario loading', () => {
         const testActionCatalog = [
             {
                 name: 'do-something',
+                description: null,
                 type: ActionType.REST,
                 invoke: null,
                 data: {
@@ -90,6 +97,7 @@ describe('Scenario loading', () => {
         const testActionCatalog = [
             {
                 name: 'do-something',
+                description: null,
                 type: ActionType.REST,
                 invoke: null,
                 responseValidation: ['userId !== null'],
@@ -106,5 +114,22 @@ describe('Scenario loading', () => {
         expect(
             (<RestAction>result[0].actions[0]).responseValidation,
         ).to.contain('userId !== null');
+    });
+
+    it('should be able to set action´s description correctly', () => {
+        const testActionCatalog = [
+            {
+                name: 'do-something',
+                description: null,
+                type: ActionType.REST,
+                invoke: null,
+                method: 'GET',
+            },
+        ];
+        const result = loadAllScenarios(TEST_SCENARIO_PATH, testActionCatalog);
+        expect(result[0].actions).to.have.lengthOf(1);
+        expect((<RestAction>result[0].actions[0]).description).to.be.equal(
+            'test something',
+        );
     });
 });
