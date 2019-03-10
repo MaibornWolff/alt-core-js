@@ -13,7 +13,7 @@ const RESULTS: Map<string, TestResult[]> = new Map();
 
 const NUM_PARALLEL_RUNS = 10;
 
-let _OUT_DIR = '';
+let OUT_DIR = '';
 
 // increase the pixel-size (width/height) limit of PlantUML (the default is 4096 which is not enough for some diagrams)
 process.env.PLANTUML_LIMIT_SIZE = '16384';
@@ -23,7 +23,7 @@ export const runScenario = (
     actionDir: string,
     outDir = 'out',
     envConfigFile: string,
-) => {
+): void => {
     try {
         if (typeof scenarioPath === 'undefined' || scenarioPath === '') {
             getLogger('unknown').error(
@@ -41,7 +41,7 @@ export const runScenario = (
             `Starting scenario: ${scenarioPath} (actions: ${actionDir}, out: ${outDir}, envConfig: ${envConfigFile})`,
         );
 
-        _OUT_DIR = outDir;
+        OUT_DIR = outDir;
 
         const envConfig = envConfigFile
             ? loadYamlConfiguration(envConfigFile)
@@ -59,11 +59,12 @@ export const runScenario = (
     }
 };
 
-async function processScenarios(scenarios: Scenario[]) {
-    while (scenarios.length > 0) {
+async function processScenarios(scenarios: Scenario[]): Promise<void> {
+    for (let i = 0; i < scenarios.length; i += NUM_PARALLEL_RUNS) {
+        // eslint-disable-next-line no-await-in-loop
         await Promise.all(
             scenarios
-                .splice(0, NUM_PARALLEL_RUNS)
+                .slice(i, i + NUM_PARALLEL_RUNS)
                 .map(invokeActionsSynchronously),
         );
     }
@@ -71,7 +72,7 @@ async function processScenarios(scenarios: Scenario[]) {
     stopProcessIfUnsuccessfulResults();
 }
 
-async function invokeActionsSynchronously(scenario: Scenario) {
+async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
     const scenarioName = scenario.name;
     RESULTS.set(scenarioName, []);
 
@@ -90,12 +91,37 @@ async function invokeActionsSynchronously(scenario: Scenario) {
     getLogger(scenarioName).debug(pad(MSG_WIDTH, '#', '#'), ctx);
     initDiagramCreation(scenarioName);
 
-    const timeDiffInMs = function(stop: [number, number]) {
-        return (stop[0] * 1e9 + stop[1]) * 1e-6;
-    };
+    const timeDiffInMs = (stop: [number, number]): number =>
+        (stop[0] * 1e9 + stop[1]) * 1e-6;
 
     let successful = true;
     const ASYNC_ACTIONS = [];
+
+    const handleError = (
+        reason: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        action: Action,
+        start: [number, number],
+    ): void => {
+        {
+            const duration = timeDiffInMs(process.hrtime(start)).toFixed(2);
+
+            const scenarioResults = RESULTS.get(scenarioName);
+            if (scenarioResults)
+                scenarioResults.push(
+                    new TestResult(action.description, duration, false),
+                );
+
+            if (reason)
+                getLogger(scenario.name).error(JSON.stringify(reason), ctx);
+            getLogger(scenario.name).info(
+                pad(MSG_WIDTH, ` Time: ${duration} ms ###########`, '#'),
+                ctx,
+            );
+
+            // process.exit(1);
+            successful = false;
+        }
+    };
 
     for (const action of scenario.actions) {
         Object.assign(ctx, { action: action.name });
@@ -107,10 +133,11 @@ async function invokeActionsSynchronously(scenario: Scenario) {
         const start = process.hrtime();
 
         const actionCallback = action.invoke(scenario);
-        if (action.type == ActionType.WEBSOCKET) {
+        if (action.type === ActionType.WEBSOCKET) {
             ASYNC_ACTIONS.push(actionCallback);
         }
 
+        // eslint-disable-next-line no-await-in-loop
         await actionCallback.promise
             .then(result => {
                 const duration = timeDiffInMs(process.hrtime(start)).toFixed(2);
@@ -128,26 +155,7 @@ async function invokeActionsSynchronously(scenario: Scenario) {
                     ctx,
                 );
             })
-            .catch(reason => {
-                const duration = timeDiffInMs(process.hrtime(start)).toFixed(2);
-
-                const scenarioResults = RESULTS.get(scenarioName);
-                if (scenarioResults)
-                    scenarioResults.push(
-                        new TestResult(action.description, duration, false),
-                    );
-
-                if (reason)
-                    getLogger(scenario.name).error(JSON.stringify(reason), ctx);
-                getLogger(scenario.name).info(
-                    pad(MSG_WIDTH, ` Time: ${duration} ms ###########`, '#'),
-                    ctx,
-                );
-
-                // process.exit(1);
-                successful = false;
-            });
-
+            .catch(reason => handleError(reason, action, start));
         if (!successful) break;
     }
 
@@ -157,7 +165,7 @@ async function invokeActionsSynchronously(scenario: Scenario) {
     });
 }
 
-function printResults(): any {
+function printResults(): void {
     RESULTS.forEach((result, scenario) => {
         const ctx = { scenario };
         const MSG_WIDTH = 100;
@@ -184,7 +192,7 @@ function printResults(): any {
     });
 }
 
-async function stopProcessIfUnsuccessfulResults() {
+async function stopProcessIfUnsuccessfulResults(): Promise<void> {
     let anyError = false;
     const diagrams = [];
     RESULTS.forEach((res, scenario) => {
@@ -197,4 +205,4 @@ async function stopProcessIfUnsuccessfulResults() {
     if (anyError) process.exit(1);
 }
 
-export const OUTPUT_DIR = () => _OUT_DIR;
+export const OUTPUT_DIR = (): string => OUT_DIR;
