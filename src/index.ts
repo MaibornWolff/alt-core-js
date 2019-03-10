@@ -98,7 +98,7 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
     const ASYNC_ACTIONS = [];
 
     const handleError = (
-        reason: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        reason: unknown,
         action: Action,
         start: [number, number],
     ): void => {
