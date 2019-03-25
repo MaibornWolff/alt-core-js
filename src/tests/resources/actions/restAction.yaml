@@ -2,6 +2,9 @@ type: REST
 service: my-service
 endpoint: /all
 method: GET
+queryParameters:
+  size: 9
+  filter: "{{age}}"
 headers:
   Content-Type: application/json
 data:

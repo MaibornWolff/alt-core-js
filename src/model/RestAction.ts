@@ -16,37 +16,40 @@ import { ActionType } from './ActionType';
 import { Scenario } from './Scenario';
 
 class RestAction implements Action {
-    serviceName: string;
+    public serviceName: string;
 
-    name: string;
+    public name: string;
 
-    description: string;
+    public description: string;
 
-    type = ActionType.REST;
+    public type = ActionType.REST;
 
-    url: string;
+    public url: string;
 
-    method: string;
+    public method: string;
 
-    restHead: any;
+    public queryParameters: Map<string, string>;
 
-    data: Map<string, string>;
+    public restHead: any;
 
-    dataBinary: string;
+    public data: Map<string, string>;
 
-    form: any;
+    public dataBinary: string;
 
-    responseValidation: string[];
+    public form: any;
 
-    variables: Map<string, string>;
+    public responseValidation: string[];
 
-    constructor(
+    public variables: Map<string, string>;
+
+    public constructor(
         name: string,
         desc = name,
         actionDef: any,
         url: string,
         serviceName: string,
         restMethod = actionDef.method,
+        queryParameters = actionDef.queryParameters,
         restHeaders = actionDef.headers,
         restData = actionDef.data,
         restDataBinary = actionDef.dataBinary,
@@ -59,6 +62,7 @@ class RestAction implements Action {
         this.url = url;
         this.serviceName = serviceName;
         this.method = restMethod;
+        this.queryParameters = queryParameters;
         this.restHead = restHeaders;
         this.data = restData;
         this.dataBinary = restDataBinary;
@@ -67,7 +71,10 @@ class RestAction implements Action {
         this.variables = vars;
     }
 
-    static fromTemplate(actionDef: any, template: RestAction): RestAction {
+    public static fromTemplate(
+        actionDef: any,
+        template: RestAction,
+    ): RestAction {
         return new RestAction(
             actionDef.name,
             actionDef.description || actionDef.name,
@@ -75,19 +82,16 @@ class RestAction implements Action {
             template.url,
             template.serviceName,
             actionDef.method || template.method,
+            template.queryParameters
+                ? { ...template.queryParameters, ...actionDef.queryParameters }
+                : actionDef.queryParameters,
             template.restHead
-                ? Object.assign(
-                      Object.assign({}, template.restHead),
-                      actionDef.headers,
-                  )
+                ? { ...template.restHead, ...actionDef.actionDef.headers }
                 : actionDef.restHead,
             this.loadData(template, actionDef),
             actionDef.dataBinary || template.dataBinary,
             template.form
-                ? Object.assign(
-                      Object.assign({}, template.form),
-                      actionDef.form,
-                  )
+                ? { ...template.form, ...actionDef.actionDef.form }
                 : null,
             template.responseValidation
                 ? template.responseValidation.concat(
@@ -112,7 +116,7 @@ class RestAction implements Action {
         return actionDef.data;
     }
 
-    invoke(scenario: Scenario): ActionCallback {
+    public invoke(scenario: Scenario): ActionCallback {
         const ctx = { scenario: scenario.name, action: this.name };
         const scenarioVariables = this.variables;
         const registeredValidations = this.responseValidation;
@@ -163,6 +167,11 @@ class RestAction implements Action {
             }
         };
 
+        const concatParams = (paramMap: Map<string, string>): string =>
+            Array.from(paramMap.entries())
+                .map(([key, value]) => `${key}=${value}`)
+                .join('&');
+
         const promise = new Promise((resolve, reject) => {
             const requestHeaders = this.restHead
                 ? injectEvalAndVarsToMap(this.restHead, scenario.cache, ctx)
@@ -184,10 +193,13 @@ class RestAction implements Action {
             const binaryData = this.dataBinary
                 ? createReadStream(this.dataBinary)
                 : null;
+            const requestUrl = this.queryParameters
+                ? this.url + '?' + concatParams(this.queryParameters)
+                : this.url;
 
             request({
                 method: this.method,
-                url: injectEvalAndVarsToString(this.url, scenario.cache, ctx),
+                url: injectEvalAndVarsToString(requestUrl, scenario.cache, ctx),
                 headers: requestHeaders,
                 body: requestBody || binaryData,
                 encoding: binaryData ? null : undefined,
