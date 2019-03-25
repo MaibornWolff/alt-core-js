@@ -83,24 +83,15 @@ class RestAction implements Action {
             template.serviceName,
             actionDef.method || template.method,
             template.queryParameters
-                ? Object.assign(
-                      Object.assign({}, template.queryParameters),
-                      actionDef.queryParameters,
-                  )
+                ? { ...template.queryParameters, ...actionDef.queryParameters }
                 : actionDef.queryParameters,
             template.restHead
-                ? Object.assign(
-                      Object.assign({}, template.restHead),
-                      actionDef.headers,
-                  )
+                ? { ...template.restHead, ...actionDef.actionDef.headers }
                 : actionDef.restHead,
             this.loadData(template, actionDef),
             actionDef.dataBinary || template.dataBinary,
             template.form
-                ? Object.assign(
-                      Object.assign({}, template.form),
-                      actionDef.form,
-                  )
+                ? { ...template.form, ...actionDef.actionDef.form }
                 : null,
             template.responseValidation
                 ? template.responseValidation.concat(
@@ -176,15 +167,10 @@ class RestAction implements Action {
             }
         };
 
-        const concatParams = function(paramMap: Map<string, string>): string {
-            let result = '';
-
-            for (const pair of Object.entries(paramMap)) {
-                if (result !== '') result += '&';
-                result += pair[0] + '=' + pair[1];
-            }
-            return result;
-        };
+        const concatParams = (paramMap: Map<string, string>): string =>
+            Array.from(paramMap.entries())
+                .map(([key, value]) => `${key}=${value}`)
+                .join('&');
 
         const promise = new Promise((resolve, reject) => {
             const requestHeaders = this.restHead
