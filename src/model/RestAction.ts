@@ -86,13 +86,11 @@ class RestAction implements Action {
                 ? { ...template.queryParameters, ...actionDef.queryParameters }
                 : actionDef.queryParameters,
             template.restHead
-                ? { ...template.restHead, ...actionDef.actionDef.headers }
+                ? { ...template.restHead, ...actionDef.headers }
                 : actionDef.restHead,
             this.loadData(template, actionDef),
             actionDef.dataBinary || template.dataBinary,
-            template.form
-                ? { ...template.form, ...actionDef.actionDef.form }
-                : null,
+            template.form ? { ...template.form, ...actionDef.form } : null,
             template.responseValidation
                 ? template.responseValidation.concat(
                       actionDef.responseValidation || [],
