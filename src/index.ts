@@ -8,6 +8,7 @@ import { Scenario } from './model/Scenario';
 import { TestResult } from './model/TestResult';
 import { loadAllScenarios, loadScenariosById } from './scenarioLoading';
 import { loadYamlConfiguration } from './yamlParsing';
+import { stringify } from 'querystring';
 
 const RESULTS: Map<string, TestResult[]> = new Map();
 
@@ -18,21 +19,28 @@ process.env.PLANTUML_LIMIT_SIZE = '16384';
 
 interface RunConfiguration {
     numberOfScenariosRunInParallel?: number;
+    environmentNameToBeUsed?: string;
 }
 
-export const runScenario = (
-    scenarioPath: string,
+export const runMultipleSceanriosWithConfig = (
     actionDir: string,
     outDir = 'out',
-    envConfigFile: string,
-    config: RunConfiguration,
+    envConfigDir: string,
+    runConfig: RunConfiguration,
+    ...scenarioPaths: Array<string>
 ): void => {
-    const { numberOfScenariosRunInParallel = 10 } = config;
+    const {
+        numberOfScenariosRunInParallel = 10,
+        environmentNameToBeUsed = 'none',
+    } = runConfig;
 
     try {
-        if (typeof scenarioPath === 'undefined' || scenarioPath === '') {
+        if (
+            typeof scenarioPaths === 'undefined' ||
+            scenarioPaths.length === 0
+        ) {
             getLogger('unknown').error(
-                'Please provide correct path to the SCENARIO file!',
+                'Please provide correct path(s) to the SCENARIO file!',
             );
             process.exit(1);
         }
@@ -42,26 +50,62 @@ export const runScenario = (
             );
             process.exit(1);
         }
-        getLogger('unknown').info(
-            `Starting scenario: ${scenarioPath} (actions: ${actionDir}, out: ${outDir}, envConfig: ${envConfigFile})`,
+
+        getLogger('setup').info(
+            `RUNNING: scenario(s): ${scenarioPaths} (actions: ${actionDir}, out: ${outDir}, envDir: ${envConfigDir}, numberOfScenariosRunInParallel: ${numberOfScenariosRunInParallel}, environmentNameToBeUsed: ${environmentNameToBeUsed})`,
         );
 
         OUT_DIR = outDir;
 
-        const envConfig = envConfigFile
-            ? loadYamlConfiguration(envConfigFile)
+        const envConfig = envConfigDir
+            ? loadYamlConfiguration(
+                  `${envConfigDir}/${environmentNameToBeUsed}.yaml`,
+              )
             : {};
+        getLogger('setup').debug(
+            `Using '${environmentNameToBeUsed}' configuration: ${stringify(
+                envConfig,
+            )}`,
+        );
 
         const actions: Action[] = loadAllActions(actionDir, envConfig);
+        getLogger('setup').debug(
+            `Successfully loaded ${actions.length} actions`,
+        );
 
-        const scenarios: Scenario[] = scenarioPath.endsWith('yaml')
-            ? loadScenariosById(scenarioPath, actions)
-            : loadAllScenarios(scenarioPath, actions);
+        scenarioPaths.forEach(scenarioPath => {
+            const scenario: Scenario[] = scenarioPath.endsWith('yaml')
+                ? loadScenariosById(scenarioPath, actions)
+                : loadAllScenarios(scenarioPath, actions);
+            getLogger('setup').debug(
+                `Successfully loaded ${
+                    scenario.length
+                } scenario(s): ${scenarioPath}`,
+            );
 
-        processScenarios(scenarios, numberOfScenariosRunInParallel);
+            processScenarios(scenario, numberOfScenariosRunInParallel);
+        });
     } catch (e) {
-        getLogger('unknown').error(e);
+        getLogger('setup').error(e);
     }
+};
+
+export const runScenario = (
+    scenarioPath: string,
+    actionDir: string,
+    outDir = 'out',
+    envConfigFile: string,
+): void => {
+    runMultipleSceanriosWithConfig(
+        actionDir,
+        outDir,
+        envConfigFile.substring(
+            0,
+            envConfigFile.length - 12,
+        ) /* substracting '/config.yaml' from the string */,
+        { environmentNameToBeUsed: 'config' },
+        scenarioPath,
+    );
 };
 
 async function processScenarios(
