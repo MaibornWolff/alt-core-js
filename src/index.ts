@@ -11,19 +11,24 @@ import { loadYamlConfiguration } from './yamlParsing';
 
 const RESULTS: Map<string, TestResult[]> = new Map();
 
-const NUM_PARALLEL_RUNS = 10;
-
 let OUT_DIR = '';
 
 // increase the pixel-size (width/height) limit of PlantUML (the default is 4096 which is not enough for some diagrams)
 process.env.PLANTUML_LIMIT_SIZE = '16384';
+
+interface RunConfiguration {
+    numberOfScenariosRunInParallel?: number;
+}
 
 export const runScenario = (
     scenarioPath: string,
     actionDir: string,
     outDir = 'out',
     envConfigFile: string,
+    config: RunConfiguration,
 ): void => {
+    const { numberOfScenariosRunInParallel = 10 } = config;
+
     try {
         if (typeof scenarioPath === 'undefined' || scenarioPath === '') {
             getLogger('unknown').error(
@@ -53,18 +58,21 @@ export const runScenario = (
             ? loadScenariosById(scenarioPath, actions)
             : loadAllScenarios(scenarioPath, actions);
 
-        processScenarios(scenarios);
+        processScenarios(scenarios, numberOfScenariosRunInParallel);
     } catch (e) {
         getLogger('unknown').error(e);
     }
 };
 
-async function processScenarios(scenarios: Scenario[]): Promise<void> {
-    for (let i = 0; i < scenarios.length; i += NUM_PARALLEL_RUNS) {
+async function processScenarios(
+    scenarios: Scenario[],
+    numberOfScenariosRunInParallel: number,
+): Promise<void> {
+    for (let i = 0; i < scenarios.length; i += numberOfScenariosRunInParallel) {
         // eslint-disable-next-line no-await-in-loop
         await Promise.all(
             scenarios
-                .slice(i, i + NUM_PARALLEL_RUNS)
+                .slice(i, i + numberOfScenariosRunInParallel)
                 .map(invokeActionsSynchronously),
         );
     }
