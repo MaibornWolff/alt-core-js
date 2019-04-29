@@ -27,7 +27,7 @@ export const runMultipleSceanriosWithConfig = (
     outDir = 'out',
     envConfigDir: string,
     runConfig: RunConfiguration,
-    ...scenarioPaths: Array<string>
+    scenarioPaths: Array<string>,
 ): void => {
     const {
         numberOfScenariosRunInParallel = 10,
@@ -74,6 +74,7 @@ export const runMultipleSceanriosWithConfig = (
         );
 
         scenarioPaths.forEach(scenarioPath => {
+            getLogger('setup').debug(`Loading: ${scenarioPath} ...`);
             const scenario: Scenario[] = scenarioPath.endsWith('yaml')
                 ? loadScenariosById(scenarioPath, actions)
                 : loadAllScenarios(scenarioPath, actions);
@@ -104,7 +105,7 @@ export const runScenario = (
             envConfigFile.length - 12,
         ) /* substracting '/config.yaml' from the string */,
         { environmentNameToBeUsed: 'config' },
-        scenarioPath,
+        [scenarioPath],
     );
 };
 

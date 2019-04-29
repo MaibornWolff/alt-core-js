@@ -46,11 +46,15 @@ export const loadAllScenarios = (
                     )}-${_i}`;
                     const ctx = { scenario: scenarioNameWithIdx };
 
-                    const actionCatalogWithReplacedLoadVariables: Action[] = [];
+                    const actionCatalogWithReplacedLoadVariables: Action[] = JSON.parse(
+                        JSON.stringify(actionCatalog),
+                    );
+                    /*
                     Object.assign(
                         actionCatalogWithReplacedLoadVariables,
                         actionCatalog,
                     );
+                    */
 
                     // inject loadVariables[_i] into the action definitions
                     if (scenarioDef.loadVariables) {
