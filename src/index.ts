@@ -1,4 +1,5 @@
 import * as pad from 'pad';
+import { stringify } from 'querystring';
 import { loadAllActions } from './actionLoading';
 import { generateSequenceDiagram, initDiagramCreation } from './diagramDrawing';
 import { getLogger } from './logging';
@@ -8,7 +9,6 @@ import { Scenario } from './model/Scenario';
 import { TestResult } from './model/TestResult';
 import { loadAllScenarios, loadScenariosById } from './scenarioLoading';
 import { loadYamlConfiguration } from './yamlParsing';
-import { stringify } from 'querystring';
 
 const RESULTS: Map<string, TestResult[]> = new Map();
 
@@ -27,7 +27,7 @@ export const runMultipleSceanriosWithConfig = (
     outDir = 'out',
     envConfigDir: string,
     runConfig: RunConfiguration,
-    scenarioPaths: Array<string>,
+    scenarioPaths: string[],
 ): void => {
     const {
         numberOfScenariosRunInParallel = 10,
@@ -75,22 +75,23 @@ export const runMultipleSceanriosWithConfig = (
 
         scenarioPaths.forEach(scenarioPath => {
             getLogger('setup').debug(`Loading: ${scenarioPath} ...`);
-            const scenario: Scenario[] = scenarioPath.endsWith('yaml')
+            const scenarios: Scenario[] = scenarioPath.endsWith('yaml')
                 ? loadScenariosById(scenarioPath, actions)
                 : loadAllScenarios(scenarioPath, actions);
             getLogger('setup').debug(
                 `Successfully loaded ${
-                    scenario.length
+                    scenarios.length
                 } scenario(s): ${scenarioPath}`,
             );
 
-            processScenarios(scenario, numberOfScenariosRunInParallel);
+            processScenarios(scenarios, numberOfScenariosRunInParallel);
         });
     } catch (e) {
         getLogger('setup').error(e);
     }
 };
 
+/* deprected */
 export const runScenario = (
     scenarioPath: string,
     actionDir: string,

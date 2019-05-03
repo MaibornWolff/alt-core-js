@@ -49,12 +49,6 @@ export const loadAllScenarios = (
                     const actionCatalogWithReplacedLoadVariables: Action[] = JSON.parse(
                         JSON.stringify(actionCatalog),
                     );
-                    /*
-                    Object.assign(
-                        actionCatalogWithReplacedLoadVariables,
-                        actionCatalog,
-                    );
-                    */
 
                     // inject loadVariables[_i] into the action definitions
                     if (scenarioDef.loadVariables) {
