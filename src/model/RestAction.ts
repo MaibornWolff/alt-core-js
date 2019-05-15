@@ -142,26 +142,53 @@ class RestAction implements Action {
             }
         };
 
-        const validateAssertions = function(res: any, reject: any) {
+        const validateHeaders = function(head: any, reject: any) {
             if (registeredValidations) {
-                registeredValidations.forEach(validation => {
-                    try {
-                        const validationResult = eval(validation);
-                        if (validationResult) {
-                            logDebug(
-                                `Validation (${validation}): ${validationResult}`,
-                            );
-                        } else {
-                            logError(
-                                `Validation (${validation}): ${validationResult}`,
-                            );
+                registeredValidations
+                    .filter(v => v.startsWith('head.'))
+                    .forEach(validation => {
+                        try {
+                            const validationResult = eval(validation);
+                            if (validationResult) {
+                                logDebug(
+                                    `Header validation (${validation}): ${validationResult}`,
+                                );
+                            } else {
+                                logError(
+                                    `Header validation (${validation}): ${validationResult}`,
+                                );
+                                reject(head);
+                            }
+                        } catch (e) {
+                            logError(e.message);
+                            reject(head);
+                        }
+                    });
+            }
+        };
+
+        const validateBody = function(res: any, reject: any) {
+            if (registeredValidations) {
+                registeredValidations
+                    .filter(v => v.startsWith('res.'))
+                    .forEach(validation => {
+                        try {
+                            const validationResult = eval(validation);
+                            if (validationResult) {
+                                logDebug(
+                                    `Body validation (${validation}): ${validationResult}`,
+                                );
+                            } else {
+                                logError(
+                                    `Body validation (${validation}): ${validationResult}`,
+                                );
+                                reject(res);
+                            }
+                        } catch (e) {
+                            logError(e.message);
                             reject(res);
                         }
-                    } catch (e) {
-                        logError(e.message);
-                        reject(res);
-                    }
-                });
+                    });
             }
         };
 
@@ -241,6 +268,14 @@ class RestAction implements Action {
                                 response.statusMessage
                             }): ${response.body}`,
                         );
+                        logDebug(
+                            `Response Headers: ${JSON.stringify(
+                                response.headers,
+                            )}`,
+                        );
+
+                        let head = response.headers;
+                        validateHeaders(head, reject);
 
                         let res: any;
                         const contentType = response.headers['content-type'];
@@ -263,7 +298,7 @@ class RestAction implements Action {
                                 res,
                             );
 
-                            validateAssertions(res, reject);
+                            validateBody(res, reject);
 
                             updateScenarioCache(res);
                         } else {
