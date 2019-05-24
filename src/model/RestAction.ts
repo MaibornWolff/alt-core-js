@@ -128,11 +128,15 @@ class RestAction implements Action {
             getLogger(ctx.scenario).debug(debugMessage, ctx);
         };
 
-        const updateScenarioCache = function(res: any) {
-            // `res` needed for the `eval()` call
+        const updateScenarioCache = function(res: any, head: any) {
+            // `res` & `head` needed for the `eval()` call
             if (scenarioVariables) {
                 for (const pair of Object.entries(scenarioVariables)) {
-                    scenario.cache.set(pair[0], eval(pair[1]));
+                    if (pair[1].startsWith('res') && res) {
+                        scenario.cache.set(pair[0], eval(pair[1]));
+                    } else if (pair[1].startsWith('head') && head) {
+                        scenario.cache.set(pair[0], eval(pair[1]));
+                    }
                     logDebug(
                         `Setting cache: ${pair[0]} = ${scenario.cache.get(
                             pair[0],
@@ -142,26 +146,53 @@ class RestAction implements Action {
             }
         };
 
-        const validateAssertions = function(res: any, reject: any) {
+        const validateHeaders = function(head: any, reject: any) {
             if (registeredValidations) {
-                registeredValidations.forEach(validation => {
-                    try {
-                        const validationResult = eval(validation);
-                        if (validationResult) {
-                            logDebug(
-                                `Validation (${validation}): ${validationResult}`,
-                            );
-                        } else {
-                            logError(
-                                `Validation (${validation}): ${validationResult}`,
-                            );
+                registeredValidations
+                    .filter(v => v.startsWith('head.'))
+                    .forEach(validation => {
+                        try {
+                            const validationResult = eval(validation);
+                            if (validationResult) {
+                                logDebug(
+                                    `Header validation (${validation}): ${validationResult}`,
+                                );
+                            } else {
+                                logError(
+                                    `Header validation (${validation}): ${validationResult}`,
+                                );
+                                reject(head);
+                            }
+                        } catch (e) {
+                            logError(e.message);
+                            reject(head);
+                        }
+                    });
+            }
+        };
+
+        const validateBody = function(res: any, reject: any) {
+            if (registeredValidations) {
+                registeredValidations
+                    .filter(v => v.startsWith('res.'))
+                    .forEach(validation => {
+                        try {
+                            const validationResult = eval(validation);
+                            if (validationResult) {
+                                logDebug(
+                                    `Body validation (${validation}): ${validationResult}`,
+                                );
+                            } else {
+                                logError(
+                                    `Body validation (${validation}): ${validationResult}`,
+                                );
+                                reject(res);
+                            }
+                        } catch (e) {
+                            logError(e.message);
                             reject(res);
                         }
-                    } catch (e) {
-                        logError(e.message);
-                        reject(res);
-                    }
-                });
+                    });
             }
         };
 
@@ -241,6 +272,15 @@ class RestAction implements Action {
                                 response.statusMessage
                             }): ${response.body}`,
                         );
+                        logDebug(
+                            `Response Headers: ${JSON.stringify(
+                                response.headers,
+                            )}`,
+                        );
+
+                        let head = response.headers;
+                        validateHeaders(head, reject);
+                        updateScenarioCache(null, head);
 
                         let res: any;
                         const contentType = response.headers['content-type'];
@@ -263,9 +303,9 @@ class RestAction implements Action {
                                 res,
                             );
 
-                            validateAssertions(res, reject);
+                            validateBody(res, reject);
 
-                            updateScenarioCache(res);
+                            updateScenarioCache(res, null);
                         } else {
                             addSuccessfulResponse(
                                 scenario.name,
