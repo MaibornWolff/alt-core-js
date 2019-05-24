@@ -52,11 +52,13 @@ describe('Scenario loading', () => {
                 description: null,
                 type: ActionType.REST,
                 invoke: null,
+                invokeEvenOnFail: true,
             },
         ];
         const result = loadAllScenarios(TEST_SCENARIO_PATH, testActionCatalog);
         expect(result[0].actions).to.have.lengthOf(1);
         expect(result[0].actions[0].name).to.be.equal('do-something');
+        expect(result[0].actions[0].invokeEvenOnFail).to.be.equal(true);
     });
 
     it('should be able to override action simple properties', () => {
@@ -67,6 +69,7 @@ describe('Scenario loading', () => {
                 type: ActionType.REST,
                 invoke: null,
                 method: 'GET',
+                invokeEvenOnFail: false,
             },
         ];
         const result = loadAllScenarios(TEST_SCENARIO_PATH, testActionCatalog);
@@ -84,6 +87,7 @@ describe('Scenario loading', () => {
                 data: {
                     userId: 1,
                 },
+                invokeEvenOnFail: false,
             },
         ];
         const result = loadAllScenarios(TEST_SCENARIO_PATH, testActionCatalog);
@@ -101,6 +105,7 @@ describe('Scenario loading', () => {
                 type: ActionType.REST,
                 invoke: null,
                 responseValidation: ['userId !== null'],
+                invokeEvenOnFail: false,
             },
         ];
         const result = loadAllScenarios(TEST_SCENARIO_PATH, testActionCatalog);
@@ -124,6 +129,7 @@ describe('Scenario loading', () => {
                 type: ActionType.REST,
                 invoke: null,
                 method: 'GET',
+                invokeEvenOnFail: false,
             },
         ];
         const result = loadAllScenarios(TEST_SCENARIO_PATH, testActionCatalog);

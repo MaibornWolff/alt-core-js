@@ -1,6 +1,6 @@
 {
   "name": "@maibornwolff/alt-core-js",
-  "version": "1.5.3",
+  "version": "1.6.0-bb2",
   "description": "Simple test framework supporting execution of different `scenarios` based on `action` templates. The framework supports definition of different action types in an *yaml* format, including e.g. which endpoints have to be called with which parameters as well as defining validation rules to be applied on the responses. It also supports detailed report creation of the test results.",
   "main": "lib/index",
   "types": "lib/index",
@@ -8,6 +8,7 @@
     "start": "npm run build:live",
     "build": "tsc",
     "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/index.ts",
+    "build-and-publish": "tsc && npm publish --access public",
     "test": "mocha -r ts-node/register src/**/*.spec.ts",
     "format": "prettier-eslint --write \"src/**/*.ts\"",
     "format:files": "prettier-eslint --write",

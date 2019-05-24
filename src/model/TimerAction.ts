@@ -14,15 +14,19 @@ class TimerAction implements Action {
 
     duration: number;
 
+    invokeEvenOnFail = false;
+
     constructor(
         name: string,
         desc = name,
         timerDefinition: any,
         duration = timerDefinition.durationInSec,
+        invokeEvenOnFail = timerDefinition.invokeEvenOnFail,
     ) {
         this.name = name;
         this.duration = duration;
         this.description = desc;
+        this.invokeEvenOnFail = invokeEvenOnFail;
     }
 
     static fromTemplate(
@@ -34,6 +38,7 @@ class TimerAction implements Action {
             timerDefinition.description || timerDefinition.name,
             timerDefinition,
             timerDefinition.durationInSec || template.duration,
+            timerDefinition.invokeEvenOnFail || template.invokeEvenOnFail,
         );
     }
 
