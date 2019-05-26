@@ -19,7 +19,12 @@ class Scenario {
     /* internal vars */
     cache: Map<string, any>;
 
-    constructor(fileName: string, yamlConfig: any, actionConfig: Action[]) {
+    constructor(
+        fileName: string,
+        yamlConfig: any,
+        actionConfig: Action[],
+        imports: Scenario[],
+    ) {
         this.name = fileName;
 
         this.description = yamlConfig.description;

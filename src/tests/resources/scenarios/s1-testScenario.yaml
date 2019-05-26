@@ -1,4 +1,10 @@
+import:
+  - "s0-before"
+
 description: "test description"
+
+before: "s0-before"
+
 actions:
   - name: do-something
     description: "test something"
@@ -7,3 +13,5 @@ actions:
       userId: 22
     responseValidation:
     - "saved === true"
+
+after: "s99-after"
