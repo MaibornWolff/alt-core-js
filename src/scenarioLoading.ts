@@ -47,16 +47,12 @@ export const loadAllScenarios = (
                         i => loadedScenarios.findIndex(s => s.name === i) >= 0,
                     )
                 ) {
-                    scenarioImports.push(
-                        loadedScenarios.find(s =>
-                            scenarioNamesToBeImported.includes(s.name),
-                        ),
-                    );
+                    loadedScenarios
+                        .filter(s => scenarioNamesToBeImported.includes(s.name))
+                        .forEach(s => scenarioImports.push(s));
                 } else {
                     getLogger(nameFromYamlConfig(file)).error(
-                        `One of the imports (${
-                            scenarioDef.import
-                        }) are missing or were not loaded prior to this one!`,
+                        `One of the imports (${scenarioNamesToBeImported}) are missing or were not loaded prior to this one!`,
                     );
                 }
             }

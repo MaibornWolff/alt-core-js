@@ -10,7 +10,7 @@ describe('Scenario loading', () => {
     it('should be able to parse scenario files in the correct folder', () => {
         const testActionCatalog = [];
         const result = loadAllScenarios(TEST_SCENARIO_PATH, testActionCatalog);
-        expect(result).to.have.lengthOf(4);
+        expect(result).to.have.lengthOf(5);
         expect(result[0]).to.have.property('description');
         expect(result[0].description).to.be.equal('test description');
         expect(result[0]).to.have.property('actions');
@@ -48,6 +48,20 @@ describe('Scenario loading', () => {
     it('should be able to parse scenario actions', () => {
         const testActionCatalog = [
             {
+                name: 'do-something-before',
+                description: null,
+                type: ActionType.TIMER,
+                invoke: null,
+                invokeEvenOnFail: false,
+            },
+            {
+                name: 'do-something-after',
+                description: null,
+                type: ActionType.TIMER,
+                invoke: null,
+                invokeEvenOnFail: false,
+            },
+            {
                 name: 'do-something',
                 description: null,
                 type: ActionType.REST,
@@ -59,9 +73,11 @@ describe('Scenario loading', () => {
             `${TEST_SCENARIO_PATH}/s1`,
             testActionCatalog,
         );
-        expect(result[0].actions).to.have.lengthOf(1);
-        expect(result[0].actions[0].name).to.be.equal('do-something');
-        expect(result[0].actions[0].invokeEvenOnFail).to.be.equal(true);
+        expect(result[0].actions).to.have.lengthOf(3);
+        expect(result[0].actions[0].name).to.be.equal('do-something-before');
+        expect(result[0].actions[1].name).to.be.equal('do-something');
+        expect(result[0].actions[2].name).to.be.equal('do-something-after');
+        expect(result[0].actions[1].invokeEvenOnFail).to.be.equal(true);
     });
 
     it('should be able to override action simple properties', () => {
