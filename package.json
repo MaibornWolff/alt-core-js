@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "hexdump-nodejs": "^0.1.0",
-    "js-yaml": "^3.10.0",
+    "js-yaml": "^3.13.1",
     "long": "^4.0.0",
     "mqtt": "^2.17.0",
     "node-plantuml": "^0.6.2",
