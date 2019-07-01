@@ -178,6 +178,11 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
     };
 
     for (const action of scenario.actions) {
+        if (!successful) {
+            // after first ERROR skip further actions unless 'Action#invokeEvenOnFail' is set to TRUE
+            if (!action.invokeEvenOnFail) continue;
+        }
+
         Object.assign(ctx, { action: action.name });
 
         getLogger(scenarioName).info(
@@ -210,7 +215,6 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
                 );
             })
             .catch(reason => handleError(reason, action, start));
-        if (!successful) break;
     }
 
     // stop all async running actions

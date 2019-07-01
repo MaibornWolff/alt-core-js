@@ -19,11 +19,24 @@ class Scenario {
     /* internal vars */
     cache: Map<string, any>;
 
-    constructor(fileName: string, yamlConfig: any, actionConfig: Action[]) {
+    constructor(
+        fileName: string,
+        yamlConfig: any,
+        actionConfig: Action[],
+        imports: Scenario[],
+    ) {
         this.name = fileName;
 
         this.description = yamlConfig.description;
 
+        // before
+        if (yamlConfig.before) {
+            imports
+                .filter(i => i.name === yamlConfig.before)
+                .forEach(s => s.actions.forEach(a => this.actions.push(a)));
+        }
+
+        // main
         yamlConfig.actions.forEach((actionDef: any) => {
             const actionTemplate = actionConfig.find(
                 c => c.name === actionDef.name,
@@ -75,6 +88,13 @@ class Scenario {
                 );
             }
         });
+
+        // after
+        if (yamlConfig.after) {
+            imports
+                .filter(i => i.name === yamlConfig.after)
+                .forEach(s => s.actions.forEach(a => this.actions.push(a)));
+        }
 
         this.cache = new Map<string, any>(
             yamlConfig.variables ? Object.entries(yamlConfig.variables) : [],

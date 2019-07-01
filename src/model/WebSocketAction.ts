@@ -36,6 +36,8 @@ class WebSocketAction implements Action {
 
     messageFilter: string[];
 
+    invokeEvenOnFail = false;
+
     private receivedMessages: Set<string>;
 
     constructor(
@@ -48,6 +50,7 @@ class WebSocketAction implements Action {
         data = wsDefinition.data,
         expectedNumberOfMessages = wsDefinition.expectedNumberOfMessages,
         messageFilter = wsDefinition.messageFilter,
+        invokeEvenOnFail = wsDefinition.invokeEvenOnFail,
     ) {
         this.name = name;
         this.serviceName = serviceName;
@@ -57,6 +60,7 @@ class WebSocketAction implements Action {
         this.expectedNumberOfMessages = expectedNumberOfMessages;
         this.messageFilter = messageFilter;
         this.description = desc;
+        this.invokeEvenOnFail = invokeEvenOnFail;
 
         this.receivedMessages = new Set<string>();
     }
@@ -80,6 +84,7 @@ class WebSocketAction implements Action {
             this.loadData(template, wsDefinition),
             wsDefinition.expectedNumberOfMessages ||
                 template.expectedNumberOfMessages,
+            wsDefinition.invokeEvenOnFail || template.invokeEvenOnFail,
         );
     }
 

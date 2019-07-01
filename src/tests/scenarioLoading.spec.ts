@@ -10,7 +10,7 @@ describe('Scenario loading', () => {
     it('should be able to parse scenario files in the correct folder', () => {
         const testActionCatalog = [];
         const result = loadAllScenarios(TEST_SCENARIO_PATH, testActionCatalog);
-        expect(result).to.have.lengthOf(3);
+        expect(result).to.have.lengthOf(5);
         expect(result[0]).to.have.property('description');
         expect(result[0].description).to.be.equal('test description');
         expect(result[0]).to.have.property('actions');
@@ -48,15 +48,36 @@ describe('Scenario loading', () => {
     it('should be able to parse scenario actions', () => {
         const testActionCatalog = [
             {
+                name: 'do-something-before',
+                description: null,
+                type: ActionType.TIMER,
+                invoke: null,
+                invokeEvenOnFail: false,
+            },
+            {
+                name: 'do-something-after',
+                description: null,
+                type: ActionType.TIMER,
+                invoke: null,
+                invokeEvenOnFail: false,
+            },
+            {
                 name: 'do-something',
                 description: null,
                 type: ActionType.REST,
                 invoke: null,
+                invokeEvenOnFail: true,
             },
         ];
-        const result = loadAllScenarios(TEST_SCENARIO_PATH, testActionCatalog);
-        expect(result[0].actions).to.have.lengthOf(1);
-        expect(result[0].actions[0].name).to.be.equal('do-something');
+        const result = loadScenariosById(
+            `${TEST_SCENARIO_PATH}/s1`,
+            testActionCatalog,
+        );
+        expect(result[0].actions).to.have.lengthOf(3);
+        expect(result[0].actions[0].name).to.be.equal('do-something-before');
+        expect(result[0].actions[1].name).to.be.equal('do-something');
+        expect(result[0].actions[2].name).to.be.equal('do-something-after');
+        expect(result[0].actions[1].invokeEvenOnFail).to.be.equal(true);
     });
 
     it('should be able to override action simple properties', () => {
@@ -67,9 +88,13 @@ describe('Scenario loading', () => {
                 type: ActionType.REST,
                 invoke: null,
                 method: 'GET',
+                invokeEvenOnFail: false,
             },
         ];
-        const result = loadAllScenarios(TEST_SCENARIO_PATH, testActionCatalog);
+        const result = loadScenariosById(
+            `${TEST_SCENARIO_PATH}/s1`,
+            testActionCatalog,
+        );
         expect(result[0].actions).to.have.lengthOf(1);
         expect((<RestAction>result[0].actions[0]).method).to.be.equal('POST');
     });
@@ -84,9 +109,13 @@ describe('Scenario loading', () => {
                 data: {
                     userId: 1,
                 },
+                invokeEvenOnFail: false,
             },
         ];
-        const result = loadAllScenarios(TEST_SCENARIO_PATH, testActionCatalog);
+        const result = loadScenariosById(
+            `${TEST_SCENARIO_PATH}/s1`,
+            testActionCatalog,
+        );
         expect(result[0].actions).to.have.lengthOf(1);
         expect(
             (<any>(<RestAction>result[0].actions[0]).data).userId,
@@ -101,9 +130,13 @@ describe('Scenario loading', () => {
                 type: ActionType.REST,
                 invoke: null,
                 responseValidation: ['userId !== null'],
+                invokeEvenOnFail: false,
             },
         ];
-        const result = loadAllScenarios(TEST_SCENARIO_PATH, testActionCatalog);
+        const result = loadScenariosById(
+            `${TEST_SCENARIO_PATH}/s1`,
+            testActionCatalog,
+        );
         expect(result[0].actions).to.have.lengthOf(1);
         expect(
             (<RestAction>result[0].actions[0]).responseValidation,
@@ -124,9 +157,13 @@ describe('Scenario loading', () => {
                 type: ActionType.REST,
                 invoke: null,
                 method: 'GET',
+                invokeEvenOnFail: false,
             },
         ];
-        const result = loadAllScenarios(TEST_SCENARIO_PATH, testActionCatalog);
+        const result = loadScenariosById(
+            `${TEST_SCENARIO_PATH}/s1`,
+            testActionCatalog,
+        );
         expect(result[0].actions).to.have.lengthOf(1);
         expect((<RestAction>result[0].actions[0]).description).to.be.equal(
             'test something',

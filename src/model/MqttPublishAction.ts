@@ -33,6 +33,8 @@ class MqttPublishAction implements Action {
 
     protoClass: string;
 
+    invokeEvenOnFail = false;
+
     constructor(
         name: string,
         desc = name,
@@ -44,6 +46,7 @@ class MqttPublishAction implements Action {
         data = mqttDefinition.data,
         protoFile = mqttDefinition.protoFile,
         protoClass = mqttDefinition.protoClass,
+        invokeEvenOnFail = mqttDefinition.invokeEvenOnFail,
     ) {
         this.name = name;
         this.url = url;
@@ -54,6 +57,7 @@ class MqttPublishAction implements Action {
         this.protoFile = protoFile;
         this.protoClass = protoClass;
         this.description = desc;
+        this.invokeEvenOnFail = invokeEvenOnFail;
     }
 
     static fromTemplate(

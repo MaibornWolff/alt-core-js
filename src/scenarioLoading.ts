@@ -38,6 +38,24 @@ export const loadAllScenarios = (
     readdirSync(`${path}`).forEach((file: any) => {
         const scenarioDef = loadYamlConfiguration(`${path}/${file}`);
         if (scenarioDef) {
+            // get imports
+            let scenarioImports: Scenario[] = [];
+            if (scenarioDef.import) {
+                let scenarioNamesToBeImported: string[] = scenarioDef.import;
+                if (
+                    scenarioNamesToBeImported.every(
+                        i => loadedScenarios.findIndex(s => s.name === i) >= 0,
+                    )
+                ) {
+                    loadedScenarios
+                        .filter(s => scenarioNamesToBeImported.includes(s.name))
+                        .forEach(s => scenarioImports.push(s));
+                } else {
+                    getLogger(nameFromYamlConfig(file)).error(
+                        `One of the imports (${scenarioNamesToBeImported}) are missing or were not loaded prior to this one!`,
+                    );
+                }
+            }
             // split into multiple scenario instances
             if (scenarioDef.loadFactor) {
                 for (let _i = 0; _i < scenarioDef.loadFactor; _i++) {
@@ -117,6 +135,7 @@ export const loadAllScenarios = (
                             scenarioNameWithIdx,
                             scenarioDef,
                             actionCatalogWithReplacedLoadVariables,
+                            scenarioImports,
                         ),
                     );
                 }
@@ -127,6 +146,7 @@ export const loadAllScenarios = (
                         nameFromYamlConfig(file),
                         scenarioDef,
                         actionCatalog,
+                        scenarioImports,
                     ),
                 );
             }
