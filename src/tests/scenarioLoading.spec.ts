@@ -29,7 +29,17 @@ describe('Scenario loading', () => {
     });
 
     it('should be able to parse load scenarios by ID', () => {
-        const testActionCatalog = [];
+        const testActionCatalog = [
+            {
+                name: 'do-something',
+                description: null,
+                type: ActionType.REST,
+                invoke: null,
+                method: 'GET',
+                invokeEvenOnFail: false,
+                data: {},
+            },
+        ];
         const result = loadScenariosById(
             `${TEST_SCENARIO_PATH}/s2`,
             testActionCatalog,
@@ -39,10 +49,22 @@ describe('Scenario loading', () => {
         expect(result[0]).to.have.property('description');
         expect(result[0].description).to.be.equal('test description');
         expect(result[0]).to.have.property('actions');
+        expect(
+            (<RestAction>result[0].actions[0])['data']['userId'],
+        ).to.be.equal('user-1');
+        expect(
+            (<RestAction>result[0].actions[0])['data']['vehicles'][0]['id'],
+        ).to.be.equal('vin1');
 
         expect(result[1]).to.have.property('description');
         expect(result[1].description).to.be.equal('test description');
         expect(result[1]).to.have.property('actions');
+        expect(
+            (<RestAction>result[1].actions[0])['data']['userId'],
+        ).to.be.equal('user-2');
+        expect(
+            (<RestAction>result[1].actions[0])['data']['vehicles'][0]['id'],
+        ).to.be.equal('vin2');
     });
 
     it('should be able to parse scenario actions', () => {

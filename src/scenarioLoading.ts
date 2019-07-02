@@ -164,30 +164,38 @@ function getLoadVariableTreeForLoadIdx(rootObject: any, idx: number): any {
         if (propEntry[0] == 'name') continue;
 
         if (Array.isArray(propEntry[1])) {
-            const loadVars = propEntry[1] as string[];
-            if (loadVars.length == 1 && loadVars[0].indexOf('...') >= 0) {
-                const stringPrefix = loadVars[0].substr(
-                    0,
-                    loadVars[0].indexOf('$$'),
-                );
-                const numberRange = loadVars[0]
-                    .replace('$$', '')
-                    .substring(stringPrefix.length);
-                const limits = numberRange.split('...');
-                const minValue = Number.parseInt(limits[0]);
-                const maxValue = Number.parseInt(limits[1]);
-                const offset =
-                    minValue + idx <= maxValue
-                        ? idx
-                        : minValue + idx - maxValue;
-                // console.log(`${stringPrefix} | ${numberRange} | ${minValue} | ${maxValue} | ${offset}`);
-                Object.defineProperty(res, propEntry[0], {
-                    value: `${stringPrefix}${minValue + offset}`,
-                });
+            if (typeof propEntry[1][0] === 'object') {
+                // not a load-var-array but custom one
+                var arr = [];
+                arr.push(getLoadVariableTreeForLoadIdx(propEntry[1][0], idx));
+
+                Object.defineProperty(res, propEntry[0], { value: arr });
             } else {
-                Object.defineProperty(res, propEntry[0], {
-                    value: loadVars[idx % loadVars.length],
-                });
+                const loadVars = propEntry[1] as string[];
+                if (loadVars.length == 1 && loadVars[0].indexOf('...') >= 0) {
+                    const stringPrefix = loadVars[0].substr(
+                        0,
+                        loadVars[0].indexOf('$$'),
+                    );
+                    const numberRange = loadVars[0]
+                        .replace('$$', '')
+                        .substring(stringPrefix.length);
+                    const limits = numberRange.split('...');
+                    const minValue = Number.parseInt(limits[0]);
+                    const maxValue = Number.parseInt(limits[1]);
+                    const offset =
+                        minValue + idx <= maxValue
+                            ? idx
+                            : minValue + idx - maxValue;
+                    // console.log(`${stringPrefix} | ${numberRange} | ${minValue} | ${maxValue} | ${offset}`);
+                    Object.defineProperty(res, propEntry[0], {
+                        value: `${stringPrefix}${minValue + offset}`,
+                    });
+                } else {
+                    Object.defineProperty(res, propEntry[0], {
+                        value: loadVars[idx % loadVars.length],
+                    });
+                }
             }
         } else {
             Object.defineProperty(res, propEntry[0], {
