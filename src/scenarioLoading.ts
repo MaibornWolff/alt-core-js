@@ -26,7 +26,7 @@ export const loadScenariosById = (
     getLogger('unknown').error(
         `Scenario '${scenarioName}' not found in the directory!`,
     );
-    process.exit(1);
+    return process.exit(1);
 };
 
 export const loadAllScenarios = (
@@ -39,9 +39,9 @@ export const loadAllScenarios = (
         const scenarioDef = loadYamlConfiguration(`${path}/${file}`);
         if (scenarioDef) {
             // get imports
-            let scenarioImports: Scenario[] = [];
+            const scenarioImports: Scenario[] = [];
             if (scenarioDef.import) {
-                let scenarioNamesToBeImported: string[] = scenarioDef.import;
+                const scenarioNamesToBeImported: string[] = scenarioDef.import;
                 if (
                     scenarioNamesToBeImported.every(
                         i => loadedScenarios.findIndex(s => s.name === i) >= 0,
@@ -58,10 +58,10 @@ export const loadAllScenarios = (
             }
             // split into multiple scenario instances
             if (scenarioDef.loadFactor) {
-                for (let _i = 0; _i < scenarioDef.loadFactor; _i++) {
+                for (let i = 0; i < scenarioDef.loadFactor; i++) {
                     const scenarioNameWithIdx = `${nameFromYamlConfig(
                         file,
-                    )}-${_i}`;
+                    )}-${i}`;
                     const ctx = { scenario: scenarioNameWithIdx };
 
                     const actionCatalogWithReplacedLoadVariables: Action[] = JSON.parse(
@@ -72,12 +72,12 @@ export const loadAllScenarios = (
                     if (scenarioDef.loadVariables) {
                         const currentLoadVariables = getLoadVariableTreeForLoadIdx(
                             scenarioDef.loadVariables,
-                            _i,
+                            i,
                         );
-                        for (const _current of Object.entries(
+                        for (const current of Object.entries(
                             currentLoadVariables,
                         )) {
-                            const currentLoad = _current[1];
+                            const currentLoad = current[1];
 
                             const actionToBeReplaced: any = actionCatalogWithReplacedLoadVariables.find(
                                 a => a.name === (currentLoad as any).name,
@@ -161,18 +161,18 @@ function getLoadVariableTreeForLoadIdx(rootObject: any, idx: number): any {
     Object.assign(res, rootObject);
 
     for (const propEntry of Object.entries(rootObject)) {
-        if (propEntry[0] == 'name') continue;
+        if (propEntry[0] === 'name') continue;
 
         if (Array.isArray(propEntry[1])) {
             if (typeof propEntry[1][0] === 'object') {
                 // not a load-var-array but custom one
-                var arr = [];
+                const arr = [];
                 arr.push(getLoadVariableTreeForLoadIdx(propEntry[1][0], idx));
 
                 Object.defineProperty(res, propEntry[0], { value: arr });
             } else {
                 const loadVars = propEntry[1] as string[];
-                if (loadVars.length == 1 && loadVars[0].indexOf('...') >= 0) {
+                if (loadVars.length === 1 && loadVars[0].indexOf('...') >= 0) {
                     const stringPrefix = loadVars[0].substr(
                         0,
                         loadVars[0].indexOf('$$'),
@@ -181,8 +181,8 @@ function getLoadVariableTreeForLoadIdx(rootObject: any, idx: number): any {
                         .replace('$$', '')
                         .substring(stringPrefix.length);
                     const limits = numberRange.split('...');
-                    const minValue = Number.parseInt(limits[0]);
-                    const maxValue = Number.parseInt(limits[1]);
+                    const minValue = Number.parseInt(limits[0], 10);
+                    const maxValue = Number.parseInt(limits[1], 10);
                     const offset =
                         minValue + idx <= maxValue
                             ? idx

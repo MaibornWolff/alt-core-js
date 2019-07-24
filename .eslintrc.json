@@ -23,6 +23,7 @@
     "no-continue": "off",
     "no-cond-assign": "off",
     "no-eval": "off",
+    "no-plusplus": "off",
     "@typescript-eslint/no-use-before-define": "off",
     "no-restricted-syntax": [
       "error",

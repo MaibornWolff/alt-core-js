@@ -6,8 +6,8 @@ function injectVarsToString(
     ctx: any,
 ): string {
     const regex = /{{(\w*)}}/g;
-
-    searchForMatchingStrings(regex, str).forEach(variable => {
+    let result = str;
+    searchForMatchingStrings(regex, result).forEach(variable => {
         const replaceValue = scenarioVariables.get(variable);
         if (replaceValue) {
             const searchValue = `{{${variable}}}`;
@@ -15,7 +15,7 @@ function injectVarsToString(
                 `Replacing '${searchValue}' with '${replaceValue}'`,
                 ctx,
             );
-            str = str.replace(searchValue, replaceValue);
+            result = result.replace(searchValue, replaceValue);
         } else {
             getLogger(ctx.scenario).debug(
                 `Not able to replace {{${variable}}} because no variable with that name found!`,
@@ -24,7 +24,7 @@ function injectVarsToString(
         }
     });
 
-    return str;
+    return result;
 }
 
 export function injectEvalAndVarsToString(
