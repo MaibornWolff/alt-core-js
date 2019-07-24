@@ -49,21 +49,21 @@ describe('Scenario loading', () => {
         expect(result[0]).to.have.property('description');
         expect(result[0].description).to.be.equal('test description');
         expect(result[0]).to.have.property('actions');
+        expect((result[0].actions[0] as RestAction).data['userId']).to.be.equal(
+            'user-1',
+        );
         expect(
-            (<RestAction>result[0].actions[0])['data']['userId'],
-        ).to.be.equal('user-1');
-        expect(
-            (<RestAction>result[0].actions[0])['data']['vehicles'][0]['id'],
+            (result[0].actions[0] as RestAction).data['vehicles'][0]['id'],
         ).to.be.equal('vin1');
 
         expect(result[1]).to.have.property('description');
         expect(result[1].description).to.be.equal('test description');
         expect(result[1]).to.have.property('actions');
+        expect((result[1].actions[0] as RestAction).data['userId']).to.be.equal(
+            'user-2',
+        );
         expect(
-            (<RestAction>result[1].actions[0])['data']['userId'],
-        ).to.be.equal('user-2');
-        expect(
-            (<RestAction>result[1].actions[0])['data']['vehicles'][0]['id'],
+            (result[1].actions[0] as RestAction).data['vehicles'][0]['id'],
         ).to.be.equal('vin2');
     });
 
@@ -118,7 +118,7 @@ describe('Scenario loading', () => {
             testActionCatalog,
         );
         expect(result[0].actions).to.have.lengthOf(1);
-        expect((<RestAction>result[0].actions[0]).method).to.be.equal('POST');
+        expect((result[0].actions[0] as RestAction).method).to.be.equal('POST');
     });
 
     it('should be able to override action object properties', () => {
@@ -139,9 +139,9 @@ describe('Scenario loading', () => {
             testActionCatalog,
         );
         expect(result[0].actions).to.have.lengthOf(1);
-        expect(
-            (<any>(<RestAction>result[0].actions[0]).data).userId,
-        ).to.be.equal(22);
+        expect((result[0].actions[0] as RestAction).data['userId']).to.be.equal(
+            22,
+        );
     });
 
     it('should be able to concat action array properties', () => {
@@ -161,13 +161,13 @@ describe('Scenario loading', () => {
         );
         expect(result[0].actions).to.have.lengthOf(1);
         expect(
-            (<RestAction>result[0].actions[0]).responseValidation,
+            (result[0].actions[0] as RestAction).responseValidation,
         ).to.have.lengthOf(2);
         expect(
-            (<RestAction>result[0].actions[0]).responseValidation,
+            (result[0].actions[0] as RestAction).responseValidation,
         ).to.contain('saved === true');
         expect(
-            (<RestAction>result[0].actions[0]).responseValidation,
+            (result[0].actions[0] as RestAction).responseValidation,
         ).to.contain('userId !== null');
     });
 
@@ -187,7 +187,7 @@ describe('Scenario loading', () => {
             testActionCatalog,
         );
         expect(result[0].actions).to.have.lengthOf(1);
-        expect((<RestAction>result[0].actions[0]).description).to.be.equal(
+        expect((result[0].actions[0] as RestAction).description).to.be.equal(
             'test something',
         );
     });

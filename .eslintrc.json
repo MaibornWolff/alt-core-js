@@ -57,6 +57,10 @@
       "files": "src/**/*.spec.ts",
       "env": {
         "mocha": true
+      },
+      "rules": {
+        "no-unused-expressions": "off",
+        "dot-notation": "off"
       }
     }
   ]
