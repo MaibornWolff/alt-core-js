@@ -2,19 +2,19 @@ import { appendFileSync, createWriteStream, writeFileSync } from 'fs';
 import { generate } from 'node-plantuml';
 import { OUTPUT_DIR } from '.';
 
-function getInputFile(scenario: string) {
+function getInputFile(scenario: string): string {
     return `${OUTPUT_DIR()}/_${scenario}.input`;
 }
 
-function getOutputFile(scenario: string) {
+function getOutputFile(scenario: string): string {
     return `${OUTPUT_DIR()}/_${scenario}.png`;
 }
 
-function extractPayload(dict: any) {
+function extractPayload(dict: any): string {
     return JSON.stringify(dict, null, 1);
 }
 
-function currentTimestamp() {
+function currentTimestamp(): string {
     return new Date().toISOString();
 }
 
@@ -22,7 +22,7 @@ function replaceDashes(str: string): string {
     return str.replace(new RegExp('-', 'g'), '_');
 }
 
-export const initDiagramCreation = (scenarioId: string) => {
+export const initDiagramCreation = (scenarioId: string): void => {
     writeFileSync(getInputFile(scenarioId), '');
     const initValues = [
         '@startuml',
@@ -39,15 +39,17 @@ export const addRequest = (
     target: string,
     url: string,
     data: any,
-) => {
-    const _target = replaceDashes(target);
-    let _request = `YATF -> ${_target}: ${url}\nactivate ${_target}\n`;
-    if (data) {
-        _request += `note right\n**${currentTimestamp()}**\n${extractPayload(
-            data,
-        )}\nend note\n`;
-    }
-    appendFileSync(getInputFile(scenarioId), _request);
+): void => {
+    const targetWithUnderscores = replaceDashes(target);
+    const request = `YATF -> ${targetWithUnderscores}: ${url}\nactivate ${targetWithUnderscores}\n${
+        data
+            ? `note right\n**${currentTimestamp()}**\n${extractPayload(
+                  data,
+              )}\nend note\n`
+            : ''
+    }`;
+
+    appendFileSync(getInputFile(scenarioId), request);
 };
 
 export const addSuccessfulResponse = (
@@ -55,7 +57,7 @@ export const addSuccessfulResponse = (
     source: string,
     status: string,
     body: string,
-) => {
+): void => {
     doAddResponse(scenarioId, source, status, 'green');
     if (body) {
         const note = `note left\n**${currentTimestamp()}**\n${
@@ -70,7 +72,7 @@ export const addFailedResponse = (
     source: string,
     status: string,
     body: string,
-) => {
+): void => {
     doAddResponse(scenarioId, source, status, 'red');
     appendFileSync(
         getInputFile(scenarioId),
@@ -83,15 +85,15 @@ const doAddResponse = (
     source: string,
     status: string,
     color: string,
-) => {
-    const _source = replaceDashes(source);
+): void => {
+    const sourceWithUnderscores = replaceDashes(source);
     appendFileSync(
         getInputFile(scenarioId),
-        `${_source} --> YATF: <color ${color}>${status}</color>\ndeactivate ${_source}\n`,
+        `${sourceWithUnderscores} --> YATF: <color ${color}>${status}</color>\ndeactivate ${sourceWithUnderscores}\n`,
     );
 };
 
-export const addDelay = (scenarioId: string, durationInSec: number) => {
+export const addDelay = (scenarioId: string, durationInSec: number): void => {
     appendFileSync(
         getInputFile(scenarioId),
         `\n...sleep ${durationInSec} s...\n`,
@@ -102,11 +104,11 @@ export const addWsMessage = (
     scenarioId: string,
     source: string,
     payload: any,
-) => {
-    const _source = replaceDashes(source);
+): void => {
+    const sourceWithUnderscores = replaceDashes(source);
     appendFileSync(
         getInputFile(scenarioId),
-        `${_source} -[#0000FF]->o YATF : [WS]\n`,
+        `${sourceWithUnderscores} -[#0000FF]->o YATF : [WS]\n`,
     );
     const note = `note left #aqua\n**${currentTimestamp()}**\n${extractPayload(
         payload,
@@ -118,7 +120,7 @@ export const addMqttMessage = (
     scenarioId: string,
     topic: string,
     payload: any,
-) => {
+): void => {
     appendFileSync(
         getInputFile(scenarioId),
         `MQTT -[#green]->o YATF : ${topic}\n`,
@@ -133,7 +135,7 @@ export const addMqttPublishMessage = (
     scenarioId: string,
     topic: string,
     payload: any,
-) => {
+): void => {
     appendFileSync(
         getInputFile(scenarioId),
         `YATF -[#green]->o MQTT : ${topic}\n`,
@@ -144,8 +146,8 @@ export const addMqttPublishMessage = (
     appendFileSync(getInputFile(scenarioId), note);
 };
 
-export const generateSequenceDiagram = (scenarioId: string): Promise<any> =>
-    new Promise<any>(resolve => {
+export const generateSequenceDiagram = (scenarioId: string): Promise<void> =>
+    new Promise<void>(resolve => {
         appendFileSync(getInputFile(scenarioId), '\n@enduml');
         const gen = generate(getInputFile(scenarioId));
         gen.out.pipe(createWriteStream(getOutputFile(scenarioId)));
