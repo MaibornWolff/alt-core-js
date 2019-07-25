@@ -72,7 +72,7 @@ export function injectEvalAndVarsToMap(
                 scenarioVariables,
                 loggingCtx,
             );
-        } else {
+        } else if (typeof value === 'string') {
             copy[key] = injectEvalAndVarsToString(
                 value,
                 scenarioVariables,
