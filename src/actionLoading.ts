@@ -9,25 +9,20 @@ import { TimerAction } from './model/TimerAction';
 import { WebSocketAction } from './model/WebSocketAction';
 import { loadYamlConfiguration, nameFromYamlConfig } from './yamlParsing';
 
-const isRestAction = function(actionDef: any) {
-    return actionDef && actionDef.type === ActionType[ActionType.REST];
-};
+const isRestAction = (actionDef: any): boolean =>
+    actionDef && actionDef.type === ActionType[ActionType.REST];
 
-const isTimerAction = function(actionDef: any) {
-    return actionDef && actionDef.type === ActionType[ActionType.TIMER];
-};
+const isTimerAction = (actionDef: any): boolean =>
+    actionDef && actionDef.type === ActionType[ActionType.TIMER];
 
-const isWebsocketAction = function(actionDef: any) {
-    return actionDef && actionDef.type === ActionType[ActionType.WEBSOCKET];
-};
+const isWebsocketAction = (actionDef: any): boolean =>
+    actionDef && actionDef.type === ActionType[ActionType.WEBSOCKET];
 
-const isMqttAction = function(actionDef: any) {
-    return actionDef && actionDef.type === ActionType[ActionType.MQTT];
-};
+const isMqttAction = (actionDef: any): boolean =>
+    actionDef && actionDef.type === ActionType[ActionType.MQTT];
 
-const isMqttPublishAction = function(actionDef: any) {
-    return actionDef && actionDef.type === ActionType[ActionType.MQTT_PUBLISH];
-};
+const isMqttPublishAction = (actionDef: any): boolean =>
+    actionDef && actionDef.type === ActionType[ActionType.MQTT_PUBLISH];
 
 /* TODO */
 export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
@@ -37,13 +32,7 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
         const actionDef = loadYamlConfiguration(`${actionDir}/${file}`);
 
         if (isRestAction(actionDef)) {
-            // the host is either declared directly in the action template or will be loaded from evn-config file
-            const host = actionDef.service.startsWith('http')
-                ? actionDef.service
-                : // if not defined 'https' will be prepended automatically
-                envConfig[actionDef.service].startsWith('http')
-                ? envConfig[actionDef.service]
-                : `https://${envConfig[actionDef.service]}`;
+            const host = getHost(actionDef, envConfig);
             loadedActions.push(
                 new RestAction(
                     nameFromYamlConfig(file),
@@ -89,4 +78,21 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
     });
 
     return loadedActions;
+};
+
+/**
+ * Extracts the host from the action definition if present or from the
+ * environment configuration. If the http protocol is not specified explicitly,
+ * https is assumed.
+ * @param actionDef The action definition
+ * @param envConfig The environment configuration
+ */
+const getHost = (actionDef: any, envConfig: any): string => {
+    if (actionDef.service.startsWith('http')) {
+        return actionDef.service;
+    }
+    if (envConfig[actionDef.service].startsWith('http')) {
+        return envConfig[actionDef.service];
+    }
+    return `https://${envConfig[actionDef.service]}`;
 };

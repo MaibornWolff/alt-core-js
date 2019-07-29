@@ -38,7 +38,7 @@ export function decodeProto(
     protoDefPath: string,
     outerClass: string,
     buffer: Uint8Array,
-) {
+): { [k: string]: any } {
     const root = new Root();
     root.resolvePath = resolveImportPath;
     root.loadSync(protoDefPath);
