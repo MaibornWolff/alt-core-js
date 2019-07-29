@@ -79,9 +79,7 @@ export const runMultipleSceanriosWithConfig = (
                 ? loadScenariosById(scenarioPath, actions)
                 : loadAllScenarios(scenarioPath, actions);
             getLogger('setup').debug(
-                `Successfully loaded ${
-                    scenarios.length
-                } scenario(s): ${scenarioPath}`,
+                `Successfully loaded ${scenarios.length} scenario(s): ${scenarioPath}`,
             );
 
             processScenarios(scenarios, numberOfScenariosRunInParallel);

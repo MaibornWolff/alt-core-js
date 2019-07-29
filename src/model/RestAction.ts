@@ -246,9 +246,7 @@ class RestAction implements Action {
                     // console.log(response.toJSON());
 
                     logDebug(
-                        `Calling:  ${response.request.method} ${
-                            response.request.href
-                        }`,
+                        `Calling:  ${response.request.method} ${response.request.href}`,
                     );
                     logDebug(
                         `          ${JSON.stringify(response.request.headers)}`,
@@ -273,9 +271,7 @@ class RestAction implements Action {
                         response.statusCode === 201
                     ) {
                         logDebug(
-                            `Response: ${response.statusCode} (${
-                                response.statusMessage
-                            }): ${response.body}`,
+                            `Response: ${response.statusCode} (${response.statusMessage}): ${response.body}`,
                         );
                         logDebug(
                             `Response Headers: ${JSON.stringify(
@@ -302,9 +298,7 @@ class RestAction implements Action {
                             addSuccessfulResponse(
                                 scenario.name,
                                 targetService,
-                                `${response.statusMessage} (${
-                                    response.statusCode
-                                })`,
+                                `${response.statusMessage} (${response.statusCode})`,
                                 res,
                             );
 
@@ -315,9 +309,7 @@ class RestAction implements Action {
                             addSuccessfulResponse(
                                 scenario.name,
                                 targetService,
-                                `${response.statusMessage} (${
-                                    response.statusCode
-                                })`,
+                                `${response.statusMessage} (${response.statusCode})`,
                                 null,
                             );
                         }
@@ -326,32 +318,24 @@ class RestAction implements Action {
                     }
                     if (response.statusCode === 204) {
                         logDebug(
-                            `Response: ${response.statusCode} (${
-                                response.statusMessage
-                            })`,
+                            `Response: ${response.statusCode} (${response.statusMessage})`,
                         );
                         addSuccessfulResponse(
                             scenario.name,
                             targetService,
-                            `${response.statusMessage} (${
-                                response.statusCode
-                            })`,
+                            `${response.statusMessage} (${response.statusCode})`,
                             null,
                         );
                         resolve();
                     } else {
                         logError(
-                            `Response: ${response.statusCode} (${
-                                response.statusMessage
-                            })`,
+                            `Response: ${response.statusCode} (${response.statusMessage})`,
                         );
                         logError(`          ${response.body}`);
                         addFailedResponse(
                             scenario.name,
                             targetService,
-                            `${response.statusMessage} (${
-                                response.statusCode
-                            })`,
+                            `${response.statusMessage} (${response.statusCode})`,
                             response.body,
                         );
                         reject();

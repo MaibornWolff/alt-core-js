@@ -140,9 +140,7 @@ class MqttAction implements Action {
 
         client.on('connect', () => {
             getLogger(scenario.name).debug(
-                `MQTT connection to ${this.url} successfully opened for ${
-                    this.durationInSec
-                }s`,
+                `MQTT connection to ${this.url} successfully opened for ${this.durationInSec}s`,
                 ctx,
             );
             client.subscribe(this.topic, (error: any, granted: any) => {
@@ -153,9 +151,7 @@ class MqttAction implements Action {
                     );
                 } else {
                     getLogger(scenario.name).debug(
-                        `Successfully subscribed to '${
-                            granted[0].topic
-                        }' (qos: ${granted[0].qos})`,
+                        `Successfully subscribed to '${granted[0].topic}' (qos: ${granted[0].qos})`,
                         ctx,
                     );
                 }
@@ -198,9 +194,7 @@ class MqttAction implements Action {
             getLogger(scenario.name).debug(`MQTT connection closed!`, ctx);
             if (numberOfRetrievedMessages !== this.expectedNumberOfMessages) {
                 getLogger(scenario.name).error(
-                    `Unexpected number of MQTT updates retrieved: ${numberOfRetrievedMessages} (expected: ${
-                        this.expectedNumberOfMessages
-                    })`,
+                    `Unexpected number of MQTT updates retrieved: ${numberOfRetrievedMessages} (expected: ${this.expectedNumberOfMessages})`,
                     ctx,
                 );
             }

@@ -169,9 +169,7 @@ class WebSocketAction implements Action {
             if (isMessageRelevant(parsedMessage)) {
                 this.receivedMessages.add(data);
                 logDebug(
-                    `Relevant WS message received (${
-                        this.receivedMessages.size
-                    }/${this.expectedNumberOfMessages}): ${data}`,
+                    `Relevant WS message received (${this.receivedMessages.size}/${this.expectedNumberOfMessages}): ${data}`,
                 );
                 addWsMessage(scenario.name, this.serviceName, parsedMessage);
             }
@@ -188,9 +186,7 @@ class WebSocketAction implements Action {
                     this.receivedMessages.size !== this.expectedNumberOfMessages
                 ) {
                     logError(
-                        `Unexpected number of messages retrieved: ${
-                            this.receivedMessages.size
-                        } (expected: ${this.expectedNumberOfMessages})`,
+                        `Unexpected number of messages retrieved: ${this.receivedMessages.size} (expected: ${this.expectedNumberOfMessages})`,
                     );
                 }
             }

@@ -111,11 +111,7 @@ export const loadAllScenarios = (
                                             getLogger(
                                                 scenarioNameWithIdx,
                                             ).debug(
-                                                `Replacing "${
-                                                    actionToBeReplaced[key]
-                                                }" with "${
-                                                    currentLoad[key]
-                                                }" for key "${key}"`,
+                                                `Replacing "${actionToBeReplaced[key]}" with "${currentLoad[key]}" for key "${key}"`,
                                                 Object.assign(ctx, {
                                                     action:
                                                         actionToBeReplaced.name,
