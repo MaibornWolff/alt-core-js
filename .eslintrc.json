@@ -20,6 +20,10 @@
     ],
     "arrow-body-style": ["warn", "as-needed"],
     "no-use-before-define": "off",
+    "no-continue": "off",
+    "no-cond-assign": "off",
+    "no-eval": "off",
+    "no-plusplus": "off",
     "@typescript-eslint/no-use-before-define": "off",
     "no-restricted-syntax": [
       "error",
@@ -53,6 +57,10 @@
       "files": "src/**/*.spec.ts",
       "env": {
         "mocha": true
+      },
+      "rules": {
+        "no-unused-expressions": "off",
+        "dot-notation": "off"
       }
     }
   ]

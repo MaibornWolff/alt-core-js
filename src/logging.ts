@@ -1,11 +1,11 @@
 import * as pad from 'pad';
-import { createLogger, format, transports } from 'winston';
+import { createLogger, format, transports, Logger } from 'winston';
 import { OUTPUT_DIR } from '.';
 
 const { combine, timestamp, printf } = format;
 
 const myFormat = printf(
-    (info: any) =>
+    info =>
         `${info.timestamp} [${pad(info.scenario || 'unknown', 30)}] [${pad(
             info.action || 'unknown',
             30,
@@ -14,7 +14,7 @@ const myFormat = printf(
         }`,
 );
 
-export const getLogger = (scenario: string) =>
+export const getLogger = (scenario: string): Logger =>
     createLogger({
         level: 'debug',
         format: combine(timestamp(), myFormat),

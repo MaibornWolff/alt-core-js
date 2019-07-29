@@ -6,8 +6,8 @@ function injectVarsToString(
     ctx: any,
 ): string {
     const regex = /{{(\w*)}}/g;
-
-    searchForMatchingStrings(regex, str).forEach(variable => {
+    let result = str;
+    searchForMatchingStrings(regex, result).forEach(variable => {
         const replaceValue = scenarioVariables.get(variable);
         if (replaceValue) {
             const searchValue = `{{${variable}}}`;
@@ -15,7 +15,7 @@ function injectVarsToString(
                 `Replacing '${searchValue}' with '${replaceValue}'`,
                 ctx,
             );
-            str = str.replace(searchValue, replaceValue);
+            result = result.replace(searchValue, replaceValue);
         } else {
             getLogger(ctx.scenario).debug(
                 `Not able to replace {{${variable}}} because no variable with that name found!`,
@@ -24,7 +24,7 @@ function injectVarsToString(
         }
     });
 
-    return str;
+    return result;
 }
 
 export function injectEvalAndVarsToString(
@@ -48,6 +48,7 @@ export function injectEvalAndVarsToString(
     ] = injectEvaluationToNumber(afterVarInjection, ctx, scenarioVariables);
 
     // if the string contains only number description, that can be converted, then return a number, in other case return a string
+    // TODO: What does comparison with itself do?
     if (foundNumericExpression && +afterEvalToNumber === +afterEvalToNumber) {
         return +afterEvalToNumber;
     }
@@ -83,11 +84,12 @@ export function injectEvalAndVarsToMap(
     return copy;
 }
 
-function searchForMatchingStrings(regex: RegExp, str: string) {
+function searchForMatchingStrings(regex: RegExp, str: string): string[] {
+    const regexCopy = regex;
     let m;
     const matchingStrings: string[] = [];
-    while ((m = regex.exec(str)) !== null) {
-        if (m.index === regex.lastIndex) regex.lastIndex++;
+    while ((m = regexCopy.exec(str)) !== null) {
+        if (m.index === regexCopy.lastIndex) regexCopy.lastIndex += 1;
         matchingStrings.push(m[1]);
     }
     return matchingStrings;
@@ -102,18 +104,18 @@ function injectEvaluationToString(
     // and set them from within evaluated expressions
 
     const regex = /{{{(.*?)}}}/g;
-
-    searchForMatchingStrings(regex, str).forEach(expression => {
-        const replaceValue = function() {
-            return eval(expression);
-        }.call(buildExpHelpers(vars));
+    let result = str;
+    searchForMatchingStrings(regex, result).forEach(expression => {
+        const replaceValue = (() => eval(expression)).call(
+            buildExpHelpers(vars),
+        );
         if (replaceValue) {
             const searchValue = `{{{${expression}}}}`;
             getLogger(ctx.scenario).debug(
                 `Replacing '${searchValue}' with '${replaceValue}'`,
                 ctx,
             );
-            str = str.replace(searchValue, replaceValue);
+            result = result.replace(searchValue, replaceValue);
         } else {
             getLogger(ctx.scenario).debug(
                 `Not able to replace {{{${expression}}}} !`,
@@ -122,7 +124,7 @@ function injectEvaluationToString(
         }
     });
 
-    return str;
+    return result;
 }
 
 function injectEvaluationToNumber(
@@ -135,19 +137,19 @@ function injectEvaluationToNumber(
 
     const regex = /<<<(.*?)>>>/g;
     let foundNumericExpression = false;
-
-    searchForMatchingStrings(regex, str).forEach(expression => {
+    let result = str;
+    searchForMatchingStrings(regex, result).forEach(expression => {
         foundNumericExpression = true;
-        const replaceValue = function() {
-            return eval(expression);
-        }.call(buildExpHelpers(vars));
+        const replaceValue = (() => eval(expression)).call(
+            buildExpHelpers(vars),
+        );
         if (replaceValue) {
             const searchValue = `<<<${expression}>>>`;
             getLogger(ctx.scenario).debug(
                 `Replacing '"${searchValue}"' with '${replaceValue}'`,
                 ctx,
             );
-            str = str.replace(searchValue, replaceValue);
+            result = result.replace(searchValue, replaceValue);
         } else {
             getLogger(ctx.scenario).debug(
                 `Not able to replace {{{${expression}}}} !`,
@@ -156,10 +158,10 @@ function injectEvaluationToNumber(
         }
     });
 
-    return [str, foundNumericExpression];
+    return [result, foundNumericExpression];
 }
 
-function buildExpHelpers(vars: Map<string, any>) {
+function buildExpHelpers(vars: Map<string, any>): unknown {
     return {
         get(name: string): any {
             return vars.get(name);
