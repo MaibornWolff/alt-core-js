@@ -175,7 +175,7 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
                 ctx,
             );
 
-            if (!action.allowFailure) {
+            if (action.allowFailure === false) {
                 successful = false;
             }
             // process.exit(1);
