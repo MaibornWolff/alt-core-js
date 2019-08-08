@@ -8,6 +8,7 @@ interface Action {
     type: ActionType;
     invoke(scenario: Scenario): ActionCallback;
     invokeEvenOnFail: boolean;
+    allowFailure: boolean;
 }
 
 export { Action };

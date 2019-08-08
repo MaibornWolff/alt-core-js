@@ -160,7 +160,12 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
             const scenarioResults = RESULTS.get(scenarioName);
             if (scenarioResults)
                 scenarioResults.push(
-                    new TestResult(action.description, duration, false),
+                    new TestResult(
+                        action.description,
+                        duration,
+                        false,
+                        action.allowFailure,
+                    ),
                 );
 
             if (reason)
@@ -170,8 +175,10 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
                 ctx,
             );
 
+            if (!action.allowFailure) {
+                successful = false;
+            }
             // process.exit(1);
-            successful = false;
         }
     };
 
@@ -202,7 +209,12 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
                 const scenarioResults = RESULTS.get(scenarioName);
                 if (scenarioResults)
                     scenarioResults.push(
-                        new TestResult(action.description, duration, true),
+                        new TestResult(
+                            action.description,
+                            duration,
+                            true,
+                            action.allowFailure,
+                        ),
                     );
 
                 if (result)
@@ -232,16 +244,22 @@ function printResults(): void {
         );
 
         result.forEach((res: TestResult) => {
-            if (res.successful)
+            if (res.successful) {
                 getLogger(scenario).info(
                     ` OK: ${pad(res.action, 50)} ${res.duration} ms`,
                     ctx,
                 );
-            else
+            } else if (res.allowFailure) {
+                getLogger(scenario).info(
+                    `IGN: ${pad(res.action, 50)} ${res.duration} ms`,
+                    ctx,
+                );
+            } else {
                 getLogger(scenario).info(
                     `NOK: ${pad(res.action, 50)} ${res.duration} ms`,
                     ctx,
                 );
+            }
         });
 
         getLogger(scenario).info(pad(MSG_WIDTH, '#', '#'), ctx);
@@ -253,7 +271,7 @@ async function stopProcessIfUnsuccessfulResults(): Promise<void> {
     const diagrams = [];
     RESULTS.forEach((res, scenario) => {
         diagrams.push(generateSequenceDiagram(scenario));
-        if (res.some(t => t.successful === false)) {
+        if (res.some(t => t.successful === false && t.allowFailure === false)) {
             anyError = true;
         }
     });

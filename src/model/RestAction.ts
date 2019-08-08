@@ -44,6 +44,8 @@ class RestAction implements Action {
 
     public invokeEvenOnFail = false;
 
+    public allowFailure = false;
+
     public constructor(
         name: string,
         desc = name,
@@ -59,6 +61,7 @@ class RestAction implements Action {
         validators = actionDef.responseValidation,
         vars = actionDef.variables,
         invokeOnFail = actionDef.invokeEvenOnFail,
+        allowFailure = actionDef.allowFailure,
     ) {
         this.name = name;
         this.description = desc;
@@ -73,6 +76,7 @@ class RestAction implements Action {
         this.responseValidation = validators ? [].concat(validators) : [];
         this.variables = vars;
         this.invokeEvenOnFail = invokeOnFail;
+        this.allowFailure = allowFailure;
     }
 
     public static fromTemplate(
@@ -104,6 +108,7 @@ class RestAction implements Action {
                 ? Object.assign(template.variables, actionDef.variables)
                 : actionDef.variables,
             actionDef.invokeEvenOnFail || template.invokeEvenOnFail,
+            actionDef.allowFailure || template.allowFailure,
         );
     }
 
