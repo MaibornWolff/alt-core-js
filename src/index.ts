@@ -271,7 +271,7 @@ async function stopProcessIfUnsuccessfulResults(): Promise<void> {
     const diagrams = [];
     RESULTS.forEach((res, scenario) => {
         diagrams.push(generateSequenceDiagram(scenario));
-        if (res.some(t => t.successful === false && t.allowFailure === false)) {
+        if (res.some(t => t.successful === false && t.allowFailure !== true)) {
             anyError = true;
         }
     });
