@@ -37,6 +37,7 @@ describe('Scenario loading', () => {
                 invoke: null,
                 method: 'GET',
                 invokeEvenOnFail: false,
+                allowFailure: false,
                 data: {},
             },
         ];
@@ -75,6 +76,7 @@ describe('Scenario loading', () => {
                 type: ActionType.TIMER,
                 invoke: null,
                 invokeEvenOnFail: false,
+                allowFailure: false,
             },
             {
                 name: 'do-something-after',
@@ -82,6 +84,7 @@ describe('Scenario loading', () => {
                 type: ActionType.TIMER,
                 invoke: null,
                 invokeEvenOnFail: false,
+                allowFailure: false,
             },
             {
                 name: 'do-something',
@@ -89,6 +92,7 @@ describe('Scenario loading', () => {
                 type: ActionType.REST,
                 invoke: null,
                 invokeEvenOnFail: true,
+                allowFailure: false,
             },
         ];
         const result = loadScenariosById(
@@ -111,6 +115,7 @@ describe('Scenario loading', () => {
                 invoke: null,
                 method: 'GET',
                 invokeEvenOnFail: false,
+                allowFailure: false,
             },
         ];
         const result = loadScenariosById(
@@ -132,6 +137,7 @@ describe('Scenario loading', () => {
                     userId: 1,
                 },
                 invokeEvenOnFail: false,
+                allowFailure: false,
             },
         ];
         const result = loadScenariosById(
@@ -153,6 +159,7 @@ describe('Scenario loading', () => {
                 invoke: null,
                 responseValidation: ['userId !== null'],
                 invokeEvenOnFail: false,
+                allowFailure: false,
             },
         ];
         const result = loadScenariosById(
@@ -180,6 +187,7 @@ describe('Scenario loading', () => {
                 invoke: null,
                 method: 'GET',
                 invokeEvenOnFail: false,
+                allowFailure: false,
             },
         ];
         const result = loadScenariosById(

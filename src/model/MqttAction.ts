@@ -37,6 +37,8 @@ class MqttAction implements Action {
 
     invokeEvenOnFail = false;
 
+    allowFailure = false;
+
     constructor(
         name: string,
         desc = name,
@@ -52,6 +54,7 @@ class MqttAction implements Action {
         protoFile = mqttDefinition.protoFile,
         protoClass = mqttDefinition.protoClass,
         invokeEvenOnFail = mqttDefinition.invokeEvenOnFail,
+        allowFailure = mqttDefinition.allowFailure,
     ) {
         this.name = name;
         this.url = url;
@@ -66,6 +69,7 @@ class MqttAction implements Action {
         this.protoClass = protoClass;
         this.description = desc;
         this.invokeEvenOnFail = invokeEvenOnFail;
+        this.allowFailure = allowFailure;
     }
 
     static fromTemplate(mqttDefinition: any, template: MqttAction): MqttAction {
