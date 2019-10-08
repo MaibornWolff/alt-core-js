@@ -81,9 +81,8 @@ class MqttAction implements Action {
     }
 
     invoke(scenario: Scenario): ActionCallback {
-        const promise = new Promise(resolve => {
-            this.invokeAsync(scenario);
-            resolve();
+        const promise = new Promise((resolve, reject) => {
+            this.invokeAsync(scenario, resolve, reject);
         });
         return { promise, cancel: () => console.log('TODO') };
     }
@@ -92,7 +91,11 @@ class MqttAction implements Action {
         return decodeProto(this.protoFile, this.protoClass, buffer);
     }
 
-    invokeAsync(scenario: Scenario): void {
+    invokeAsync(
+        scenario: Scenario,
+        resolve: (value?: unknown) => void,
+        reject: (reason?: unknown) => void,
+    ): void {
         const registeredMessageFilters = this.messageFilter;
         const messageType = this.messageType || 'json';
 
@@ -153,6 +156,7 @@ class MqttAction implements Action {
                         `Error while subscribing to ${this.topic}: ${error}`,
                         ctx,
                     );
+                    reject();
                 } else {
                     getLogger(scenario.name).debug(
                         `Successfully subscribed to '${granted[0].topic}' (qos: ${granted[0].qos})`,
@@ -201,6 +205,9 @@ class MqttAction implements Action {
                     `Unexpected number of MQTT updates retrieved: ${numberOfRetrievedMessages} (expected: ${this.expectedNumberOfMessages})`,
                     ctx,
                 );
+                reject();
+            } else {
+                resolve();
             }
         });
 
@@ -209,8 +216,10 @@ class MqttAction implements Action {
                 `Error during connection: ${error}`,
                 ctx,
             );
+            reject();
         });
     }
+    ƒ;
 }
 
 export { MqttAction };

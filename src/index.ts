@@ -147,7 +147,8 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
         (stop[0] * 1e9 + stop[1]) * 1e-6;
 
     let successful = true;
-    const ASYNC_ACTIONS = [];
+    const actionsToCancel = [];
+    const actionsToAwaitAtEnd = [];
 
     const handleError = (
         reason: unknown,
@@ -197,12 +198,7 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
         const start = process.hrtime();
 
         const actionCallback = action.invoke(scenario);
-        if (action.type === ActionType.WEBSOCKET) {
-            ASYNC_ACTIONS.push(actionCallback);
-        }
-
-        // eslint-disable-next-line no-await-in-loop
-        await actionCallback.promise
+        const actionPromise = actionCallback.promise
             .then(result => {
                 const duration = timeDiffInMs(process.hrtime(start)).toFixed(2);
 
@@ -225,12 +221,23 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
                 );
             })
             .catch(reason => handleError(reason, action, start));
+
+        if (action.type === ActionType.WEBSOCKET) {
+            actionsToCancel.push(actionCallback);
+        }
+        if (action.type === ActionType.MQTT) {
+            actionsToAwaitAtEnd.push(actionPromise);
+        } else {
+            // eslint-disable-next-line no-await-in-loop
+            await actionPromise;
+        }
     }
 
     // stop all async running actions
-    ASYNC_ACTIONS.forEach(callback => {
+    actionsToCancel.forEach(callback => {
         callback.cancel();
     });
+    await Promise.all(actionsToAwaitAtEnd);
 }
 
 function printResults(): void {
