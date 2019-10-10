@@ -106,9 +106,8 @@ class WebSocketAction implements Action {
     }
 
     invoke(scenario: Scenario): ActionCallback {
-        const promise = new Promise(resolve => {
-            this.invokeAsync(scenario);
-            resolve();
+        const promise = new Promise((resolve, reject) => {
+            this.invokeAsync(scenario, resolve, reject);
         });
 
         return {
@@ -117,7 +116,11 @@ class WebSocketAction implements Action {
         };
     }
 
-    invokeAsync(scenario: Scenario): void {
+    invokeAsync(
+        scenario: Scenario,
+        resolve: (value?: unknown) => void,
+        reject: (reason?: unknown) => void,
+    ): void {
         const ctx = { scenario: scenario.name, action: this.name };
         const resolvedUrl = injectEvalAndVarsToString(
             this.url,
@@ -184,7 +187,7 @@ class WebSocketAction implements Action {
             if (code === 1006 && this.reconnected <= MAX_RECONNECTIONS) {
                 logDebug('reconnecting...');
                 this.reconnected++;
-                this.invokeAsync(scenario);
+                this.invokeAsync(scenario, resolve, reject);
             } else {
                 logDebug(`Successfully closed WS connection: ${code}`);
                 if (
@@ -193,12 +196,16 @@ class WebSocketAction implements Action {
                     logError(
                         `Unexpected number of messages retrieved: ${this.receivedMessages.size} (expected: ${this.expectedNumberOfMessages})`,
                     );
+                    reject();
+                } else {
+                    resolve();
                 }
             }
         });
 
         this.wsInstance.on('error', err => {
             logError(`${err}`);
+            reject();
         });
     }
 }

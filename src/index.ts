@@ -225,7 +225,10 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
         if (action.type === ActionType.WEBSOCKET) {
             actionsToCancel.push(actionCallback);
         }
-        if (action.type === ActionType.MQTT) {
+        if (
+            action.type === ActionType.MQTT ||
+            action.type === ActionType.WEBSOCKET
+        ) {
             actionsToAwaitAtEnd.push(actionPromise);
         } else {
             // eslint-disable-next-line no-await-in-loop
