@@ -1,7 +1,7 @@
 import 'mocha';
 import * as WebSocket from 'ws';
 import { expect } from 'chai';
-import { runMultipleSceanriosWithConfigAsync } from '../../../index';
+import { runMultipleScenariosWithConfigAsync } from '../../../index';
 
 describe('WebSocket Action', () => {
     const actionDir = 'src/tests/integration/webSocket/resources/actions';
@@ -25,7 +25,7 @@ describe('WebSocket Action', () => {
         const scenarioPath =
             'src/tests/integration/webSocket/resources/scenarios/s1-webSocketExpectingTheSentMessageToBeEchoed.yaml';
 
-        const result = await runMultipleSceanriosWithConfigAsync(
+        const result = await runMultipleScenariosWithConfigAsync(
             actionDir,
             outDir,
             envConfigDir,
@@ -44,7 +44,7 @@ describe('WebSocket Action', () => {
         const scenarioPath =
             'src/tests/integration/webSocket/resources/scenarios/s2-webSocketExpectingSomethingElseThenTheSentDataToBeReceived.yaml';
 
-        const result = await runMultipleSceanriosWithConfigAsync(
+        const result = await runMultipleScenariosWithConfigAsync(
             actionDir,
             outDir,
             envConfigDir,

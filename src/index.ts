@@ -24,14 +24,33 @@ interface RunConfiguration {
     drawDiagrams?: boolean;
 }
 
+// TODO: add exact version number for deprecation
+/**
+ * @deprecated since 1.x.0, use {@link runMultipleScenariosWithConfig} instead
+ */
 export const runMultipleSceanriosWithConfig = (
     actionDir: string,
     outDir = 'out',
     envConfigDir: string,
     runConfig: RunConfiguration,
     scenarioPaths: string[],
+): void =>
+    runMultipleScenariosWithConfig(
+        actionDir,
+        outDir,
+        envConfigDir,
+        runConfig,
+        scenarioPaths,
+    );
+
+export const runMultipleScenariosWithConfig = (
+    actionDir: string,
+    outDir = 'out',
+    envConfigDir: string,
+    runConfig: RunConfiguration,
+    scenarioPaths: string[],
 ): void => {
-    runMultipleSceanriosWithConfigAsync(
+    runMultipleScenariosWithConfigAsync(
         actionDir,
         outDir,
         envConfigDir,
@@ -42,7 +61,7 @@ export const runMultipleSceanriosWithConfig = (
     });
 };
 
-export const runMultipleSceanriosWithConfigAsync = async (
+export const runMultipleScenariosWithConfigAsync = async (
     actionDir: string,
     outDir = 'out',
     envConfigDir: string,
