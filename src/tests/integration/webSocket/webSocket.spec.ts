@@ -32,12 +32,13 @@ describe('WebSocket Action', () => {
             {
                 numberOfScenariosRunInParallel: 1,
                 environmentNameToBeUsed: environment,
+                drawDiagrams: false,
             },
             [scenarioPath],
         );
 
         expect(result).to.be.equal(true);
-    }).timeout(4000);
+    });
 
     it('should fail permorming s2', async () => {
         const scenarioPath =
@@ -50,10 +51,11 @@ describe('WebSocket Action', () => {
             {
                 numberOfScenariosRunInParallel: 1,
                 environmentNameToBeUsed: environment,
+                drawDiagrams: false,
             },
             [scenarioPath],
         );
 
         expect(result).to.be.equal(false);
-    }).timeout(4000);
+    });
 });

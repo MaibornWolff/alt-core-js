@@ -21,6 +21,7 @@ process.env.PLANTUML_LIMIT_SIZE = '16384';
 interface RunConfiguration {
     numberOfScenariosRunInParallel?: number;
     environmentNameToBeUsed?: string;
+    drawDiagrams?: boolean;
 }
 
 export const runMultipleSceanriosWithConfig = (
@@ -51,6 +52,7 @@ export const runMultipleSceanriosWithConfigAsync = async (
     const {
         numberOfScenariosRunInParallel = 10,
         environmentNameToBeUsed = 'none',
+        drawDiagrams = true,
     } = runConfig;
 
     try {
@@ -103,7 +105,11 @@ export const runMultipleSceanriosWithConfigAsync = async (
             );
 
             resultPromises.push(
-                processScenarios(scenarios, numberOfScenariosRunInParallel),
+                processScenarios(
+                    scenarios,
+                    numberOfScenariosRunInParallel,
+                    drawDiagrams,
+                ),
             );
         });
 
@@ -140,6 +146,7 @@ export const runScenario = (
 async function processScenarios(
     scenarios: Scenario[],
     numberOfScenariosRunInParallel: number,
+    drawDiagrams: boolean,
 ): Promise<boolean> {
     for (let i = 0; i < scenarios.length; i += numberOfScenariosRunInParallel) {
         // eslint-disable-next-line no-await-in-loop
@@ -150,7 +157,7 @@ async function processScenarios(
         );
     }
     printResults();
-    return generateDiagramsAndDetermineSuccess();
+    return generateDiagramsAndDetermineSuccess(drawDiagrams);
 }
 
 async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
@@ -301,11 +308,15 @@ function printResults(): void {
     });
 }
 
-async function generateDiagramsAndDetermineSuccess(): Promise<boolean> {
+async function generateDiagramsAndDetermineSuccess(
+    drawDiagrams: boolean,
+): Promise<boolean> {
     let anyError = false;
     const diagrams = [];
     RESULTS.forEach((results, scenario) => {
-        diagrams.push(generateSequenceDiagram(scenario));
+        if (drawDiagrams) {
+            diagrams.push(generateSequenceDiagram(scenario));
+        }
         anyError =
             anyError || results.some(result => result.isConsideredFailure());
     });
