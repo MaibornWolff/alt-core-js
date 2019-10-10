@@ -1,13 +1,13 @@
 class TestResult {
-    action: string;
+    public action: string;
 
-    duration: string;
+    public duration: string;
 
-    successful: boolean;
+    public successful: boolean;
 
-    allowFailure: boolean;
+    public allowFailure: boolean;
 
-    constructor(
+    public constructor(
         action: string,
         duration: string,
         successful: boolean,
@@ -17,6 +17,10 @@ class TestResult {
         this.duration = duration;
         this.successful = successful;
         this.allowFailure = allowFailure;
+    }
+
+    public isConsideredFailure(): boolean {
+        return this.successful === false && this.allowFailure !== true;
     }
 }
 

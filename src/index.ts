@@ -9,6 +9,7 @@ import { Scenario } from './model/Scenario';
 import { TestResult } from './model/TestResult';
 import { loadAllScenarios, loadScenariosById } from './scenarioLoading';
 import { loadYamlConfiguration } from './yamlParsing';
+import { ActionCallback } from './model/ActionCallback';
 
 const RESULTS: Map<string, TestResult[]> = new Map();
 
@@ -89,7 +90,9 @@ export const runMultipleSceanriosWithConfig = (
     }
 };
 
-/* deprected */
+/**
+ * @deprecated since 1.5.0, use {@link runMultipleSceanriosWithConfig} instead
+ */
 export const runScenario = (
     scenarioPath: string,
     actionDir: string,
@@ -147,8 +150,8 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
         (stop[0] * 1e9 + stop[1]) * 1e-6;
 
     let successful = true;
-    const actionsToCancel = [];
-    const actionsToAwaitAtEnd = [];
+    const actionsToCancel: ActionCallback[] = [];
+    const actionsToAwaitAtEnd: Promise<unknown>[] = [];
 
     const handleError = (
         reason: unknown,
@@ -179,7 +182,6 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
             if (action.allowFailure !== true) {
                 successful = false;
             }
-            // process.exit(1);
         }
     };
 
@@ -231,15 +233,12 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
         ) {
             actionsToAwaitAtEnd.push(actionPromise);
         } else {
-            // eslint-disable-next-line no-await-in-loop
-            await actionPromise;
+            await actionPromise; // eslint-disable-line no-await-in-loop
         }
     }
 
     // stop all async running actions
-    actionsToCancel.forEach(callback => {
-        callback.cancel();
-    });
+    actionsToCancel.forEach(callback => callback.cancel());
     await Promise.all(actionsToAwaitAtEnd);
 }
 
@@ -279,11 +278,10 @@ function printResults(): void {
 async function stopProcessIfUnsuccessfulResults(): Promise<void> {
     let anyError = false;
     const diagrams = [];
-    RESULTS.forEach((res, scenario) => {
+    RESULTS.forEach((results, scenario) => {
         diagrams.push(generateSequenceDiagram(scenario));
-        if (res.some(t => t.successful === false && t.allowFailure !== true)) {
-            anyError = true;
-        }
+        anyError =
+            anyError || results.some(result => result.isConsideredFailure());
     });
     await Promise.all(diagrams);
     if (anyError) process.exit(1);
