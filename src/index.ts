@@ -30,6 +30,24 @@ export const runMultipleSceanriosWithConfig = (
     runConfig: RunConfiguration,
     scenarioPaths: string[],
 ): void => {
+    runMultipleSceanriosWithConfigAsync(
+        actionDir,
+        outDir,
+        envConfigDir,
+        runConfig,
+        scenarioPaths,
+    ).then(result => {
+        if (!result) process.exit(1);
+    });
+};
+
+export const runMultipleSceanriosWithConfigAsync = async (
+    actionDir: string,
+    outDir = 'out',
+    envConfigDir: string,
+    runConfig: RunConfiguration,
+    scenarioPaths: string[],
+): Promise<boolean> => {
     const {
         numberOfScenariosRunInParallel = 10,
         environmentNameToBeUsed = 'none',
@@ -74,6 +92,7 @@ export const runMultipleSceanriosWithConfig = (
             `Successfully loaded ${actions.length} actions`,
         );
 
+        const resultPromises: Promise<boolean>[] = [];
         scenarioPaths.forEach(scenarioPath => {
             getLogger('setup').debug(`Loading: ${scenarioPath} ...`);
             const scenarios: Scenario[] = scenarioPath.endsWith('yaml')
@@ -83,15 +102,22 @@ export const runMultipleSceanriosWithConfig = (
                 `Successfully loaded ${scenarios.length} scenario(s): ${scenarioPath}`,
             );
 
-            processScenarios(scenarios, numberOfScenariosRunInParallel);
+            resultPromises.push(
+                processScenarios(scenarios, numberOfScenariosRunInParallel),
+            );
         });
+
+        const results = await Promise.all(resultPromises);
+        return results.every(result => result);
     } catch (e) {
         getLogger('setup').error(e);
+        return false;
     }
 };
 
 /**
- * @deprecated since 1.5.0, use {@link runMultipleSceanriosWithConfig} instead
+ * @deprecated since 1.5.0, use {@link runMultipleSceanriosWithConfig} or
+ * {@link runMultipleSceanriosWithConfigAsync} instead
  */
 export const runScenario = (
     scenarioPath: string,
@@ -114,7 +140,7 @@ export const runScenario = (
 async function processScenarios(
     scenarios: Scenario[],
     numberOfScenariosRunInParallel: number,
-): Promise<void> {
+): Promise<boolean> {
     for (let i = 0; i < scenarios.length; i += numberOfScenariosRunInParallel) {
         // eslint-disable-next-line no-await-in-loop
         await Promise.all(
@@ -124,7 +150,7 @@ async function processScenarios(
         );
     }
     printResults();
-    stopProcessIfUnsuccessfulResults();
+    return generateDiagramsAndDetermineSuccess();
 }
 
 async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
@@ -275,7 +301,7 @@ function printResults(): void {
     });
 }
 
-async function stopProcessIfUnsuccessfulResults(): Promise<void> {
+async function generateDiagramsAndDetermineSuccess(): Promise<boolean> {
     let anyError = false;
     const diagrams = [];
     RESULTS.forEach((results, scenario) => {
@@ -284,7 +310,7 @@ async function stopProcessIfUnsuccessfulResults(): Promise<void> {
             anyError || results.some(result => result.isConsideredFailure());
     });
     await Promise.all(diagrams);
-    if (anyError) process.exit(1);
+    return !anyError;
 }
 
 export const OUTPUT_DIR = (): string => OUT_DIR;
