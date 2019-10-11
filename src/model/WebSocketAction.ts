@@ -107,7 +107,7 @@ class WebSocketAction implements Action {
     }
 
     public invoke(scenario: Scenario): ActionCallback {
-        const promise = new Promise((resolve, reject): void => {
+        const promise = new Promise((resolve, reject) => {
             this.invokeAsync(scenario, resolve, reject);
         });
 
