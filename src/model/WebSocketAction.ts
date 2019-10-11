@@ -1,4 +1,5 @@
 import { stringify } from 'querystring';
+import { runInNewContext } from 'vm';
 import * as WebSocket from 'ws';
 import { addWsMessage } from '../diagramDrawing';
 import { getLogger } from '../logging';
@@ -142,7 +143,7 @@ class WebSocketAction implements Action {
             getLogger(scenario.name).error(errorMessage, ctx);
         };
 
-        const isMessageRelevant = (msg: string): boolean => {
+        const isMessageRelevant = (msg: unknown): boolean => {
             if (registeredMessageFilters) {
                 return registeredMessageFilters.some((filter): boolean => {
                     const expandedFilter = injectEvalAndVarsToString(
@@ -150,7 +151,9 @@ class WebSocketAction implements Action {
                         scenario.cache,
                         ctx,
                     ).toString();
-                    const filterResult: boolean = eval(expandedFilter);
+                    const filterResult = !!runInNewContext(expandedFilter, {
+                        msg,
+                    });
                     logDebug(`Filter (${expandedFilter}): ${filterResult}`);
                     return filterResult;
                 });
