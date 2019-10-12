@@ -57,7 +57,7 @@ jobs:
           paths:
             - ./node_modules
       - run:
-          name: Check format
+          name: Lint
           command: npm run lint
 
   check-format:
