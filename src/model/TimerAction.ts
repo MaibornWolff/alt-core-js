@@ -6,19 +6,19 @@ import { ActionCallback } from './ActionCallback';
 import { addDelay } from '../diagramDrawing';
 
 class TimerAction implements Action {
-    name: string;
+    public name: string;
 
-    description: string;
+    public description: string;
 
-    type = ActionType.TIMER;
+    public type = ActionType.TIMER;
 
-    duration: number;
+    private duration: number;
 
-    invokeEvenOnFail = false;
+    public invokeEvenOnFail = false;
 
-    allowFailure = false;
+    public allowFailure = false;
 
-    constructor(
+    public constructor(
         name: string,
         desc = name,
         timerDefinition: any,
@@ -33,7 +33,7 @@ class TimerAction implements Action {
         this.allowFailure = allowFailure;
     }
 
-    static fromTemplate(
+    public static fromTemplate(
         timerDefinition: any,
         template: TimerAction,
     ): TimerAction {
@@ -46,10 +46,10 @@ class TimerAction implements Action {
         );
     }
 
-    invoke(scenario: Scenario): ActionCallback {
+    public invoke(scenario: Scenario): ActionCallback {
         const ctx = { scenario: scenario.name, action: this.name };
 
-        const promise = new Promise((resolve, reject) => {
+        const promise = new Promise(resolve => {
             setTimeout(() => {
                 getLogger(ctx.scenario).debug(
                     `Waited for ${this.duration} seconds!`,

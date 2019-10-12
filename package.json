@@ -13,7 +13,8 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "format:files": "prettier --write",
     "check-format": "prettier --list-different \"src/**/*.ts\"",
-    "lint": "eslint \"src/**/*.ts\""
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint-fix": "eslint --fix \"src/**/*.ts\""
   },
   "keywords": [],
   "author": "Bartosz Boron <www.github.com/bboron86>",
@@ -24,6 +25,7 @@
     "@types/js-yaml": "^3.12.1",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.7.12",
+    "@types/requestretry": "^1.12.5",
     "@types/ws": "^6.0.3",
     "@typescript-eslint/eslint-plugin": "^2.3.3",
     "@typescript-eslint/parser": "^2.3.3",
@@ -65,10 +67,10 @@
     "url": "https://github.com/MaibornWolff/alt-core-js/issues"
   },
   "lint-staged": {
-      "*.ts": [
-        "npm run format:files",
-        "git add"
-      ]
+    "*.ts": [
+      "npm run format:files",
+      "git add"
+    ]
   },
   "husky": {
     "hooks": {

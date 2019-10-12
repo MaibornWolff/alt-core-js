@@ -210,30 +210,27 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
         action: Action,
         start: [number, number],
     ): void => {
-        {
-            const duration = timeDiffInMs(process.hrtime(start)).toFixed(2);
+        const duration = timeDiffInMs(process.hrtime(start)).toFixed(2);
 
-            const scenarioResults = RESULTS.get(scenarioName);
-            if (scenarioResults)
-                scenarioResults.push(
-                    new TestResult(
-                        action.description,
-                        duration,
-                        false,
-                        action.allowFailure,
-                    ),
-                );
-
-            if (reason)
-                getLogger(scenario.name).error(JSON.stringify(reason), ctx);
-            getLogger(scenario.name).info(
-                pad(MSG_WIDTH, ` Time: ${duration} ms ###########`, '#'),
-                ctx,
+        const scenarioResults = RESULTS.get(scenarioName);
+        if (scenarioResults)
+            scenarioResults.push(
+                new TestResult(
+                    action.description,
+                    duration,
+                    false,
+                    action.allowFailure,
+                ),
             );
 
-            if (action.allowFailure !== true) {
-                successful = false;
-            }
+        if (reason) getLogger(scenario.name).error(JSON.stringify(reason), ctx);
+        getLogger(scenario.name).info(
+            pad(MSG_WIDTH, ` Time: ${duration} ms ###########`, '#'),
+            ctx,
+        );
+
+        if (action.allowFailure !== true) {
+            successful = false;
         }
     };
 
@@ -331,7 +328,7 @@ async function generateDiagramsAndDetermineSuccess(
     drawDiagrams: boolean,
 ): Promise<boolean> {
     let anyError = false;
-    const diagrams = [];
+    const diagrams: Promise<void>[] = [];
     RESULTS.forEach((results, scenario) => {
         if (drawDiagrams) {
             diagrams.push(generateSequenceDiagram(scenario));

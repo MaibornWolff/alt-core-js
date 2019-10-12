@@ -13,6 +13,7 @@ export const loadYamlConfiguration = (pathToFile: string): any => {
         return yamlConfig;
     }
     getLogger('unknown').warn(`Skipping unsupported file: ${pathToFile}`);
+    return undefined;
 };
 
 export const nameFromYamlConfig = (fileName: string): string =>

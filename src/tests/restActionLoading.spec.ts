@@ -17,8 +17,9 @@ describe('REST action loading', () => {
         const param = 'param';
         const user = 'user';
         const file = 'file';
-        expect(result.name).to.be.equal('restAction');
-        expect(result.type).to.be.equal(ActionType.REST);
+        expect(result).to.exist;
+        expect(result && result.name).to.be.equal('restAction');
+        expect(result && result.type).to.be.equal(ActionType.REST);
         expect((result as RestAction).url).to.be.equal(
             'https://localhost:8080/all',
         );

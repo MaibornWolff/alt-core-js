@@ -9,17 +9,17 @@ import { MqttPublishAction } from './MqttPublishAction';
 
 class Scenario {
     /* retrieved from the file name */
-    name: string;
+    public name: string;
 
     /* retrieved from the YAML definition */
-    description: string;
+    public description: string;
 
-    actions: Action[] = [];
+    public actions: Action[] = [];
 
     /* internal vars */
-    cache: Map<string, any>;
+    public cache: Map<string, any>;
 
-    constructor(
+    public constructor(
         fileName: string,
         yamlConfig: any,
         actionConfig: Action[],
@@ -45,39 +45,48 @@ class Scenario {
                 switch (actionTemplate.type) {
                     case ActionType.REST:
                         this.actions.push(
-                            RestAction.fromTemplate(actionDef, <RestAction>(
-                                actionTemplate
-                            )),
+                            RestAction.fromTemplate(
+                                actionDef,
+                                actionTemplate as RestAction,
+                            ),
                         );
                         break;
                     case ActionType.TIMER:
                         this.actions.push(
-                            TimerAction.fromTemplate(actionDef, <TimerAction>(
-                                actionTemplate
-                            )),
+                            TimerAction.fromTemplate(
+                                actionDef,
+                                actionTemplate as TimerAction,
+                            ),
                         );
                         break;
                     case ActionType.WEBSOCKET:
                         this.actions.push(
-                            WebSocketAction.fromTemplate(actionDef, <
-                                WebSocketAction
-                            >actionTemplate),
+                            WebSocketAction.fromTemplate(
+                                actionDef,
+                                actionTemplate as WebSocketAction,
+                            ),
                         );
                         break;
                     case ActionType.MQTT:
                         this.actions.push(
-                            MqttAction.fromTemplate(actionDef, <MqttAction>(
-                                actionTemplate
-                            )),
+                            MqttAction.fromTemplate(
+                                actionDef,
+                                actionTemplate as MqttAction,
+                            ),
                         );
                         break;
                     case ActionType.MQTT_PUBLISH:
                         this.actions.push(
-                            MqttPublishAction.fromTemplate(actionDef, <
-                                MqttPublishAction
-                            >actionTemplate),
+                            MqttPublishAction.fromTemplate(
+                                actionDef,
+                                actionTemplate as MqttPublishAction,
+                            ),
                         );
                         break;
+                    default:
+                        getLogger(this.name).error(
+                            `Action template ${actionTemplate.name} is of unknown type ${actionTemplate.type}`,
+                        );
                 }
             } else {
                 getLogger(this.name).error(

@@ -3,9 +3,15 @@ import { expect } from 'chai';
 import { loadAllScenarios, loadScenariosById } from '../scenarioLoading';
 import { ActionType } from '../model/ActionType';
 import { RestAction } from '../model/RestAction';
+import { ActionCallback } from '../model/ActionCallback';
 
 describe('Scenario loading', () => {
     const TEST_SCENARIO_PATH = 'src/tests/resources/scenarios';
+
+    const dummyActionCallback = (): ActionCallback => ({
+        promise: new Promise(() => {}),
+        cancel: () => {},
+    });
 
     it('should be able to parse scenario files in the correct folder', () => {
         const testActionCatalog = [];
@@ -32,9 +38,9 @@ describe('Scenario loading', () => {
         const testActionCatalog = [
             {
                 name: 'do-something',
-                description: null,
+                description: '',
                 type: ActionType.REST,
-                invoke: null,
+                invoke: dummyActionCallback,
                 method: 'GET',
                 invokeEvenOnFail: false,
                 allowFailure: false,
@@ -72,25 +78,25 @@ describe('Scenario loading', () => {
         const testActionCatalog = [
             {
                 name: 'do-something-before',
-                description: null,
+                description: '',
                 type: ActionType.TIMER,
-                invoke: null,
+                invoke: dummyActionCallback,
                 invokeEvenOnFail: false,
                 allowFailure: false,
             },
             {
                 name: 'do-something-after',
-                description: null,
+                description: '',
                 type: ActionType.TIMER,
-                invoke: null,
+                invoke: dummyActionCallback,
                 invokeEvenOnFail: false,
                 allowFailure: false,
             },
             {
                 name: 'do-something',
-                description: null,
+                description: '',
                 type: ActionType.REST,
-                invoke: null,
+                invoke: dummyActionCallback,
                 invokeEvenOnFail: true,
                 allowFailure: false,
             },
@@ -110,9 +116,9 @@ describe('Scenario loading', () => {
         const testActionCatalog = [
             {
                 name: 'do-something',
-                description: null,
+                description: '',
                 type: ActionType.REST,
-                invoke: null,
+                invoke: dummyActionCallback,
                 method: 'GET',
                 invokeEvenOnFail: false,
                 allowFailure: false,
@@ -130,9 +136,9 @@ describe('Scenario loading', () => {
         const testActionCatalog = [
             {
                 name: 'do-something',
-                description: null,
+                description: '',
                 type: ActionType.REST,
-                invoke: null,
+                invoke: dummyActionCallback,
                 data: {
                     userId: 1,
                 },
@@ -154,9 +160,9 @@ describe('Scenario loading', () => {
         const testActionCatalog = [
             {
                 name: 'do-something',
-                description: null,
+                description: '',
                 type: ActionType.REST,
-                invoke: null,
+                invoke: dummyActionCallback,
                 responseValidation: ['userId !== null'],
                 invokeEvenOnFail: false,
                 allowFailure: false,
@@ -182,9 +188,9 @@ describe('Scenario loading', () => {
         const testActionCatalog = [
             {
                 name: 'do-something',
-                description: null,
+                description: '',
                 type: ActionType.REST,
-                invoke: null,
+                invoke: dummyActionCallback,
                 method: 'GET',
                 invokeEvenOnFail: false,
                 allowFailure: false,

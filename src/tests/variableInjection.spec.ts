@@ -66,7 +66,6 @@ describe('string injection', () => {
     });
 
     it('should be able to evaluate expressions with spaces in them', () => {
-        const now = Date.now();
         const result = injectEvalAndVarsToString(
             '{{{new Date().toISOString()}}}',
             new Map(),
