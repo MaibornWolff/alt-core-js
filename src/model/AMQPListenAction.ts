@@ -192,7 +192,7 @@ export class AMQPListenAction implements Action {
         const registeredMessageFilters = this.messageFilter;
 
         if (registeredMessageFilters) {
-            return registeredMessageFilters.some((filter): boolean => {
+            return registeredMessageFilters.some(filter => {
                 const expandedFilter = injectEvalAndVarsToString(
                     filter,
                     scenario.cache,
