@@ -4,6 +4,7 @@ enum ActionType {
     WEBSOCKET,
     MQTT,
     MQTT_PUBLISH,
+    AMQP_LISTEN,
 }
 
 export { ActionType };
