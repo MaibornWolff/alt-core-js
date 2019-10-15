@@ -176,9 +176,10 @@ class WebSocketAction implements Action {
         });
 
         this.wsInstance.on('message', data => {
-            const parsedMessage = JSON.parse(data.toString());
+            const dataString = data.toString();
+            const parsedMessage = JSON.parse(dataString);
             if (isMessageRelevant(parsedMessage)) {
-                this.receivedMessages.add(data.toString());
+                this.receivedMessages.add(dataString);
                 logDebug(
                     `Relevant WS message received (${this.receivedMessages.size}/${this.expectedNumberOfMessages}): ${data}`,
                 );

@@ -87,7 +87,7 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
  * @param actionDef The action definition
  * @param envConfig The environment configuration
  */
-const getHost = (actionDef: any, envConfig: any): string | void => {
+const getHost = (actionDef: any, envConfig: any): string | undefined => {
     if (isRestAction(actionDef)) {
         if (actionDef.service.startsWith('http')) {
             return actionDef.service;

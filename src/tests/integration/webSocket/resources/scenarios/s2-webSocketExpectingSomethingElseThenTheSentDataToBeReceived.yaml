@@ -1,4 +1,4 @@
-description: 'A simple scenario for testing WebSocket functionality. It expects the data that is sent to different from the received data.'
+description: 'A simple scenario for testing WebSocket functionality. It expects the data that is sent to be different from the received data.'
 actions:
     - name: webSocket
       expectedNumberOfMessages: 1

@@ -40,7 +40,7 @@ describe('WebSocket Action', () => {
         expect(result).to.be.equal(true);
     });
 
-    it('should fail permorming s2', async () => {
+    it('should fail performing s2', async () => {
         const scenarioPath =
             'src/tests/integration/webSocket/resources/scenarios/s2-webSocketExpectingSomethingElseThenTheSentDataToBeReceived.yaml';
 
