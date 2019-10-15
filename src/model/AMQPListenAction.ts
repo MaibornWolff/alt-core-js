@@ -35,7 +35,7 @@ export class AMQPListenAction implements Action {
 
     private numberOfReceivedMessages = 0;
 
-    private amqpConnection: Connection | void = undefined;
+    private amqpConnection: Connection | undefined = undefined;
 
     public constructor(
         name: string,
