@@ -47,15 +47,14 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
                 new TimerAction(nameFromYamlConfig(file), null, actionDef),
             );
         } else if (isWebsocketAction(actionDef)) {
+            const host = getHost(actionDef, envConfig);
             loadedActions.push(
                 new WebSocketAction(
                     nameFromYamlConfig(file),
                     null,
                     actionDef,
                     actionDef.service,
-                    `wss://${envConfig[actionDef.service]}${
-                        actionDef.endpoint
-                    }`,
+                    host + actionDef.endpoint,
                 ),
             );
         } else if (isMqttAction(actionDef)) {
@@ -82,17 +81,30 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
 
 /**
  * Extracts the host from the action definition if present or from the
- * environment configuration. If the http protocol is not specified explicitly,
- * https is assumed.
+ * environment configuration. In case of REST actions, if the http protocol is
+ * not specified explicitly, https is assumed. In case of WebSocket actions, if
+ * the ws protocol is not specified explicitly, wss is assumed.
  * @param actionDef The action definition
  * @param envConfig The environment configuration
  */
-const getHost = (actionDef: any, envConfig: any): string => {
-    if (actionDef.service.startsWith('http')) {
-        return actionDef.service;
+const getHost = (actionDef: any, envConfig: any): string | undefined => {
+    if (isRestAction(actionDef)) {
+        if (actionDef.service.startsWith('http')) {
+            return actionDef.service;
+        }
+        if (envConfig[actionDef.service].startsWith('http')) {
+            return envConfig[actionDef.service];
+        }
+        return `https://${envConfig[actionDef.service]}`;
     }
-    if (envConfig[actionDef.service].startsWith('http')) {
-        return envConfig[actionDef.service];
+    if (isWebsocketAction(actionDef)) {
+        if (actionDef.service.startsWith('ws')) {
+            return actionDef.service;
+        }
+        if (envConfig[actionDef.service].startsWith('ws')) {
+            return envConfig[actionDef.service];
+        }
+        return `wss://${envConfig[actionDef.service]}`;
     }
-    return `https://${envConfig[actionDef.service]}`;
+    return undefined;
 };

@@ -9,6 +9,7 @@ import { Scenario } from './model/Scenario';
 import { TestResult } from './model/TestResult';
 import { loadAllScenarios, loadScenariosById } from './scenarioLoading';
 import { loadYamlConfiguration } from './yamlParsing';
+import { ActionCallback } from './model/ActionCallback';
 
 const RESULTS: Map<string, TestResult[]> = new Map();
 
@@ -20,18 +21,57 @@ process.env.PLANTUML_LIMIT_SIZE = '16384';
 interface RunConfiguration {
     numberOfScenariosRunInParallel?: number;
     environmentNameToBeUsed?: string;
+    drawDiagrams?: boolean;
 }
 
+// TODO: add exact version number for deprecation
+/**
+ * @deprecated since 1.x.0, use {@link runMultipleScenariosWithConfig} instead
+ */
 export const runMultipleSceanriosWithConfig = (
     actionDir: string,
     outDir = 'out',
     envConfigDir: string,
     runConfig: RunConfiguration,
     scenarioPaths: string[],
+): void =>
+    runMultipleScenariosWithConfig(
+        actionDir,
+        outDir,
+        envConfigDir,
+        runConfig,
+        scenarioPaths,
+    );
+
+export const runMultipleScenariosWithConfig = (
+    actionDir: string,
+    outDir = 'out',
+    envConfigDir: string,
+    runConfig: RunConfiguration,
+    scenarioPaths: string[],
 ): void => {
+    runMultipleScenariosWithConfigAsync(
+        actionDir,
+        outDir,
+        envConfigDir,
+        runConfig,
+        scenarioPaths,
+    ).then(result => {
+        if (!result) process.exit(1);
+    });
+};
+
+export const runMultipleScenariosWithConfigAsync = async (
+    actionDir: string,
+    outDir = 'out',
+    envConfigDir: string,
+    runConfig: RunConfiguration,
+    scenarioPaths: string[],
+): Promise<boolean> => {
     const {
         numberOfScenariosRunInParallel = 10,
         environmentNameToBeUsed = 'none',
+        drawDiagrams = true,
     } = runConfig;
 
     try {
@@ -73,6 +113,7 @@ export const runMultipleSceanriosWithConfig = (
             `Successfully loaded ${actions.length} actions`,
         );
 
+        const resultPromises: Promise<boolean>[] = [];
         scenarioPaths.forEach(scenarioPath => {
             getLogger('setup').debug(`Loading: ${scenarioPath} ...`);
             const scenarios: Scenario[] = scenarioPath.endsWith('yaml')
@@ -82,14 +123,27 @@ export const runMultipleSceanriosWithConfig = (
                 `Successfully loaded ${scenarios.length} scenario(s): ${scenarioPath}`,
             );
 
-            processScenarios(scenarios, numberOfScenariosRunInParallel);
+            resultPromises.push(
+                processScenarios(
+                    scenarios,
+                    numberOfScenariosRunInParallel,
+                    drawDiagrams,
+                ),
+            );
         });
+
+        const results = await Promise.all(resultPromises);
+        return results.every(result => result);
     } catch (e) {
         getLogger('setup').error(e);
+        return false;
     }
 };
 
-/* deprected */
+/**
+ * @deprecated since 1.5.0, use {@link runMultipleSceanriosWithConfig} or
+ * {@link runMultipleSceanriosWithConfigAsync} instead
+ */
 export const runScenario = (
     scenarioPath: string,
     actionDir: string,
@@ -111,7 +165,8 @@ export const runScenario = (
 async function processScenarios(
     scenarios: Scenario[],
     numberOfScenariosRunInParallel: number,
-): Promise<void> {
+    drawDiagrams: boolean,
+): Promise<boolean> {
     for (let i = 0; i < scenarios.length; i += numberOfScenariosRunInParallel) {
         // eslint-disable-next-line no-await-in-loop
         await Promise.all(
@@ -121,7 +176,7 @@ async function processScenarios(
         );
     }
     printResults();
-    stopProcessIfUnsuccessfulResults();
+    return generateDiagramsAndDetermineSuccess(drawDiagrams);
 }
 
 async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
@@ -147,7 +202,8 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
         (stop[0] * 1e9 + stop[1]) * 1e-6;
 
     let successful = true;
-    const ASYNC_ACTIONS = [];
+    const actionsToCancel: ActionCallback[] = [];
+    const actionsToAwaitAtEnd: Promise<unknown>[] = [];
 
     const handleError = (
         reason: unknown,
@@ -178,7 +234,6 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
             if (action.allowFailure !== true) {
                 successful = false;
             }
-            // process.exit(1);
         }
     };
 
@@ -197,12 +252,7 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
         const start = process.hrtime();
 
         const actionCallback = action.invoke(scenario);
-        if (action.type === ActionType.WEBSOCKET) {
-            ASYNC_ACTIONS.push(actionCallback);
-        }
-
-        // eslint-disable-next-line no-await-in-loop
-        await actionCallback.promise
+        const actionPromise = actionCallback.promise
             .then(result => {
                 const duration = timeDiffInMs(process.hrtime(start)).toFixed(2);
 
@@ -225,12 +275,23 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
                 );
             })
             .catch(reason => handleError(reason, action, start));
+
+        if (action.type === ActionType.WEBSOCKET) {
+            actionsToCancel.push(actionCallback);
+        }
+        if (
+            action.type === ActionType.MQTT ||
+            action.type === ActionType.WEBSOCKET
+        ) {
+            actionsToAwaitAtEnd.push(actionPromise);
+        } else {
+            await actionPromise; // eslint-disable-line no-await-in-loop
+        }
     }
 
     // stop all async running actions
-    ASYNC_ACTIONS.forEach(callback => {
-        callback.cancel();
-    });
+    actionsToCancel.forEach(callback => callback.cancel());
+    await Promise.all(actionsToAwaitAtEnd);
 }
 
 function printResults(): void {
@@ -266,17 +327,20 @@ function printResults(): void {
     });
 }
 
-async function stopProcessIfUnsuccessfulResults(): Promise<void> {
+async function generateDiagramsAndDetermineSuccess(
+    drawDiagrams: boolean,
+): Promise<boolean> {
     let anyError = false;
     const diagrams = [];
-    RESULTS.forEach((res, scenario) => {
-        diagrams.push(generateSequenceDiagram(scenario));
-        if (res.some(t => t.successful === false && t.allowFailure !== true)) {
-            anyError = true;
+    RESULTS.forEach((results, scenario) => {
+        if (drawDiagrams) {
+            diagrams.push(generateSequenceDiagram(scenario));
         }
+        anyError =
+            anyError || results.some(result => result.isConsideredFailure());
     });
     await Promise.all(diagrams);
-    if (anyError) process.exit(1);
+    return !anyError;
 }
 
 export const OUTPUT_DIR = (): string => OUT_DIR;

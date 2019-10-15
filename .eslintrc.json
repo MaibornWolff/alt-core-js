@@ -25,6 +25,14 @@
     "no-eval": "off",
     "no-plusplus": "off",
     "@typescript-eslint/no-use-before-define": "off",
+    "@typescript-eslint/explicit-function-return-type": [
+      "warn",
+      {
+        "allowExpressions": true,
+        "allowTypedFunctionExpressions": true,
+        "allowHigherOrderFunctions": true
+      }
+    ],
     "no-restricted-syntax": [
       "error",
       {

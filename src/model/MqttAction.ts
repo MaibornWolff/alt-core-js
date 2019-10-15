@@ -1,4 +1,5 @@
 import { connect } from 'mqtt';
+import { runInNewContext } from 'vm';
 import { addMqttMessage } from '../diagramDrawing';
 import { getLogger } from '../logging';
 import { decodeProto } from '../protoParsing';
@@ -9,37 +10,37 @@ import { ActionType } from './ActionType';
 import { Scenario } from './Scenario';
 
 class MqttAction implements Action {
-    name: string;
+    public name: string;
 
-    description: string;
+    public description: string;
 
-    type = ActionType.MQTT;
+    public type = ActionType.MQTT;
 
-    url: string;
+    public invokeEvenOnFail = false;
 
-    username: string;
+    public allowFailure = false;
 
-    password: string;
+    private url: string;
 
-    topic: string;
+    private username: string;
 
-    durationInSec: number;
+    private password: string;
 
-    expectedNumberOfMessages: number;
+    private topic: string;
 
-    messageType: string;
+    private durationInSec: number;
 
-    messageFilter: string[];
+    private expectedNumberOfMessages: number;
 
-    protoFile: string;
+    private messageType: string;
 
-    protoClass: string;
+    private messageFilter: string[];
 
-    invokeEvenOnFail = false;
+    private protoFile: string;
 
-    allowFailure = false;
+    private protoClass: string;
 
-    constructor(
+    public constructor(
         name: string,
         desc = name,
         mqttDefinition: any,
@@ -72,7 +73,10 @@ class MqttAction implements Action {
         this.allowFailure = allowFailure;
     }
 
-    static fromTemplate(mqttDefinition: any, template: MqttAction): MqttAction {
+    public static fromTemplate(
+        mqttDefinition: any,
+        template: MqttAction,
+    ): MqttAction {
         return new MqttAction(
             template.name,
             mqttDefinition.description || mqttDefinition.name,
@@ -80,40 +84,45 @@ class MqttAction implements Action {
         );
     }
 
-    invoke(scenario: Scenario): ActionCallback {
-        const promise = new Promise(resolve => {
-            this.invokeAsync(scenario);
-            resolve();
+    public invoke(scenario: Scenario): ActionCallback {
+        const promise = new Promise((resolve, reject) => {
+            this.invokeAsync(scenario, resolve, reject);
         });
         return { promise, cancel: () => console.log('TODO') };
     }
 
-    decodeProtoPayload(buffer: Buffer): any {
+    public decodeProtoPayload(buffer: Buffer): { [k: string]: any } {
         return decodeProto(this.protoFile, this.protoClass, buffer);
     }
 
-    invokeAsync(scenario: Scenario): void {
+    private invokeAsync(
+        scenario: Scenario,
+        resolve: (value?: unknown) => void,
+        reject: (reason?: unknown) => void,
+    ): void {
         const registeredMessageFilters = this.messageFilter;
         const messageType = this.messageType || 'json';
 
-        const logDebug = function(debugMessage: string) {
+        const logDebug = (debugMessage: string): void => {
             getLogger(scenario.name).debug(debugMessage, ctx);
         };
 
-        const logError = function(errorMessage: string) {
+        const logError = (errorMessage: string): void => {
             getLogger(scenario.name).error(errorMessage, ctx);
         };
 
-        const isMessageRelevant = function(msg: any) {
+        const isMessageRelevant = (msg: unknown): boolean => {
             if (registeredMessageFilters) {
                 return registeredMessageFilters.some(filter => {
-                    filter = injectEvalAndVarsToString(
+                    const expandedFilter = injectEvalAndVarsToString(
                         filter,
                         scenario.cache,
                         ctx,
                     ).toString();
-                    const filterResult: boolean = eval(filter);
-                    logDebug(`Filter (${filter}): ${filterResult}`);
+                    const filterResult = !!runInNewContext(expandedFilter, {
+                        msg,
+                    });
+                    logDebug(`Filter (${expandedFilter}): ${filterResult}`);
                     return filterResult;
                 });
             }
@@ -143,20 +152,18 @@ class MqttAction implements Action {
         );
 
         client.on('connect', () => {
-            getLogger(scenario.name).debug(
+            logDebug(
                 `MQTT connection to ${this.url} successfully opened for ${this.durationInSec}s`,
-                ctx,
             );
-            client.subscribe(this.topic, (error: any, granted: any) => {
+            client.subscribe(this.topic, (error, granted) => {
                 if (error) {
-                    getLogger(scenario.name).error(
+                    logError(
                         `Error while subscribing to ${this.topic}: ${error}`,
-                        ctx,
                     );
+                    reject();
                 } else {
-                    getLogger(scenario.name).debug(
+                    logDebug(
                         `Successfully subscribed to '${granted[0].topic}' (qos: ${granted[0].qos})`,
-                        ctx,
                     );
                 }
             });
@@ -164,12 +171,12 @@ class MqttAction implements Action {
             setTimeout(() => client.end(), this.durationInSec * 1000);
         });
 
-        client.on('message', (topic: any, message: any) => {
+        client.on('message', (topic, message) => {
             let msgObj = {};
 
             if (messageType === 'json') {
                 msgObj = JSON.parse(message.toString());
-            } else if (messageType == 'proto') {
+            } else if (messageType === 'proto') {
                 msgObj = this.decodeProtoPayload(message);
             }
 
@@ -191,24 +198,24 @@ class MqttAction implements Action {
         });
 
         client.on('reconnect', () => {
-            getLogger(scenario.name).debug(`MQTT client reconnected`, ctx);
+            logDebug(`MQTT client reconnected`);
         });
 
         client.on('close', () => {
-            getLogger(scenario.name).debug(`MQTT connection closed!`, ctx);
+            logDebug(`MQTT connection closed!`);
             if (numberOfRetrievedMessages !== this.expectedNumberOfMessages) {
-                getLogger(scenario.name).error(
+                logError(
                     `Unexpected number of MQTT updates retrieved: ${numberOfRetrievedMessages} (expected: ${this.expectedNumberOfMessages})`,
-                    ctx,
                 );
+                reject();
+            } else {
+                resolve();
             }
         });
 
-        client.on('error', (error: any) => {
-            getLogger(scenario.name).error(
-                `Error during connection: ${error}`,
-                ctx,
-            );
+        client.on('error', error => {
+            logError(`Error during connection: ${error}`);
+            reject();
         });
     }
 }

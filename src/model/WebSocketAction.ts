@@ -1,4 +1,5 @@
 import { stringify } from 'querystring';
+import { runInNewContext } from 'vm';
 import * as WebSocket from 'ws';
 import { addWsMessage } from '../diagramDrawing';
 import { getLogger } from '../logging';
@@ -14,35 +15,35 @@ import { Scenario } from './Scenario';
 const MAX_RECONNECTIONS = 3;
 
 class WebSocketAction implements Action {
-    private wsInstance: any;
+    public name: string;
+
+    public description: string;
+
+    public type = ActionType.WEBSOCKET;
+
+    public invokeEvenOnFail = false;
+
+    public allowFailure = false;
 
     private reconnected = 0;
 
-    serviceName: string;
+    private serviceName: string;
 
-    name: string;
+    private url: string;
 
-    description: string;
+    private headers: any;
 
-    type = ActionType.WEBSOCKET;
+    private data: any;
 
-    url: string;
+    private expectedNumberOfMessages: number;
 
-    headers: any;
-
-    data: any;
-
-    expectedNumberOfMessages: number;
-
-    messageFilter: string[];
-
-    invokeEvenOnFail = false;
-
-    allowFailure = false;
+    private messageFilter: string[];
 
     private receivedMessages: Set<string>;
 
-    constructor(
+    private wsInstance: WebSocket;
+
+    public constructor(
         name: string,
         desc = name,
         wsDefinition: any,
@@ -69,7 +70,7 @@ class WebSocketAction implements Action {
         this.receivedMessages = new Set<string>();
     }
 
-    static fromTemplate(
+    public static fromTemplate(
         wsDefinition: any,
         template: WebSocketAction,
     ): WebSocketAction {
@@ -93,7 +94,7 @@ class WebSocketAction implements Action {
         );
     }
 
-    private static loadData(template: WebSocketAction, actionDef: any) {
+    private static loadData(template: WebSocketAction, actionDef: any): any {
         if (template.data) {
             if (Array.isArray(template.data))
                 return template.data.concat(actionDef.data || []);
@@ -105,10 +106,9 @@ class WebSocketAction implements Action {
         return actionDef.data;
     }
 
-    invoke(scenario: Scenario): ActionCallback {
-        const promise = new Promise(resolve => {
-            this.invokeAsync(scenario);
-            resolve();
+    public invoke(scenario: Scenario): ActionCallback {
+        const promise = new Promise((resolve, reject) => {
+            this.invokeAsync(scenario, resolve, reject);
         });
 
         return {
@@ -117,7 +117,11 @@ class WebSocketAction implements Action {
         };
     }
 
-    invokeAsync(scenario: Scenario): void {
+    private invokeAsync(
+        scenario: Scenario,
+        resolve: (value?: unknown) => void,
+        reject: (reason?: unknown) => void,
+    ): void {
         const ctx = { scenario: scenario.name, action: this.name };
         const resolvedUrl = injectEvalAndVarsToString(
             this.url,
@@ -131,24 +135,26 @@ class WebSocketAction implements Action {
         );
         const registeredMessageFilters = this.messageFilter;
 
-        const logDebug = function(debugMessage: string) {
+        const logDebug = (debugMessage: string): void => {
             getLogger(scenario.name).debug(debugMessage, ctx);
         };
 
-        const logError = function(errorMessage: string) {
+        const logError = (errorMessage: string): void => {
             getLogger(scenario.name).error(errorMessage, ctx);
         };
 
-        const isMessageRelevant = function(msg: string) {
+        const isMessageRelevant = (msg: unknown): boolean => {
             if (registeredMessageFilters) {
-                return registeredMessageFilters.some(filter => {
-                    filter = injectEvalAndVarsToString(
+                return registeredMessageFilters.some((filter): boolean => {
+                    const expandedFilter = injectEvalAndVarsToString(
                         filter,
                         scenario.cache,
                         ctx,
                     ).toString();
-                    const filterResult: boolean = eval(filter);
-                    logDebug(`Filter (${filter}): ${filterResult}`);
+                    const filterResult = !!runInNewContext(expandedFilter, {
+                        msg,
+                    });
+                    logDebug(`Filter (${expandedFilter}): ${filterResult}`);
                     return filterResult;
                 });
             }
@@ -162,17 +168,18 @@ class WebSocketAction implements Action {
         this.wsInstance.on('open', () => {
             logDebug(`WebSocket to ${resolvedUrl} successfully opened!`);
 
-            if (this.data && this.reconnected == 0) {
+            if (this.data && this.reconnected === 0) {
                 const payload = JSON.stringify(this.data);
                 this.wsInstance.send(payload);
                 logDebug(`WS message sent: ${payload}`);
             }
         });
 
-        this.wsInstance.on('message', (data: any) => {
-            const parsedMessage = JSON.parse(data.toString());
+        this.wsInstance.on('message', data => {
+            const dataString = data.toString();
+            const parsedMessage = JSON.parse(dataString);
             if (isMessageRelevant(parsedMessage)) {
-                this.receivedMessages.add(data);
+                this.receivedMessages.add(dataString);
                 logDebug(
                     `Relevant WS message received (${this.receivedMessages.size}/${this.expectedNumberOfMessages}): ${data}`,
                 );
@@ -180,25 +187,29 @@ class WebSocketAction implements Action {
             }
         });
 
-        this.wsInstance.on('close', code => {
-            if (code === 1006 && this.reconnected <= MAX_RECONNECTIONS) {
+        this.wsInstance.on('close', closeCode => {
+            if (closeCode === 1006 && this.reconnected <= MAX_RECONNECTIONS) {
                 logDebug('reconnecting...');
                 this.reconnected++;
-                this.invokeAsync(scenario);
+                this.invokeAsync(scenario, resolve, reject);
             } else {
-                logDebug(`Successfully closed WS connection: ${code}`);
+                logDebug(`Successfully closed WS connection: ${closeCode}`);
                 if (
                     this.receivedMessages.size !== this.expectedNumberOfMessages
                 ) {
                     logError(
                         `Unexpected number of messages retrieved: ${this.receivedMessages.size} (expected: ${this.expectedNumberOfMessages})`,
                     );
+                    reject();
+                } else {
+                    resolve();
                 }
             }
         });
 
         this.wsInstance.on('error', err => {
             logError(`${err}`);
+            reject();
         });
     }
 }
