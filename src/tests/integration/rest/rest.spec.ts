@@ -11,17 +11,20 @@ describe('Rest Action', () => {
     const envConfigDir = `${integrationTestBasePath}environment`;
     const environment = 'config';
 
-    const port = 8080;
+    let server;
 
-    const requestHandler = (request, response) => {
-        response.setHeader('Content-Type', 'application/json');
-        const responseBody = { code: 200 };
-        response.end(JSON.stringify(responseBody));
-    };
+    before(() => {
+        const port = 8080;
 
-    const server = Http.createServer(requestHandler);
+        const requestHandler = (request, response) => {
+            response.setHeader('Content-Type', 'application/json');
+            const responseBody = { code: 200 };
+            response.end(JSON.stringify(responseBody));
+        };
 
-    server.listen(port);
+        server = Http.createServer(requestHandler);
+        server.listen(port);
+    });
 
     after(() => {
         server.close();

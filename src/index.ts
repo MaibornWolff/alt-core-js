@@ -68,6 +68,7 @@ export const runMultipleScenariosWithConfigAsync = async (
     runConfig: RunConfiguration,
     scenarioPaths: string[],
 ): Promise<boolean> => {
+    RESULTS.clear();
     const {
         numberOfScenariosRunInParallel = 10,
         environmentNameToBeUsed = 'none',
@@ -271,7 +272,9 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
                     ctx,
                 );
             })
-            .catch(reason => handleError(reason, action, start));
+            .catch(reason => {
+                handleError(reason, action, start);
+            });
 
         if (action.type === ActionType.WEBSOCKET) {
             actionsToCancel.push(actionCallback);

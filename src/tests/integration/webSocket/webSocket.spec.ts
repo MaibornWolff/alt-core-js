@@ -10,10 +10,13 @@ describe('WebSocket Action', () => {
         'src/tests/integration/webSocket/resources/environment';
     const environment = 'config';
 
-    const wss = new WebSocket.Server({ port: 8080, path: '/ws' });
-    wss.on('connection', ws => {
-        ws.on('message', message => {
-            ws.send(message);
+    let wss;
+    before(function() {
+        wss = new WebSocket.Server({ port: 8080, path: '/ws' });
+        wss.on('connection', ws => {
+            ws.on('message', message => {
+                ws.send(message);
+            });
         });
     });
 
