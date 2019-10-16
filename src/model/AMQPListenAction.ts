@@ -1,13 +1,13 @@
 import { connect, ConsumeMessage, Connection } from 'amqplib';
-import { runInNewContext } from 'vm';
 import { URL } from 'url';
-// TODO: import { addAMQPMessage } from '../diagramDrawing';
-import { getLogger } from '../logging';
-import { injectEvalAndVarsToString } from '../variableInjection';
+import { runInNewContext } from 'vm';
 import { Action, ActionDefinition } from './Action';
 import { ActionCallback } from './ActionCallback';
 import { ActionType } from './ActionType';
+import { addAMQPReceivedMessage } from '../diagramDrawing';
+import { getLogger } from '../logging';
 import { Scenario } from './Scenario';
+import { injectEvalAndVarsToString } from '../variableInjection';
 
 export interface AMQPListenActionDefinition extends ActionDefinition {
     readonly type: 'AMQP_LISTEN';
@@ -239,7 +239,13 @@ export class AMQPListenAction implements Action {
                 )}`,
                 ctx,
             );
-            // TODO: addAMQPMessage(scenario.name, this.serviceName, parsedMessage);
+            addAMQPReceivedMessage(
+                scenario.name,
+                this.broker,
+                this.exchange,
+                this.routingKey,
+                parsedMessage,
+            );
         } else {
             logger.debug(
                 `Received irrelevant AMQP message: ${JSON.stringify(

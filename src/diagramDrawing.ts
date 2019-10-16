@@ -146,6 +146,23 @@ export const addMqttPublishMessage = (
     appendFileSync(getInputFile(scenarioId), note);
 };
 
+export const addAMQPReceivedMessage = (
+    scenarioId: string,
+    source: string,
+    exchange: string,
+    routingKey: string,
+    payload: unknown,
+): void => {
+    const sourceWithUnderscores = replaceDashes(source);
+    appendFileSync(
+        getInputFile(scenarioId),
+        `${sourceWithUnderscores} -[#cyan]->o YATF : ${exchange}/${routingKey}\n`,
+    );
+    const note = `note right #cyan\n**${currentTimestamp()}**\n${extractPayload(
+        payload,
+    )}\nend note\n`;
+};
+
 export const generateSequenceDiagram = (scenarioId: string): Promise<void> =>
     new Promise<void>(resolve => {
         appendFileSync(getInputFile(scenarioId), '\n@enduml');
