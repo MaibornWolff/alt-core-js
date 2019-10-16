@@ -9,7 +9,7 @@ export interface ActionDefinition {
     readonly allowFailure?: boolean;
 }
 
-export function isActionDefinition(
+export function isValidActionDefinition(
     toBeValidated: unknown,
 ): toBeValidated is ActionDefinition {
     if (typeof toBeValidated !== 'object' || toBeValidated === null) {

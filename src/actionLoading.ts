@@ -1,23 +1,27 @@
 import { readdirSync } from 'fs';
 import { getLogger } from './logging';
-import { Action, isActionDefinition, ActionDefinition } from './model/Action';
+import {
+    Action,
+    ActionDefinition,
+    isValidActionDefinition,
+} from './model/Action';
 import { ActionType } from './model/ActionType';
 import { MqttAction } from './model/MqttAction';
 import { MqttPublishAction } from './model/MqttPublishAction';
 import {
-    RestAction,
     isRestActionDefinition,
+    RestAction,
     RestActionDefinition,
 } from './model/RestAction';
 import { TimerAction } from './model/TimerAction';
 import {
-    WebSocketAction,
     isWebSocketActionDefinition,
+    WebSocketAction,
     WebSocketActionDefinition,
 } from './model/WebSocketAction';
 import { loadYamlConfiguration, nameFromYamlConfig } from './yamlParsing';
 import {
-    isAMQPListenActionDefinition,
+    isValidAMQPListenActionDefinition,
     AMQPListenAction,
     AMQPListenActionDefinition,
 } from './model/AMQPListenAction';
@@ -38,9 +42,9 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
     readdirSync(actionDir).forEach(file => {
         const actionDef = loadYamlConfiguration(`${actionDir}/${file}`);
 
-        if (!isActionDefinition(actionDef)) {
+        if (!isValidActionDefinition(actionDef)) {
             getLogger('unknown').error(
-                `Invalid action definition:${actionDef}`,
+                `Invalid action definition: ${JSON.stringify(actionDef)}`,
             );
             return;
         }
@@ -83,7 +87,7 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
                     actionDef,
                 ),
             );
-        } else if (isAMQPListenActionDefinition(actionDef)) {
+        } else if (isValidAMQPListenActionDefinition(actionDef)) {
             loadedActions.push(
                 new AMQPListenAction(
                     nameFromYamlConfig(file),
@@ -93,7 +97,9 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
             );
         } else {
             getLogger('unknown').error(
-                `Unknown type of Action: ${actionDef.type}`,
+                `Action definition ${nameFromYamlConfig(file)} of type ${
+                    actionDef.type
+                } does not contain a valid action definition for that type.`,
             );
         }
     });

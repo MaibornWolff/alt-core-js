@@ -22,13 +22,15 @@ export interface AMQPListenActionDefinition extends ActionDefinition {
     readonly messageFilter?: string[];
 }
 
-export function isAMQPListenActionDefinition(
+export function isValidAMQPListenActionDefinition(
     actionDef: ActionDefinition,
 ): actionDef is AMQPListenActionDefinition {
     if (actionDef.type !== 'AMQP_LISTEN') {
         return false;
     }
-    const amqpListenActionDef = actionDef as AMQPListenActionDefinition;
+    const amqpListenActionDef = actionDef as Partial<
+        AMQPListenActionDefinition
+    >;
     return (
         typeof amqpListenActionDef.broker === 'string' &&
         typeof amqpListenActionDef.exchange === 'string' &&
@@ -37,34 +39,13 @@ export function isAMQPListenActionDefinition(
         ['string', 'undefined'].includes(typeof amqpListenActionDef.username) &&
         ['string', 'undefined'].includes(typeof amqpListenActionDef.password) &&
         typeof amqpListenActionDef.expectedNumberOfMessages === 'number' &&
-        ['string', 'undefined'].includes(
-            typeof amqpListenActionDef.messageFilter,
-        )
+        (typeof amqpListenActionDef.messageFilter === 'undefined' ||
+            isArrayOfStrings(amqpListenActionDef.messageFilter))
     );
 }
 
-type Protocol = 'amqp' | 'amqps';
-
-function extractProtocol(url: string): Protocol {
-    const { protocol } = new URL(url);
-    if (protocol === 'amqp' || protocol === 'amqps') {
-        return protocol;
-    }
-    throw new Error(`${protocol} is not a valid AMQP protocol`);
-}
-
-function extractHostname(url: string): string {
-    return new URL(url).hostname;
-}
-
-function extractPort(url: string): number | undefined {
-    const { port } = new URL(url);
-    return port ? +port : undefined;
-}
-
-function extractVhost(url: string): string | undefined {
-    const path = new URL(url).pathname;
-    return path ? path.substr(1) : undefined;
+function isArrayOfStrings(input: unknown): input is string[] {
+    return Array.isArray(input) && input.every(it => typeof it === 'string');
 }
 
 export class AMQPListenAction implements Action {
@@ -175,53 +156,45 @@ export class AMQPListenAction implements Action {
     private async invokeAsync(scenario: Scenario): Promise<void> {
         const ctx = { scenario: scenario.name, action: this.name };
         const logger = getLogger(scenario.name);
-        const resolvedURL = injectEvalAndVarsToString(
+        const expandedURL = injectEvalAndVarsToString(
             this.url,
             scenario.cache,
             ctx,
         ).toString();
-        try {
-            const connection = await connect({
-                protocol: extractProtocol(resolvedURL),
-                hostname: extractHostname(resolvedURL),
-                port: extractPort(resolvedURL),
-                vhost: extractVhost(resolvedURL),
-                username: this.username,
-                password: this.password,
-            });
-            this.amqpConnection = connection;
-            logger.debug(
-                `Successfully established AMQP connection to ${resolvedURL}.`,
-                ctx,
-            );
-            const channel = await connection.createChannel();
+        const connection = await connect({
+            protocol: extractProtocol(expandedURL),
+            hostname: extractHostname(expandedURL),
+            port: extractPort(expandedURL),
+            vhost: extractVhost(expandedURL),
+            username: this.username,
+            password: this.password,
+        });
+        this.amqpConnection = connection;
+        logger.debug(
+            `Successfully established AMQP connection to ${expandedURL}.`,
+            ctx,
+        );
+        const channel = await connection.createChannel();
 
-            await channel.checkExchange(this.exchange);
-            await channel.assertQueue(this.queue, {
-                autoDelete: true,
-            });
-            await channel.bindQueue(this.queue, this.exchange, this.routingKey);
-            await channel.consume(this.queue, msg =>
-                this.onMessage(msg, scenario),
-            );
-            logger.debug(
-                `Successfully bound queue ${this.queue} to routing key ${this.routingKey} on exchange ${this.exchange}.`,
-                ctx,
-            );
+        await channel.checkExchange(this.exchange);
+        await channel.assertQueue(this.queue, {
+            autoDelete: true,
+        });
+        await channel.bindQueue(this.queue, this.exchange, this.routingKey);
+        await channel.consume(this.queue, msg => this.onMessage(msg, scenario));
+        logger.debug(
+            `Successfully bound queue ${this.queue} to routing key ${this.routingKey} on exchange ${this.exchange}.`,
+            ctx,
+        );
 
-            await new Promise((resolve, reject) => {
-                connection.on('error', err => reject(err));
-                connection.on('close', () =>
-                    this.onClose(scenario, resolve, reject),
-                );
-                channel.on('error', err => reject(err));
-                channel.on('close', () =>
-                    this.onClose(scenario, resolve, reject),
-                );
-            });
-        } catch (err) {
-            logger.error(`${err}`);
-        }
+        await new Promise((resolve, reject) => {
+            connection.on('error', err => reject(err));
+            connection.on('close', () =>
+                this.onClose(scenario, resolve, reject),
+            );
+            channel.on('error', err => reject(err));
+            channel.on('close', () => this.onClose(scenario, resolve, reject));
+        });
     }
 
     private onMessage(msg: ConsumeMessage | null, scenario: Scenario): void {
@@ -300,4 +273,29 @@ export class AMQPListenAction implements Action {
         }
         return true;
     }
+}
+
+type Protocol = 'amqp' | 'amqps';
+
+function extractProtocol(url: string): Protocol {
+    const protocolString = new URL(url).protocol;
+    const protocol = protocolString.substring(0, protocolString.length - 1);
+    if (protocol === 'amqp' || protocol === 'amqps') {
+        return protocol;
+    }
+    throw new Error(`${protocol} is not a valid AMQP protocol`);
+}
+
+function extractHostname(url: string): string {
+    return new URL(url).hostname;
+}
+
+function extractPort(url: string): number | undefined {
+    const { port } = new URL(url);
+    return port ? +port : undefined;
+}
+
+function extractVhost(url: string): string | undefined {
+    const path = new URL(url).pathname;
+    return path ? path.substr(1) : undefined;
 }

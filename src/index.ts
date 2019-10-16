@@ -211,6 +211,7 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
         reason: unknown,
         action: Action,
         start: [number, number],
+        context: { scenario: string; action: string },
     ): void => {
         const duration = timeDiffInMs(process.hrtime(start)).toFixed(2);
 
@@ -225,10 +226,16 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
                 ),
             );
 
-        if (reason) getLogger(scenario.name).error(JSON.stringify(reason), ctx);
+        if (reason)
+            getLogger(scenario.name).error(
+                reason instanceof Error
+                    ? reason.toString()
+                    : JSON.stringify(reason),
+                context,
+            );
         getLogger(scenario.name).info(
             pad(MSG_WIDTH, ` Time: ${duration} ms ###########`, '#'),
-            ctx,
+            context,
         );
 
         if (action.allowFailure !== true) {
@@ -242,43 +249,52 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
             if (!action.invokeEvenOnFail) continue;
         }
 
-        Object.assign(ctx, { action: action.name });
+        const context = { ...ctx, action: action.name };
 
         getLogger(scenarioName).info(
             pad(`#### (A): ${action.description} `, MSG_WIDTH, '#'),
-            ctx,
+            context,
         );
         const start = process.hrtime();
 
         const actionCallback = action.invoke(scenario);
-        const actionPromise = actionCallback.promise.then(result => {
-            const duration = timeDiffInMs(process.hrtime(start)).toFixed(2);
+        const actionPromise = actionCallback.promise
+            .then(result => {
+                const duration = timeDiffInMs(process.hrtime(start)).toFixed(2);
 
-            const scenarioResults = RESULTS.get(scenarioName);
-            if (scenarioResults)
-                scenarioResults.push(
-                    new TestResult(
-                        action.description,
-                        duration,
-                        true,
-                        action.allowFailure,
-                    ),
+                const scenarioResults = RESULTS.get(scenarioName);
+                if (scenarioResults)
+                    scenarioResults.push(
+                        new TestResult(
+                            action.description,
+                            duration,
+                            true,
+                            action.allowFailure,
+                        ),
+                    );
+
+                if (result)
+                    getLogger(scenario.name).debug(
+                        JSON.stringify(result),
+                        context,
+                    );
+                getLogger(scenario.name).info(
+                    pad(MSG_WIDTH, ` Time: ${duration} ms ###########`, '#'),
+                    context,
                 );
+            })
+            .catch(reason => handleError(reason, action, start, context));
 
-            if (result)
-                getLogger(scenario.name).debug(JSON.stringify(result), ctx);
-            getLogger(scenario.name).info(
-                pad(MSG_WIDTH, ` Time: ${duration} ms ###########`, '#'),
-                ctx,
-            );
-        });
-
-        if (action.type === ActionType.WEBSOCKET) {
+        if (
+            action.type === ActionType.WEBSOCKET ||
+            action.type === ActionType.AMQP_LISTEN
+        ) {
             actionsToCancel.push(actionCallback);
         }
         if (
             action.type === ActionType.MQTT ||
-            action.type === ActionType.WEBSOCKET
+            action.type === ActionType.WEBSOCKET ||
+            action.type === ActionType.AMQP_LISTEN
         ) {
             actionsToAwaitAtEnd.push(actionPromise);
         } else {
