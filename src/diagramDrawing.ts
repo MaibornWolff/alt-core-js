@@ -56,7 +56,7 @@ export const addSuccessfulResponse = (
     scenarioId: string,
     source: string,
     status: string,
-    body: string,
+    body?: string,
 ): void => {
     doAddResponse(scenarioId, source, status, 'green');
     if (body) {

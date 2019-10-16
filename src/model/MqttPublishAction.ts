@@ -13,31 +13,31 @@ import { ActionType } from './ActionType';
 import { Scenario } from './Scenario';
 
 class MqttPublishAction implements Action {
-    name: string;
+    public name: string;
 
-    description: string;
+    public description: string;
 
-    type = ActionType.MQTT_PUBLISH;
+    public type = ActionType.MQTT_PUBLISH;
 
-    url: string;
+    private url: string;
 
-    username: string;
+    private username: string;
 
-    password: string;
+    private password: string;
 
-    topic: string;
+    private topic: string;
 
-    data: any;
+    private data: any;
 
-    protoFile: string;
+    private protoFile: string;
 
-    protoClass: string;
+    private protoClass: string;
 
-    invokeEvenOnFail = false;
+    public invokeEvenOnFail = false;
 
-    allowFailure = false;
+    public allowFailure = false;
 
-    constructor(
+    public constructor(
         name: string,
         desc = name,
         mqttDefinition: any,
@@ -64,18 +64,18 @@ class MqttPublishAction implements Action {
         this.allowFailure = allowFailure;
     }
 
-    static fromTemplate(
+    public static fromTemplate(
         mqttDefinition: any,
         template: MqttPublishAction,
     ): MqttPublishAction {
         return new MqttPublishAction(
             template.name,
             mqttDefinition.description || mqttDefinition.name,
-            Object.assign(Object.assign({}, template), mqttDefinition),
+            { ...template, ...mqttDefinition },
         );
     }
 
-    invoke(scenario: Scenario): ActionCallback {
+    public invoke(scenario: Scenario): ActionCallback {
         const promise = new Promise(resolve => {
             this.invokeAsync(scenario);
             resolve();
@@ -104,12 +104,12 @@ class MqttPublishAction implements Action {
         return [payload, payload];
     }
 
-    invokeAsync(scenario: Scenario): void {
-        const logDebug = function(debugMessage: string) {
+    private invokeAsync(scenario: Scenario): void {
+        const logDebug = (debugMessage: string): void => {
             getLogger(scenario.name).debug(debugMessage, ctx);
         };
 
-        const logError = function(errorMessage: string) {
+        const logError = (errorMessage: string): void => {
             getLogger(scenario.name).error(errorMessage, ctx);
         };
 
@@ -135,11 +135,7 @@ class MqttPublishAction implements Action {
         );
 
         client.on('connect', () => {
-            const log = getLogger(scenario.name);
-            log.debug(
-                `MQTT connection to ${this.url} successfully opened`,
-                ctx,
-            );
+            logDebug(`MQTT connection to ${this.url} successfully opened`);
 
             const [payload, dataString] = this.protoFile
                 ? this.encodeProtoPayload(scenario.cache, ctx)
@@ -151,28 +147,24 @@ class MqttPublishAction implements Action {
                 ctx,
             ).toString();
 
-            client.publish(topic, payload, (error?: any, packet?: any) => {
+            client.publish(topic, payload, (error?: any) => {
                 if (error) {
-                    log.error(
-                        `Error while publishing to ${topic}: ${error}`,
-                        ctx,
-                    );
+                    logError(`Error while publishing to ${topic}: ${error}`);
                 } else {
-                    log.debug(
+                    logDebug(
                         `Successfully published message to '${topic}': ${dataString}`,
-                        ctx,
                     );
 
                     if (this.protoFile) {
                         // log the hex dump of the sent proto payload
-                        log.debug('-- Encoded proto data --');
-                        log.debug(
+                        logDebug('-- Encoded proto data --');
+                        logDebug(
                             `Base64: ${Buffer.from(
                                 payload as Uint8Array,
                             ).toString('base64')}`,
                         );
-                        log.debug('Hex:');
-                        log.debug(hexdump(payload));
+                        logDebug('Hex:');
+                        logDebug(hexdump(payload));
                     }
 
                     addMqttPublishMessage(

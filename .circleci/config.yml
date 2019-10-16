@@ -43,6 +43,23 @@ jobs:
           name: Run tests
           command: npm test
 
+  lint:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: Install dependencies
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: Lint
+          command: npm run lint
+
   check-format:
     <<: *defaults
     steps:
@@ -81,6 +98,10 @@ workflows:
             tags:
               only: /.*/
       - test:
+          filters:
+            tags:
+              only: /.*/
+      - lint:
           filters:
             tags:
               only: /.*/

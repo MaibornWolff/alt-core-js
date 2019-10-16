@@ -2,7 +2,7 @@ import { Scenario } from './Scenario';
 import { ActionType } from './ActionType';
 import { ActionCallback } from './ActionCallback';
 
-interface Action {
+export interface Action {
     name: string;
     description: string;
     type: ActionType;
@@ -10,5 +10,3 @@ interface Action {
     invokeEvenOnFail: boolean;
     allowFailure: boolean;
 }
-
-export { Action };

@@ -11,10 +11,8 @@ export const loadScenariosById = (
     actionCatalog: Action[],
 ): Scenario[] => {
     const resultList: Scenario[] = [];
-    const scenarioName = path
-        .split('/')
-        .pop()
-        .replace('.yaml', '');
+    const scenarioFileName = path.split('/').pop() as string; // casting to string is safe because splitting a string results in an array with length >= 1
+    const scenarioName = scenarioFileName.replace('.yaml', '');
 
     loadAllScenarios(path.substring(0, path.lastIndexOf('/')), actionCatalog)
         .filter(s => s.name.startsWith(scenarioName))
@@ -82,7 +80,11 @@ export const loadAllScenarios = (
                             const actionToBeReplaced: any = actionCatalogWithReplacedLoadVariables.find(
                                 a => a.name === (currentLoad as any).name,
                             );
-                            if (actionToBeReplaced) {
+                            if (
+                                actionToBeReplaced &&
+                                typeof currentLoad === 'object' &&
+                                currentLoad
+                            ) {
                                 for (const key of Object.keys(currentLoad)) {
                                     if (key !== 'name') {
                                         if (
@@ -162,7 +164,7 @@ function getLoadVariableTreeForLoadIdx(rootObject: any, idx: number): any {
         if (Array.isArray(propEntry[1])) {
             if (typeof propEntry[1][0] === 'object') {
                 // not a load-var-array but custom one
-                const arr = [];
+                const arr: unknown[] = [];
                 arr.push(getLoadVariableTreeForLoadIdx(propEntry[1][0], idx));
 
                 Object.defineProperty(res, propEntry[0], { value: arr });

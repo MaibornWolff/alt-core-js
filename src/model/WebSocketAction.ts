@@ -81,10 +81,10 @@ class WebSocketAction implements Action {
             template.serviceName,
             template.url,
             template.headers
-                ? Object.assign(
-                      Object.assign({}, template.headers),
-                      wsDefinition.headers,
-                  )
+                ? {
+                      ...template.headers,
+                      ...wsDefinition.headers,
+                  }
                 : wsDefinition.restHead,
             this.loadData(template, wsDefinition),
             wsDefinition.expectedNumberOfMessages ||
@@ -98,10 +98,10 @@ class WebSocketAction implements Action {
         if (template.data) {
             if (Array.isArray(template.data))
                 return template.data.concat(actionDef.data || []);
-            return Object.assign(
-                Object.assign({}, template.data),
-                actionDef.data,
-            );
+            return {
+                ...template.data,
+                ...actionDef.data,
+            };
         }
         return actionDef.data;
     }

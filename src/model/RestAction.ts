@@ -112,14 +112,14 @@ class RestAction implements Action {
         );
     }
 
-    private static loadData(template: RestAction, actionDef: any) {
+    private static loadData(template: RestAction, actionDef: any): any {
         if (template.data) {
             if (Array.isArray(template.data))
                 return template.data.concat(actionDef.data || []);
-            return Object.assign(
-                Object.assign({}, template.data),
-                actionDef.data,
-            );
+            return {
+                ...template.data,
+                ...actionDef.data,
+            };
         }
         return actionDef.data;
     }
@@ -130,15 +130,15 @@ class RestAction implements Action {
         const registeredValidations = this.responseValidation;
         const targetService = this.serviceName;
 
-        const logError = function(errorMessage: string) {
+        const logError = (errorMessage: string): void => {
             getLogger(ctx.scenario).error(errorMessage, ctx);
         };
 
-        const logDebug = function(debugMessage: string) {
+        const logDebug = (debugMessage: string): void => {
             getLogger(ctx.scenario).debug(debugMessage, ctx);
         };
 
-        const updateScenarioCache = function(res: any, head: any) {
+        const updateScenarioCache = (res: any, head: any): void => {
             // `res` & `head` needed for the `eval()` call
             if (scenarioVariables) {
                 for (const pair of Object.entries(scenarioVariables)) {
@@ -156,7 +156,7 @@ class RestAction implements Action {
             }
         };
 
-        const validateHeaders = function(head: any, reject: any) {
+        const validateHeaders = (head: any, reject: any): void => {
             if (registeredValidations) {
                 registeredValidations
                     .filter(v => v.startsWith('head.'))
@@ -181,7 +181,7 @@ class RestAction implements Action {
             }
         };
 
-        const validateBody = function(res: any, reject: any) {
+        const validateBody = (res: any, reject: any): void => {
             if (registeredValidations) {
                 registeredValidations
                     .filter(v => v.startsWith('res.'))
@@ -211,21 +211,20 @@ class RestAction implements Action {
                 .map(([key, value]) => `${key}=${value}`)
                 .join('&');
 
+        const generateRequestBody = (): string | null => {
+            if (!this.data) return null;
+            return Array.isArray(this.data)
+                ? JSON.stringify(this.data)
+                : JSON.stringify(
+                      injectEvalAndVarsToMap(this.data, scenario.cache, ctx),
+                  );
+        };
+
         const promise = new Promise((resolve, reject) => {
             const requestHeaders = this.restHead
                 ? injectEvalAndVarsToMap(this.restHead, scenario.cache, ctx)
                 : null;
-            const requestBody = this.data
-                ? Array.isArray(this.data)
-                    ? JSON.stringify(this.data)
-                    : JSON.stringify(
-                          injectEvalAndVarsToMap(
-                              this.data,
-                              scenario.cache,
-                              ctx,
-                          ),
-                      )
-                : null;
+            const requestBody = generateRequestBody();
             const requestForm = this.form
                 ? injectEvalAndVarsToMap(this.form, scenario.cache, ctx)
                 : null;
@@ -233,12 +232,16 @@ class RestAction implements Action {
                 ? createReadStream(this.dataBinary)
                 : null;
             const requestUrl = this.queryParameters
-                ? this.url + '?' + concatParams(this.queryParameters)
+                ? `${this.url}?${concatParams(this.queryParameters)}`
                 : this.url;
 
             request({
                 method: this.method,
-                url: injectEvalAndVarsToString(requestUrl, scenario.cache, ctx),
+                url: `${injectEvalAndVarsToString(
+                    requestUrl,
+                    scenario.cache,
+                    ctx,
+                )}`,
                 headers: requestHeaders,
                 body: requestBody || binaryData,
                 encoding: binaryData ? null : undefined,
@@ -268,7 +271,7 @@ class RestAction implements Action {
                         scenario.name,
                         targetService,
                         `${response.request.method} ${response.request.path}`,
-                        JSON.parse(requestBody),
+                        requestBody && JSON.parse(requestBody),
                     );
 
                     if (
@@ -284,7 +287,7 @@ class RestAction implements Action {
                             )}`,
                         );
 
-                        let head = response.headers;
+                        const head = response.headers;
                         validateHeaders(head, reject);
                         updateScenarioCache(null, head);
 
@@ -296,7 +299,7 @@ class RestAction implements Action {
                             } else if (contentType.startsWith('text/plain')) {
                                 res = response.body.toString();
                             } else {
-                                const body = [];
+                                const body: Uint8Array[] = [];
                                 body.push(response.body);
                                 res = Buffer.concat(body).toString();
                             }
@@ -315,13 +318,11 @@ class RestAction implements Action {
                                 scenario.name,
                                 targetService,
                                 `${response.statusMessage} (${response.statusCode})`,
-                                null,
                             );
                         }
 
-                        return resolve();
-                    }
-                    if (response.statusCode === 204) {
+                        resolve();
+                    } else if (response.statusCode === 204) {
                         logDebug(
                             `Response: ${response.statusCode} (${response.statusMessage})`,
                         );
@@ -329,7 +330,6 @@ class RestAction implements Action {
                             scenario.name,
                             targetService,
                             `${response.statusMessage} (${response.statusCode})`,
-                            null,
                         );
                         resolve();
                     } else {

@@ -48,8 +48,10 @@ export function injectEvalAndVarsToString(
     ] = injectEvaluationToNumber(afterVarInjection, ctx, scenarioVariables);
 
     // if the string contains only number description, that can be converted, then return a number, in other case return a string
-    // TODO: What does comparison with itself do?
-    if (foundNumericExpression && +afterEvalToNumber === +afterEvalToNumber) {
+    if (
+        foundNumericExpression &&
+        afterEvalToNumber === (+afterEvalToNumber).toString()
+    ) {
         return +afterEvalToNumber;
     }
     return afterEvalToNumber;

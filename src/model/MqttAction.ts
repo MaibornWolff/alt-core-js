@@ -80,7 +80,7 @@ class MqttAction implements Action {
         return new MqttAction(
             template.name,
             mqttDefinition.description || mqttDefinition.name,
-            Object.assign(Object.assign({}, template), mqttDefinition),
+            { ...template, ...mqttDefinition },
         );
     }
 
