@@ -7,12 +7,31 @@ import {
     injectEvalAndVarsToMap,
     injectEvalAndVarsToString,
 } from '../variableInjection';
-import { Action } from './Action';
+import { Action, ActionDefinition } from './Action';
 import { ActionCallback } from './ActionCallback';
 import { ActionType } from './ActionType';
 import { Scenario } from './Scenario';
 
 const MAX_RECONNECTIONS = 3;
+
+// TODO: Implement correctly
+export interface WebSocketActionDefinition extends ActionDefinition {
+    readonly type: 'WEBSOCKET';
+
+    readonly service: string;
+    readonly endpoint?: string;
+    readonly headers?: string;
+    readonly data?: any;
+    readonly expectedNumberOfMessages: number;
+    readonly messageFilter?: string[];
+}
+
+// TODO: Implement correctly
+export function isWebSocketActionDefinition(
+    actionDef: ActionDefinition,
+): actionDef is WebSocketActionDefinition {
+    return actionDef.type === ActionType[ActionType.WEBSOCKET];
+}
 
 class WebSocketAction implements Action {
     public name: string;
@@ -48,7 +67,7 @@ class WebSocketAction implements Action {
         desc = name,
         wsDefinition: any,
         serviceName: string,
-        url = wsDefinition.url,
+        url: string,
         headers = wsDefinition.headers,
         data = wsDefinition.data,
         expectedNumberOfMessages = wsDefinition.expectedNumberOfMessages,

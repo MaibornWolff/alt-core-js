@@ -1,4 +1,4 @@
-import { createReadStream, readFileSync } from 'fs';
+import { createReadStream, PathLike, readFileSync } from 'fs';
 import { stringify } from 'querystring';
 import * as request from 'requestretry';
 import {
@@ -11,10 +11,33 @@ import {
     injectEvalAndVarsToMap,
     injectEvalAndVarsToString,
 } from '../variableInjection';
-import { Action } from './Action';
+import { Action, ActionDefinition } from './Action';
 import { ActionCallback } from './ActionCallback';
 import { ActionType } from './ActionType';
 import { Scenario } from './Scenario';
+
+// TODO: Implement correctly
+export interface RestActionDefinition extends ActionDefinition {
+    readonly type: 'REST';
+
+    readonly service: string;
+    readonly endpoint?: string;
+    readonly method: string;
+    readonly queryParameters?: Map<string, string>;
+    readonly headers?: string;
+    readonly data?: Map<string, string>;
+    readonly dataBinary?: PathLike;
+    readonly form?: any;
+    readonly responseValidation?: string[];
+    readonly variables?: Map<string, string>;
+}
+
+// TODO: Implement correctly
+export function isRestActionDefinition(
+    actionDef: ActionDefinition,
+): actionDef is RestActionDefinition {
+    return actionDef.type === ActionType[ActionType.REST];
+}
 
 class RestAction implements Action {
     public serviceName: string;

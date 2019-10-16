@@ -1,62 +1,130 @@
 import { connect, ConsumeMessage, Connection } from 'amqplib';
 import { runInNewContext } from 'vm';
+import { URL } from 'url';
 // TODO: import { addAMQPMessage } from '../diagramDrawing';
 import { getLogger } from '../logging';
 import { injectEvalAndVarsToString } from '../variableInjection';
-import { Action } from './Action';
+import { Action, ActionDefinition } from './Action';
 import { ActionCallback } from './ActionCallback';
 import { ActionType } from './ActionType';
 import { Scenario } from './Scenario';
 
+export interface AMQPListenActionDefinition extends ActionDefinition {
+    readonly type: 'AMQP_LISTEN';
+
+    readonly broker: string;
+    readonly exchange: string;
+    readonly queue: string;
+    readonly routingKey: string;
+    readonly username?: string;
+    readonly password?: string;
+    readonly expectedNumberOfMessages: number;
+    readonly messageFilter?: string[];
+}
+
+export function isAMQPListenActionDefinition(
+    actionDef: ActionDefinition,
+): actionDef is AMQPListenActionDefinition {
+    if (actionDef.type !== 'AMQP_LISTEN') {
+        return false;
+    }
+    const amqpListenActionDef = actionDef as AMQPListenActionDefinition;
+    return (
+        typeof amqpListenActionDef.broker === 'string' &&
+        typeof amqpListenActionDef.exchange === 'string' &&
+        typeof amqpListenActionDef.queue === 'string' &&
+        typeof amqpListenActionDef.routingKey === 'string' &&
+        ['string', 'undefined'].includes(typeof amqpListenActionDef.username) &&
+        ['string', 'undefined'].includes(typeof amqpListenActionDef.password) &&
+        typeof amqpListenActionDef.expectedNumberOfMessages === 'number' &&
+        ['string', 'undefined'].includes(
+            typeof amqpListenActionDef.messageFilter,
+        )
+    );
+}
+
+type Protocol = 'amqp' | 'amqps';
+
+function extractProtocol(url: string): Protocol {
+    const { protocol } = new URL(url);
+    if (protocol === 'amqp' || protocol === 'amqps') {
+        return protocol;
+    }
+    throw new Error(`${protocol} is not a valid AMQP protocol`);
+}
+
+function extractHostname(url: string): string {
+    return new URL(url).hostname;
+}
+
+function extractPort(url: string): number | undefined {
+    const { port } = new URL(url);
+    return port ? +port : undefined;
+}
+
+function extractVhost(url: string): string | undefined {
+    const path = new URL(url).pathname;
+    return path ? path.substr(1) : undefined;
+}
+
 export class AMQPListenAction implements Action {
-    public name: string;
+    readonly name: string;
 
-    public description: string;
+    readonly description: string;
 
-    public type = ActionType.AMQP_LISTEN;
+    readonly type = ActionType.AMQP_LISTEN;
 
-    public invokeEvenOnFail = false;
+    readonly invokeEvenOnFail: boolean;
 
-    public allowFailure = false;
+    readonly allowFailure: boolean;
 
-    private serviceName: string;
+    private readonly broker: string;
 
-    private url: string;
+    private readonly url: string;
 
-    private exchange: string;
+    private readonly username?: string;
 
-    private queue: string;
+    private readonly password?: string;
 
-    private routingKey: string;
+    private readonly exchange: string;
 
-    private expectedNumberOfMessages: number;
+    private readonly queue: string;
 
-    private messageFilter: string[];
+    private readonly routingKey: string;
+
+    private readonly expectedNumberOfMessages: number;
+
+    private readonly messageFilter?: string[];
 
     private numberOfReceivedMessages = 0;
 
-    private amqpConnection: Connection | undefined = undefined;
+    private amqpConnection?: Connection = undefined;
 
     public constructor(
         name: string,
-        desc = name,
-        amqpDefinition: any,
-        allowFailure = amqpDefinition.allowFailure,
-        invokeEvenOnFail = amqpDefinition.invokeEvenOnFail,
-        serviceName: string,
-        url = amqpDefinition.url,
-        exchange = amqpDefinition.exchange,
-        queue = amqpDefinition.queue,
-        routingKey = amqpDefinition.routingKey,
-        expectedNumberOfMessages = amqpDefinition.expectedNumberOfMessages,
-        messageFilter = amqpDefinition.messageFilter,
+        url: string,
+        {
+            description = name,
+            invokeEvenOnFail = false,
+            allowFailure = false,
+            broker,
+            username,
+            password,
+            exchange,
+            queue,
+            routingKey,
+            expectedNumberOfMessages,
+            messageFilter,
+        }: AMQPListenActionDefinition,
     ) {
         this.name = name;
-        this.description = desc;
-        this.allowFailure = allowFailure;
-        this.invokeEvenOnFail = invokeEvenOnFail;
-        this.serviceName = serviceName;
         this.url = url;
+        this.description = description;
+        this.invokeEvenOnFail = invokeEvenOnFail;
+        this.allowFailure = allowFailure;
+        this.broker = broker;
+        this.username = username;
+        this.password = password;
         this.exchange = exchange;
         this.queue = queue;
         this.routingKey = routingKey;
@@ -65,23 +133,32 @@ export class AMQPListenAction implements Action {
     }
 
     public static fromTemplate(
-        amqpDefinition: any,
+        amqpDefinition: Partial<AMQPListenActionDefinition>,
         template: AMQPListenAction,
     ): AMQPListenAction {
-        return new AMQPListenAction(
-            template.name,
-            amqpDefinition.description || amqpDefinition.name,
-            amqpDefinition,
-            amqpDefinition.allowFailure || template.allowFailure,
-            amqpDefinition.invokeEvenOnFail || template.invokeEvenOnFail,
-            template.serviceName,
-            template.url,
-            amqpDefinition.exchange || template.exchange,
-            amqpDefinition.queue || template.queue,
-            amqpDefinition.routingKey || template.routingKey,
-            amqpDefinition.expectedNumberOfMessages ||
+        return new AMQPListenAction(template.name, template.url, {
+            description: amqpDefinition.description || template.description,
+            type: 'AMQP_LISTEN',
+            invokeEvenOnFail:
+                amqpDefinition.invokeEvenOnFail != null
+                    ? amqpDefinition.invokeEvenOnFail
+                    : template.invokeEvenOnFail,
+            allowFailure:
+                amqpDefinition.allowFailure != null
+                    ? amqpDefinition.allowFailure
+                    : template.allowFailure,
+            broker: template.broker,
+            username: amqpDefinition.username || template.username,
+            password: amqpDefinition.password || template.password,
+            exchange: amqpDefinition.exchange || template.exchange,
+            queue: amqpDefinition.queue || template.queue,
+            routingKey: amqpDefinition.routingKey || template.routingKey,
+            expectedNumberOfMessages:
+                amqpDefinition.expectedNumberOfMessages ||
                 template.expectedNumberOfMessages,
-        );
+            messageFilter:
+                amqpDefinition.messageFilter || template.messageFilter,
+        });
     }
 
     public invoke(scenario: Scenario): ActionCallback {
@@ -98,16 +175,23 @@ export class AMQPListenAction implements Action {
     private async invokeAsync(scenario: Scenario): Promise<void> {
         const ctx = { scenario: scenario.name, action: this.name };
         const logger = getLogger(scenario.name);
-        const resolvedUrl = injectEvalAndVarsToString(
+        const resolvedURL = injectEvalAndVarsToString(
             this.url,
             scenario.cache,
             ctx,
         ).toString();
         try {
-            const connection = await connect(resolvedUrl);
+            const connection = await connect({
+                protocol: extractProtocol(resolvedURL),
+                hostname: extractHostname(resolvedURL),
+                port: extractPort(resolvedURL),
+                vhost: extractVhost(resolvedURL),
+                username: this.username,
+                password: this.password,
+            });
             this.amqpConnection = connection;
             logger.debug(
-                `Successfully established AMQP connection to ${resolvedUrl}.`,
+                `Successfully established AMQP connection to ${resolvedURL}.`,
                 ctx,
             );
             const channel = await connection.createChannel();

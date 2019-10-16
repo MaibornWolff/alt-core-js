@@ -1,12 +1,34 @@
 import { Scenario } from './Scenario';
-import { ActionType } from './ActionType';
+import { ActionType, ActionTypeType } from './ActionType';
 import { ActionCallback } from './ActionCallback';
 
+export interface ActionDefinition {
+    readonly description?: string;
+    readonly type: ActionTypeType;
+    readonly invokeEvenOnFail?: boolean;
+    readonly allowFailure?: boolean;
+}
+
+export function isActionDefinition(
+    toBeValidated: unknown,
+): toBeValidated is ActionDefinition {
+    if (typeof toBeValidated !== 'object' || toBeValidated === null) {
+        return false;
+    }
+    const actionDef = toBeValidated as ActionDefinition;
+    return (
+        ['string', 'undefined'].includes(typeof actionDef.description) &&
+        actionDef.type in ActionType &&
+        ['boolean', 'undefined'].includes(typeof actionDef.invokeEvenOnFail) &&
+        ['boolean', 'undefined'].includes(typeof actionDef.allowFailure)
+    );
+}
+
 export interface Action {
-    name: string;
-    description: string;
-    type: ActionType;
+    readonly name: string;
+    readonly description: string;
+    readonly type: ActionType;
     invoke(scenario: Scenario): ActionCallback;
-    invokeEvenOnFail: boolean;
-    allowFailure: boolean;
+    readonly invokeEvenOnFail: boolean;
+    readonly allowFailure: boolean;
 }

@@ -1,4 +1,4 @@
-enum ActionType {
+export enum ActionType {
     REST,
     TIMER,
     WEBSOCKET,
@@ -7,4 +7,4 @@ enum ActionType {
     AMQP_LISTEN,
 }
 
-export { ActionType };
+export type ActionTypeType = keyof typeof ActionType;
