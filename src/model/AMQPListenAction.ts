@@ -147,7 +147,9 @@ export class AMQPListenAction implements Action {
             promise: this.invokeAsync(scenario),
             cancel: () => {
                 if (this.amqpConnection) {
-                    this.amqpConnection.close();
+                    this.amqpConnection.close().catch(() => {
+                        // we can safely ignore errors while closing because this always means that the connection is already closed
+                    });
                 }
             },
         };
