@@ -152,6 +152,8 @@ const getURL = (
         return `amqps://${envConfig[actionDef.broker]}`;
     }
     throw new Error(
-        `Cannot get URL for action type ${(actionDef as any).type}`, // TODO: Do this properly
+        `Cannot get URL for action type ${
+            (actionDef as ActionDefinition).type
+        }`,
     );
 };
