@@ -28,53 +28,64 @@ const isMqttPublishAction = (actionDef: any): boolean =>
 export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
     const loadedActions: Action[] = [];
 
-    readdirSync(actionDir).forEach((file: any) => {
-        const actionDef = loadYamlConfiguration(`${actionDir}/${file}`);
+    readdirSync(actionDir, { withFileTypes: true })
+        .filter(dirent => dirent.isFile())
+        .map(dirent => dirent.name)
+        .forEach(file => {
+            const actionDef = loadYamlConfiguration(`${actionDir}/${file}`);
 
-        if (isRestAction(actionDef)) {
-            const host = getHost(actionDef, envConfig);
-            loadedActions.push(
-                new RestAction(
-                    nameFromYamlConfig(file),
-                    undefined,
-                    actionDef,
-                    host + actionDef.endpoint,
-                    actionDef.service,
-                ),
-            );
-        } else if (isTimerAction(actionDef)) {
-            loadedActions.push(
-                new TimerAction(nameFromYamlConfig(file), undefined, actionDef),
-            );
-        } else if (isWebsocketAction(actionDef)) {
-            const host = getHost(actionDef, envConfig);
-            loadedActions.push(
-                new WebSocketAction(
-                    nameFromYamlConfig(file),
-                    undefined,
-                    actionDef,
-                    actionDef.service,
-                    host + actionDef.endpoint,
-                ),
-            );
-        } else if (isMqttAction(actionDef)) {
-            loadedActions.push(
-                new MqttAction(nameFromYamlConfig(file), undefined, actionDef),
-            );
-        } else if (isMqttPublishAction(actionDef)) {
-            loadedActions.push(
-                new MqttPublishAction(
-                    nameFromYamlConfig(file),
-                    undefined,
-                    actionDef,
-                ),
-            );
-        } else {
-            getLogger('unknown').error(
-                `Unknown type of Action: ${actionDef.type}`,
-            );
-        }
-    });
+            if (isRestAction(actionDef)) {
+                const host = getHost(actionDef, envConfig);
+                loadedActions.push(
+                    new RestAction(
+                        nameFromYamlConfig(file),
+                        undefined,
+                        actionDef,
+                        host + actionDef.endpoint,
+                        actionDef.service,
+                    ),
+                );
+            } else if (isTimerAction(actionDef)) {
+                loadedActions.push(
+                    new TimerAction(
+                        nameFromYamlConfig(file),
+                        undefined,
+                        actionDef,
+                    ),
+                );
+            } else if (isWebsocketAction(actionDef)) {
+                const host = getHost(actionDef, envConfig);
+                loadedActions.push(
+                    new WebSocketAction(
+                        nameFromYamlConfig(file),
+                        undefined,
+                        actionDef,
+                        actionDef.service,
+                        host + actionDef.endpoint,
+                    ),
+                );
+            } else if (isMqttAction(actionDef)) {
+                loadedActions.push(
+                    new MqttAction(
+                        nameFromYamlConfig(file),
+                        undefined,
+                        actionDef,
+                    ),
+                );
+            } else if (isMqttPublishAction(actionDef)) {
+                loadedActions.push(
+                    new MqttPublishAction(
+                        nameFromYamlConfig(file),
+                        undefined,
+                        actionDef,
+                    ),
+                );
+            } else {
+                getLogger('unknown').error(
+                    `Unknown type of Action: ${actionDef.type}`,
+                );
+            }
+        });
 
     return loadedActions;
 };
