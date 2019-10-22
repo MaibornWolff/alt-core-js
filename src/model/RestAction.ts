@@ -1,4 +1,5 @@
 import { createReadStream, readFileSync } from 'fs';
+import { stringify } from 'querystring';
 import * as request from 'requestretry';
 import {
     addFailedResponse,
@@ -28,7 +29,7 @@ class RestAction implements Action {
 
     public method: string;
 
-    public queryParameters: Map<string, string>;
+    public queryParameters: { [key: string]: string };
 
     public restHead: any;
 
@@ -216,11 +217,6 @@ class RestAction implements Action {
             }
         };
 
-        const concatParams = (paramMap: Map<string, string>): string =>
-            Array.from(paramMap.entries())
-                .map(([key, value]) => `${key}=${value}`)
-                .join('&');
-
         const generateRequestBody = (): string | null => {
             if (!this.data) return null;
             return Array.isArray(this.data)
@@ -259,17 +255,25 @@ class RestAction implements Action {
             const binaryData = this.dataBinary
                 ? createReadStream(this.dataBinary)
                 : null;
-            const requestUrl = this.queryParameters
-                ? `${this.url}?${concatParams(this.queryParameters)}`
-                : this.url;
+            const baseURL = `${injectEvalAndVarsToString(
+                this.url,
+                scenario.cache,
+                ctx,
+            )}`;
+            const queryParameters = this.queryParameters
+                ? injectEvalAndVarsToMap(
+                      this.queryParameters,
+                      scenario.cache,
+                      ctx,
+                  )
+                : undefined;
+            const url = queryParameters
+                ? `${baseURL}?${stringify(queryParameters)}`
+                : baseURL;
 
             let requestOptions = {
                 method: this.method,
-                url: `${injectEvalAndVarsToString(
-                    requestUrl,
-                    scenario.cache,
-                    ctx,
-                )}`,
+                url,
                 headers: requestHeaders,
                 body: requestBody || binaryData,
                 encoding: binaryData ? null : undefined,
