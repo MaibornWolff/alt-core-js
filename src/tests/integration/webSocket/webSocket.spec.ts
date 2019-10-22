@@ -10,7 +10,7 @@ describe('WebSocket Action', () => {
         'src/tests/integration/webSocket/resources/environment';
     const environment = 'config';
 
-    let wss;
+    let wss: WebSocket.Server | undefined;
     before(function() {
         wss = new WebSocket.Server({ port: 8080, path: '/ws' });
         wss.on('connection', ws => {
@@ -21,7 +21,7 @@ describe('WebSocket Action', () => {
     });
 
     after(() => {
-        wss.close();
+        wss && wss.close();
     });
 
     it('should successfully perform s1', async () => {
