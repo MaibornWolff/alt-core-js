@@ -68,6 +68,8 @@ export const runMultipleScenariosWithConfigAsync = async (
     runConfig: RunConfiguration,
     scenarioPaths: string[],
 ): Promise<boolean> => {
+    // TODO: global variables should be avoided
+    RESULTS.clear();
     const {
         numberOfScenariosRunInParallel = 10,
         environmentNameToBeUsed = 'none',
@@ -249,29 +251,27 @@ async function invokeActionsSynchronously(scenario: Scenario): Promise<void> {
         const start = process.hrtime();
 
         const actionCallback = action.invoke(scenario);
-        const actionPromise = actionCallback.promise
-            .then(result => {
-                const duration = timeDiffInMs(process.hrtime(start)).toFixed(2);
+        const actionPromise = actionCallback.promise.then(result => {
+            const duration = timeDiffInMs(process.hrtime(start)).toFixed(2);
 
-                const scenarioResults = RESULTS.get(scenarioName);
-                if (scenarioResults)
-                    scenarioResults.push(
-                        new TestResult(
-                            action.description,
-                            duration,
-                            true,
-                            action.allowFailure,
-                        ),
-                    );
-
-                if (result)
-                    getLogger(scenario.name).debug(JSON.stringify(result), ctx);
-                getLogger(scenario.name).info(
-                    pad(MSG_WIDTH, ` Time: ${duration} ms ###########`, '#'),
-                    ctx,
+            const scenarioResults = RESULTS.get(scenarioName);
+            if (scenarioResults)
+                scenarioResults.push(
+                    new TestResult(
+                        action.description,
+                        duration,
+                        true,
+                        action.allowFailure,
+                    ),
                 );
-            })
-            .catch(reason => handleError(reason, action, start));
+
+            if (result)
+                getLogger(scenario.name).debug(JSON.stringify(result), ctx);
+            getLogger(scenario.name).info(
+                pad(MSG_WIDTH, ` Time: ${duration} ms ###########`, '#'),
+                ctx,
+            );
+        });
 
         if (action.type === ActionType.WEBSOCKET) {
             actionsToCancel.push(actionCallback);

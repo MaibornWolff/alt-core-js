@@ -1,0 +1,9 @@
+description: 'A simple scenario for testing rest functionality. It expects the client to be unauthorized - invalid cert'
+actions:
+  - name: rest-secure
+    responseValidation:
+      - "head.code === 401"
+    clientCertificatePath: 'src/tests/integration/rest/resources/certs/bob_cert.pem'
+    clientKeyPath: 'src/tests/integration/rest/resources/certs/bob_key.pem'
+    headers:
+      - Content-Type: application/json

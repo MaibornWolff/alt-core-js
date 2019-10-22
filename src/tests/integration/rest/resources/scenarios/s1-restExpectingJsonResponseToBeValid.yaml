@@ -1,0 +1,7 @@
+description: 'A simple scenario for testing rest functionality. It expects the response to be valid'
+actions:
+    - name: rest
+      responseValidation:
+          - "res.code === 200"
+      headers:
+          - Content-Type: application/json

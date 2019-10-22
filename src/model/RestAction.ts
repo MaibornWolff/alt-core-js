@@ -1,4 +1,4 @@
-import { createReadStream } from 'fs';
+import { createReadStream, readFileSync } from 'fs';
 import * as request from 'requestretry';
 import {
     addFailedResponse,
@@ -46,6 +46,10 @@ class RestAction implements Action {
 
     public allowFailure = false;
 
+    public readonly clientCertificatePath?: string;
+
+    public readonly clientKeyPath?: string;
+
     public constructor(
         name: string,
         desc = name,
@@ -62,6 +66,8 @@ class RestAction implements Action {
         vars = actionDef.variables,
         invokeOnFail = actionDef.invokeEvenOnFail,
         allowFailure = actionDef.allowFailure,
+        clientCertificatePath = actionDef.clientCertificatePath,
+        clientKeyPath = actionDef.clientKeyPath,
     ) {
         this.name = name;
         this.description = desc;
@@ -73,10 +79,12 @@ class RestAction implements Action {
         this.data = restData;
         this.dataBinary = restDataBinary;
         this.form = restForm;
-        this.responseValidation = validators ? [].concat(validators) : [];
+        this.responseValidation = validators ? [...validators] : [];
         this.variables = vars;
         this.invokeEvenOnFail = invokeOnFail;
         this.allowFailure = allowFailure;
+        this.clientCertificatePath = clientCertificatePath;
+        this.clientKeyPath = clientKeyPath;
     }
 
     public static fromTemplate(
@@ -109,6 +117,8 @@ class RestAction implements Action {
                 : actionDef.variables,
             actionDef.invokeEvenOnFail || template.invokeEvenOnFail,
             actionDef.allowFailure || template.allowFailure,
+            actionDef.clientCertificatePath || template.clientCertificatePath,
+            actionDef.clientKeyPath || template.clientKeyPath,
         );
     }
 
@@ -220,6 +230,24 @@ class RestAction implements Action {
                   );
         };
 
+        const getClientCertificationConfiguration = (
+            clientCertificatePath: string,
+            clientKeyPath: string,
+        ): { cert?: Buffer; key?: Buffer; rejectUnauthorized?: boolean } => {
+            try {
+                const cert = readFileSync(clientCertificatePath);
+                const key = readFileSync(clientKeyPath);
+                return {
+                    cert,
+                    key,
+                    rejectUnauthorized: false,
+                };
+            } catch (error) {
+                logError(error.message);
+                return {};
+            }
+        };
+
         const promise = new Promise((resolve, reject) => {
             const requestHeaders = this.restHead
                 ? injectEvalAndVarsToMap(this.restHead, scenario.cache, ctx)
@@ -235,7 +263,7 @@ class RestAction implements Action {
                 ? `${this.url}?${concatParams(this.queryParameters)}`
                 : this.url;
 
-            request({
+            let requestOptions = {
                 method: this.method,
                 url: `${injectEvalAndVarsToString(
                     requestUrl,
@@ -249,7 +277,19 @@ class RestAction implements Action {
                 maxAttempts: 3,
                 retryDelay: 1000, // 1s
                 fullResponse: true,
-            })
+            };
+
+            if (this.clientCertificatePath && this.clientKeyPath) {
+                requestOptions = {
+                    ...requestOptions,
+                    ...getClientCertificationConfiguration(
+                        this.clientCertificatePath,
+                        this.clientKeyPath,
+                    ),
+                };
+            }
+
+            request(requestOptions)
                 .then(response => {
                     // console.log(response.toJSON());
 

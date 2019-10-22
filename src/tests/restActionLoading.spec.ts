@@ -41,5 +41,11 @@ describe('REST action loading', () => {
         );
         expect((result as RestAction).variables).to.have.property('user');
         expect((result as RestAction).variables[user]).to.be.equal('testuser');
+        expect((result as RestAction).clientCertificatePath).to.be.equal(
+            '../clientCertificate.pem',
+        );
+        expect((result as RestAction).clientKeyPath).to.be.equal(
+            '../clientKey.pem',
+        );
     });
 });
