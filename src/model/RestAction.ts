@@ -231,9 +231,9 @@ class RestAction implements Action {
         };
 
         const getClientCertificationConfiguration = (
-            clientCertificatePath,
-            clientKeyPath,
-        ) => {
+            clientCertificatePath: string,
+            clientKeyPath: string,
+        ): { cert?: Buffer; key?: Buffer; rejectUnauthorized?: boolean } => {
             try {
                 const cert = readFileSync(clientCertificatePath);
                 const key = readFileSync(clientKeyPath);
