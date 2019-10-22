@@ -46,9 +46,9 @@ class RestAction implements Action {
 
     public allowFailure = false;
 
-    private readonly clientCertificatePath?: string;
+    public readonly clientCertificatePath?: string;
 
-    private readonly clientKeyPath?: string;
+    public readonly clientKeyPath?: string;
 
     public constructor(
         name: string,
