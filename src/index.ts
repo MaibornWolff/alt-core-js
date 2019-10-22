@@ -68,6 +68,7 @@ export const runMultipleScenariosWithConfigAsync = async (
     runConfig: RunConfiguration,
     scenarioPaths: string[],
 ): Promise<boolean> => {
+    // TODO: global variables should be avoided
     RESULTS.clear();
     const {
         numberOfScenariosRunInParallel = 10,
