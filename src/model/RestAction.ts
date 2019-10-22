@@ -23,13 +23,14 @@ export interface RestActionDefinition extends ActionDefinition {
     readonly service: string;
     readonly endpoint?: string;
     readonly method: string;
-    readonly queryParameters?: Map<string, string>;
-    readonly headers?: string;
+    readonly queryParameters?: { [key: string]: string };
+    readonly headers?: { [key: string]: string };
     readonly data?: Map<string, string>;
     readonly dataBinary?: PathLike;
-    readonly form?: any;
+    readonly form?: { [key: string]: string };
     readonly responseValidation?: string[];
-    readonly variables?: Map<string, string>;
+    readonly variables?: { [key: string]: string };
+    readonly expectBinaryResponse?: boolean;
 }
 
 // TODO: Implement correctly
@@ -54,17 +55,17 @@ class RestAction implements Action {
 
     public queryParameters: { [key: string]: string };
 
-    public restHead: any;
+    public restHead: { [key: string]: string };
 
     public data: Map<string, string>;
 
     public dataBinary: string;
 
-    public form: any;
+    public form: { [key: string]: string };
 
     public responseValidation: string[];
 
-    public variables: Map<string, string>;
+    public variables: { [key: string]: string };
 
     public invokeEvenOnFail = false;
 
@@ -73,6 +74,8 @@ class RestAction implements Action {
     public readonly clientCertificatePath?: string;
 
     public readonly clientKeyPath?: string;
+
+    private readonly expectBinaryResponse: boolean;
 
     public constructor(
         name: string,
@@ -92,6 +95,7 @@ class RestAction implements Action {
         allowFailure = actionDef.allowFailure,
         clientCertificatePath = actionDef.clientCertificatePath,
         clientKeyPath = actionDef.clientKeyPath,
+        expectBinaryResponse = actionDef.expectBinaryResponse || false,
     ) {
         this.name = name;
         this.description = desc;
@@ -109,6 +113,7 @@ class RestAction implements Action {
         this.allowFailure = allowFailure;
         this.clientCertificatePath = clientCertificatePath;
         this.clientKeyPath = clientKeyPath;
+        this.expectBinaryResponse = expectBinaryResponse;
     }
 
     public static fromTemplate(
@@ -137,12 +142,13 @@ class RestAction implements Action {
                   )
                 : actionDef.responseValidation,
             template.variables
-                ? Object.assign(template.variables, actionDef.variables)
+                ? { ...template.variables, ...actionDef.variables }
                 : actionDef.variables,
             actionDef.invokeEvenOnFail || template.invokeEvenOnFail,
             actionDef.allowFailure || template.allowFailure,
             actionDef.clientCertificatePath || template.clientCertificatePath,
             actionDef.clientKeyPath || template.clientKeyPath,
+            actionDef.expectBinaryResponse || template.expectBinaryResponse,
         );
     }
 
@@ -299,7 +305,7 @@ class RestAction implements Action {
                 url,
                 headers: requestHeaders,
                 body: requestBody || binaryData,
-                encoding: binaryData ? null : undefined,
+                encoding: this.expectBinaryResponse ? null : undefined,
                 form: requestForm,
                 maxAttempts: 3,
                 retryDelay: 1000, // 1s
@@ -366,9 +372,7 @@ class RestAction implements Action {
                             } else if (contentType.startsWith('text/plain')) {
                                 res = response.body.toString();
                             } else {
-                                const body: Uint8Array[] = [];
-                                body.push(response.body);
-                                res = Buffer.concat(body).toString();
+                                res = Buffer.from(response.body).toString();
                             }
                             addSuccessfulResponse(
                                 scenario.name,
