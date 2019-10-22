@@ -21,6 +21,7 @@
   "homepage": "https://github.com/MaibornWolff/alt-core-js",
   "license": "MIT",
   "devDependencies": {
+    "@types/amqplib": "^0.5.13",
     "@types/chai": "^4.2.3",
     "@types/js-yaml": "^3.12.1",
     "@types/mocha": "^5.2.7",
@@ -44,6 +45,7 @@
     "typescript": "^3.6.4"
   },
   "dependencies": {
+    "amqplib": "^0.5.5",
     "hexdump-nodejs": "^0.1.0",
     "js-yaml": "^3.13.1",
     "long": "^4.0.0",

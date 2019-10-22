@@ -6,6 +6,7 @@ import { TimerAction } from './TimerAction';
 import { WebSocketAction } from './WebSocketAction';
 import { MqttAction } from './MqttAction';
 import { MqttPublishAction } from './MqttPublishAction';
+import { AMQPListenAction } from './AMQPListenAction';
 
 class Scenario {
     /* retrieved from the file name */
@@ -80,6 +81,14 @@ class Scenario {
                             MqttPublishAction.fromTemplate(
                                 actionDef,
                                 actionTemplate as MqttPublishAction,
+                            ),
+                        );
+                        break;
+                    case ActionType.AMQP_LISTEN:
+                        this.actions.push(
+                            AMQPListenAction.fromTemplate(
+                                actionDef,
+                                actionTemplate as AMQPListenAction,
                             ),
                         );
                         break;

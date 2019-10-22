@@ -29,7 +29,7 @@ export const initDiagramCreation = (scenarioId: string): void => {
         'autonumber',
         'skinparam handwritten false',
         'control MQTT',
-        'actor YATF #red\n',
+        'actor ALT #red\n',
     ];
     appendFileSync(getInputFile(scenarioId), initValues.join('\n'));
 };
@@ -41,7 +41,7 @@ export const addRequest = (
     data: any,
 ): void => {
     const targetWithUnderscores = replaceDashes(target);
-    const request = `YATF -> ${targetWithUnderscores}: ${url}\nactivate ${targetWithUnderscores}\n${
+    const request = `ALT -> ${targetWithUnderscores}: ${url}\nactivate ${targetWithUnderscores}\n${
         data
             ? `note right\n**${currentTimestamp()}**\n${extractPayload(
                   data,
@@ -89,7 +89,7 @@ const doAddResponse = (
     const sourceWithUnderscores = replaceDashes(source);
     appendFileSync(
         getInputFile(scenarioId),
-        `${sourceWithUnderscores} --> YATF: <color ${color}>${status}</color>\ndeactivate ${sourceWithUnderscores}\n`,
+        `${sourceWithUnderscores} --> ALT: <color ${color}>${status}</color>\ndeactivate ${sourceWithUnderscores}\n`,
     );
 };
 
@@ -108,7 +108,7 @@ export const addWsMessage = (
     const sourceWithUnderscores = replaceDashes(source);
     appendFileSync(
         getInputFile(scenarioId),
-        `${sourceWithUnderscores} -[#0000FF]->o YATF : [WS]\n`,
+        `${sourceWithUnderscores} -[#0000FF]->o ALT : [WS]\n`,
     );
     const note = `note left #aqua\n**${currentTimestamp()}**\n${extractPayload(
         payload,
@@ -123,7 +123,7 @@ export const addMqttMessage = (
 ): void => {
     appendFileSync(
         getInputFile(scenarioId),
-        `MQTT -[#green]->o YATF : ${topic}\n`,
+        `MQTT -[#green]->o ALT : ${topic}\n`,
     );
     const note = `note right #99FF99\n**${currentTimestamp()}**\n${extractPayload(
         payload,
@@ -138,10 +138,28 @@ export const addMqttPublishMessage = (
 ): void => {
     appendFileSync(
         getInputFile(scenarioId),
-        `YATF -[#green]->o MQTT : ${topic}\n`,
+        `ALT -[#green]->o MQTT : ${topic}\n`,
     );
     const note = `note left #99FF99\n**${currentTimestamp()}**\n${extractPayload(
         JSON.parse(payload),
+    )}\nend note\n`;
+    appendFileSync(getInputFile(scenarioId), note);
+};
+
+export const addAMQPReceivedMessage = (
+    scenarioId: string,
+    source: string,
+    exchange: string,
+    routingKey: string,
+    payload: unknown,
+): void => {
+    const sourceWithUnderscores = replaceDashes(source);
+    appendFileSync(
+        getInputFile(scenarioId),
+        `${sourceWithUnderscores} -[#FF6600]->o ALT : ${exchange}/${routingKey}\n`,
+    );
+    const note = `note left #FF6600\n**${currentTimestamp()}**\n${extractPayload(
+        payload,
     )}\nend note\n`;
     appendFileSync(getInputFile(scenarioId), note);
 };
