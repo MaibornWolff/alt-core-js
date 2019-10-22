@@ -67,9 +67,9 @@ class RestAction implements Action {
 
     public variables: { [key: string]: string };
 
-    public invokeEvenOnFail = false;
+    public invokeEvenOnFail: boolean;
 
-    public allowFailure = false;
+    public allowFailure: boolean;
 
     public readonly clientCertificatePath?: string;
 
@@ -89,10 +89,10 @@ class RestAction implements Action {
         restData = actionDef.data,
         restDataBinary = actionDef.dataBinary,
         restForm = actionDef.form,
-        validators = actionDef.responseValidation,
+        validators = actionDef.responseValidation || [],
         vars = actionDef.variables,
-        invokeOnFail = actionDef.invokeEvenOnFail,
-        allowFailure = actionDef.allowFailure,
+        invokeOnFail = actionDef.invokeEvenOnFail || false,
+        allowFailure = actionDef.allowFailure || false,
         clientCertificatePath = actionDef.clientCertificatePath,
         clientKeyPath = actionDef.clientKeyPath,
         expectBinaryResponse = actionDef.expectBinaryResponse || false,
@@ -107,7 +107,7 @@ class RestAction implements Action {
         this.data = restData;
         this.dataBinary = restDataBinary;
         this.form = restForm;
-        this.responseValidation = validators ? [...validators] : [];
+        this.responseValidation = [...validators];
         this.variables = vars;
         this.invokeEvenOnFail = invokeOnFail;
         this.allowFailure = allowFailure;
@@ -144,11 +144,17 @@ class RestAction implements Action {
             template.variables
                 ? { ...template.variables, ...actionDef.variables }
                 : actionDef.variables,
-            actionDef.invokeEvenOnFail || template.invokeEvenOnFail,
-            actionDef.allowFailure || template.allowFailure,
+            actionDef.invokeEvenOnFail != null
+                ? actionDef.invokeEvenOnFail
+                : template.invokeEvenOnFail,
+            actionDef.allowFailure != null
+                ? actionDef.allowFailure
+                : template.allowFailure,
             actionDef.clientCertificatePath || template.clientCertificatePath,
             actionDef.clientKeyPath || template.clientKeyPath,
-            actionDef.expectBinaryResponse || template.expectBinaryResponse,
+            actionDef.expectBinaryResponse != null
+                ? actionDef.expectBinaryResponse
+                : template.expectBinaryResponse,
         );
     }
 
