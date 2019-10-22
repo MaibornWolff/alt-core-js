@@ -1,6 +1,6 @@
 import 'mocha';
-import * as Http from 'http';
-import * as Https from 'https';
+import { createServer as createHTTPServer } from 'http';
+import { createServer as createHTTPSServer, ServerOptions } from 'https';
 
 import { expect } from 'chai';
 import * as fs from 'fs';
@@ -27,7 +27,7 @@ describe('Rest Action', () => {
                 response.end(JSON.stringify(responseBody));
             };
 
-            server = Http.createServer(requestHandler);
+            server = createHTTPServer(requestHandler);
             server.listen(port);
         });
 
@@ -82,7 +82,7 @@ describe('Rest Action', () => {
                 response.writeHead(request.client.authorized ? 200 : 401);
                 response.end();
             };
-            const serverOptions: Https.ServerOptions = {
+            const serverOptions: ServerOptions = {
                 key: fs.readFileSync(
                     path.join(__dirname, 'resources/certs/server_key.pem'),
                     'utf-8',
@@ -99,7 +99,7 @@ describe('Rest Action', () => {
                 rejectUnauthorized: false,
             };
 
-            server = Https.createServer(serverOptions, requestHandler);
+            server = createHTTPSServer(serverOptions, requestHandler);
             server.listen(port);
         });
 
