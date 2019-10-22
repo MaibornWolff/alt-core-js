@@ -6,7 +6,7 @@ import { ActionType } from '../model/ActionType';
 describe('Action loading', () => {
     const TEST_ACTION_PATH = 'src/tests/resources/actions';
 
-    it('should be able to parse action files in the correct folder', () => {
+    it('should be able to parse action files in the correct folder and ignore subdirectories', () => {
         const envConfig = {
             'my-service': 'localhost:8080',
         };
