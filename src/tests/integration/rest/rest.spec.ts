@@ -1,11 +1,22 @@
 import 'mocha';
-import { createServer as createHTTPServer } from 'http';
-import { createServer as createHTTPSServer, ServerOptions } from 'https';
+import {
+    createServer as createHTTPServer,
+    IncomingMessage,
+    RequestListener,
+    Server as HTTPServer,
+    ServerResponse,
+} from 'http';
+import {
+    createServer as createHTTPSServer,
+    Server as HTTPSServer,
+    ServerOptions as HTTPSServerOptions,
+} from 'https';
 
 import { expect } from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { TLSSocket } from 'tls';
 import { runMultipleScenariosWithConfigAsync } from '../../../index';
 
 describe('Rest Action', () => {
@@ -16,12 +27,15 @@ describe('Rest Action', () => {
     const environment = 'config';
 
     describe('Requests', () => {
-        let server;
+        let server: HTTPServer | undefined;
 
         before(() => {
             const port = 8080;
 
-            const requestHandler = (request, response) => {
+            const requestHandler = (
+                request: IncomingMessage,
+                response: ServerResponse,
+            ) => {
                 response.setHeader('Content-Type', 'application/json');
                 const responseBody = { code: 200 };
                 response.end(JSON.stringify(responseBody));
@@ -32,7 +46,7 @@ describe('Rest Action', () => {
         });
 
         after(() => {
-            server.close();
+            server && server.close();
         });
 
         it('should successfully perform s1', async () => {
@@ -73,16 +87,23 @@ describe('Rest Action', () => {
     });
 
     describe('Requests with Client Certificate', () => {
-        let server;
+        let server: HTTPSServer | undefined;
 
         before(() => {
             const port = 8080;
 
-            const requestHandler = (request, response) => {
+            type SecuredIncomingMessage = IncomingMessage & {
+                client: TLSSocket;
+            };
+
+            const requestHandler: RequestListener = (
+                request: SecuredIncomingMessage,
+                response: ServerResponse,
+            ) => {
                 response.writeHead(request.client.authorized ? 200 : 401);
                 response.end();
             };
-            const serverOptions: ServerOptions = {
+            const serverOptions: HTTPSServerOptions = {
                 key: fs.readFileSync(
                     path.join(__dirname, 'resources/certs/server_key.pem'),
                     'utf-8',
@@ -104,7 +125,7 @@ describe('Rest Action', () => {
         });
 
         after(() => {
-            server.close();
+            server && server.close();
         });
 
         it('should successfully perform s3', async () => {
