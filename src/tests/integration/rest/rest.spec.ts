@@ -9,7 +9,6 @@ import {
 import {
     createServer as createHTTPSServer,
     Server as HTTPSServer,
-    ServerOptions as HTTPSServerOptions,
 } from 'https';
 
 import { expect } from 'chai';
@@ -103,7 +102,7 @@ describe('Rest Action', () => {
                 response.writeHead(request.client.authorized ? 200 : 401);
                 response.end();
             };
-            const serverOptions: HTTPSServerOptions = {
+            const serverOptions = {
                 key: fs.readFileSync(
                     path.join(__dirname, 'resources/certs/server_key.pem'),
                     'utf-8',
