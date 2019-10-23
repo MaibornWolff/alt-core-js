@@ -191,7 +191,7 @@ class RestAction implements Action {
             );
             return body;
         }
-        return Buffer.from(body);
+        return Buffer.from(body); // TODO: Do we actually need to create a copy here or could we simply return `body`?
     }
 
     public invoke(scenario: Scenario): ActionCallback {
