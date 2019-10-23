@@ -11,7 +11,7 @@ describe('WebSocket Action', () => {
     const environment = 'config';
 
     let wss: WebSocket.Server | undefined;
-    before(function() {
+    before(() => {
         wss = new WebSocket.Server({ port: 8080, path: '/ws' });
         wss.on('connection', ws => {
             ws.on('message', message => {

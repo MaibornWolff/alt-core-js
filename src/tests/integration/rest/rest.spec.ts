@@ -34,7 +34,7 @@ describe('Rest Action', () => {
             const requestHandler = (
                 request: IncomingMessage,
                 response: ServerResponse,
-            ) => {
+            ): void => {
                 response.setHeader('Content-Type', 'application/json');
                 const responseBody = { code: 200 };
                 response.end(JSON.stringify(responseBody));
