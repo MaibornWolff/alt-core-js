@@ -255,10 +255,19 @@ class RestAction implements Action {
                                     `Header validation (${validation}): ${validationResult}`,
                                 );
                                 reject(head);
+                                reject(
+                                    new Error(
+                                        `Header validation failed, actual headers were ${head}`,
+                                    ),
+                                );
                             }
                         } catch (e) {
                             logError(e.message);
-                            reject(head);
+                            reject(
+                                new Error(
+                                    `Error during header validation, actual headers were ${head}`,
+                                ),
+                            );
                         }
                     });
             }
@@ -282,11 +291,19 @@ class RestAction implements Action {
                                 logError(
                                     `Body validation (${validation}): ${validationResult}`,
                                 );
-                                reject(res);
+                                reject(
+                                    new Error(
+                                        `Body validation failed, actual response was ${res}`,
+                                    ),
+                                );
                             }
                         } catch (e) {
                             logError(e.message);
-                            reject(res);
+                            reject(
+                                new Error(
+                                    `Error during body validation, actual response was ${res}`,
+                                ),
+                            );
                         }
                     });
             }
