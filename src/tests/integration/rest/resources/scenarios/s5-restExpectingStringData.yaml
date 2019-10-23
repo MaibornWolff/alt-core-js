@@ -1,0 +1,5 @@
+description: 'A simple scenario for testing rest functionality. It expects the response to be valid and to contain "foo" as string body.'
+actions:
+    - name: rest
+      responseValidation:
+          - "res.toString() === 'foo'"
