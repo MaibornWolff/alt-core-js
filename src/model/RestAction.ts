@@ -254,7 +254,6 @@ class RestAction implements Action {
                                 logError(
                                     `Header validation (${validation}): ${validationResult}`,
                                 );
-                                reject(head);
                                 reject(
                                     new Error(
                                         `Header validation failed, actual headers were ${head}`,
