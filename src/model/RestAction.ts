@@ -1,5 +1,7 @@
 import { createReadStream, PathLike, readFileSync } from 'fs';
+import { IncomingHttpHeaders } from 'http';
 import { stringify } from 'querystring';
+import { Response } from 'request';
 import * as request from 'requestretry';
 import {
     addFailedResponse,
@@ -170,6 +172,28 @@ class RestAction implements Action {
         return actionDef.data;
     }
 
+    private static parseResponseBody(
+        body: string | Buffer,
+        contentType: string | undefined,
+        ctx: { scenario: string; action: string },
+    ): unknown {
+        if (typeof body === 'string') {
+            if (contentType && contentType.startsWith('application/json')) {
+                return JSON.parse(body);
+            }
+            if (contentType && contentType.startsWith('text/plain')) {
+                return body;
+            }
+
+            getLogger(ctx.scenario).debug(
+                `Cannot parse string response body with content-type ${contentType}, handling it as string.`,
+                ctx,
+            );
+            return body;
+        }
+        return Buffer.from(body); // TODO: Do we actually need to create a copy here or could we simply return `body`?
+    }
+
     public invoke(scenario: Scenario): ActionCallback {
         const ctx = { scenario: scenario.name, action: this.name };
         const scenarioVariables = this.variables;
@@ -184,13 +208,23 @@ class RestAction implements Action {
             getLogger(ctx.scenario).debug(debugMessage, ctx);
         };
 
-        const updateScenarioCache = (res: any, head: any): void => {
+        // TODO: Split in 2 seperate functions for res and head
+        const updateScenarioCache = ({
+            res,
+            head,
+        }: {
+            res?: unknown;
+            head?: IncomingHttpHeaders;
+        }): void => {
             // `res` & `head` needed for the `eval()` call
             if (scenarioVariables) {
                 for (const pair of Object.entries(scenarioVariables)) {
-                    if (pair[1].startsWith('res') && res) {
+                    if (pair[1].startsWith('res') && res !== undefined) {
                         scenario.cache.set(pair[0], eval(pair[1]));
-                    } else if (pair[1].startsWith('head') && head) {
+                    } else if (
+                        pair[1].startsWith('head') &&
+                        head !== undefined
+                    ) {
                         scenario.cache.set(pair[0], eval(pair[1]));
                     }
                     logDebug(
@@ -202,7 +236,10 @@ class RestAction implements Action {
             }
         };
 
-        const validateHeaders = (head: any, reject: any): void => {
+        const validateHeaders = (
+            head: IncomingHttpHeaders,
+            reject: (reason?: unknown) => void,
+        ): void => {
             if (registeredValidations) {
                 registeredValidations
                     .filter(v => v.startsWith('head.'))
@@ -217,17 +254,28 @@ class RestAction implements Action {
                                 logError(
                                     `Header validation (${validation}): ${validationResult}`,
                                 );
-                                reject(head);
+                                reject(
+                                    new Error(
+                                        `Header validation failed, actual headers were ${head}`,
+                                    ),
+                                );
                             }
                         } catch (e) {
                             logError(e.message);
-                            reject(head);
+                            reject(
+                                new Error(
+                                    `Error during header validation, actual headers were ${head}`,
+                                ),
+                            );
                         }
                     });
             }
         };
 
-        const validateBody = (res: any, reject: any): void => {
+        const validateBody = (
+            res: unknown,
+            reject: (reason?: unknown) => void,
+        ): void => {
             if (registeredValidations) {
                 registeredValidations
                     .filter(v => v.startsWith('res.'))
@@ -242,11 +290,19 @@ class RestAction implements Action {
                                 logError(
                                     `Body validation (${validation}): ${validationResult}`,
                                 );
-                                reject(res);
+                                reject(
+                                    new Error(
+                                        `Body validation failed, actual response was ${res}`,
+                                    ),
+                                );
                             }
                         } catch (e) {
                             logError(e.message);
-                            reject(res);
+                            reject(
+                                new Error(
+                                    `Error during body validation, actual response was ${res}`,
+                                ),
+                            );
                         }
                     });
             }
@@ -329,9 +385,7 @@ class RestAction implements Action {
             }
 
             request(requestOptions)
-                .then(response => {
-                    // console.log(response.toJSON());
-
+                .then((response: Response) => {
                     logDebug(
                         `Calling:  ${response.request.method} ${response.request.href}`,
                     );
@@ -368,28 +422,25 @@ class RestAction implements Action {
 
                         const head = response.headers;
                         validateHeaders(head, reject);
-                        updateScenarioCache(null, head);
+                        updateScenarioCache({ head });
 
-                        let res: any;
                         const contentType = response.headers['content-type'];
-                        if (contentType != null) {
-                            if (contentType.startsWith('application/json')) {
-                                res = JSON.parse(response.body);
-                            } else if (contentType.startsWith('text/plain')) {
-                                res = response.body.toString();
-                            } else {
-                                res = Buffer.from(response.body).toString();
-                            }
+                        if (response.body != null) {
+                            const res = RestAction.parseResponseBody(
+                                response.body,
+                                contentType,
+                                ctx,
+                            );
                             addSuccessfulResponse(
                                 scenario.name,
                                 targetService,
                                 `${response.statusMessage} (${response.statusCode})`,
-                                res,
+                                `${res}`, // TODO: Should this be added in case of binary data?
                             );
 
                             validateBody(res, reject);
 
-                            updateScenarioCache(res, null);
+                            updateScenarioCache({ res });
                         } else {
                             addSuccessfulResponse(
                                 scenario.name,
