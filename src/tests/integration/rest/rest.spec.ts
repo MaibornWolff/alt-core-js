@@ -162,6 +162,42 @@ describe('Rest Action', () => {
 
             expect(result).to.be.equal(false);
         });
+
+        it('should successfully perform s9', async () => {
+            const scenarioPath = `${integrationTestBasePath}scenarios/s9-restExpectingClientToBeAuthorizedInlineViaVariables.yaml`;
+
+            const result = await runMultipleScenariosWithConfigAsync(
+                actionDir,
+                outDir,
+                envConfigDir,
+                {
+                    numberOfScenariosRunInParallel: 1,
+                    environmentNameToBeUsed: environment,
+                    drawDiagrams: false,
+                },
+                [scenarioPath],
+            );
+
+            expect(result).to.be.equal(true);
+        });
+
+        it('should successfully perform s10', async () => {
+            const scenarioPath = `${integrationTestBasePath}scenarios/s10-restExpectingClientToBeAuthorizedViaVariables.yaml`;
+
+            const result = await runMultipleScenariosWithConfigAsync(
+                actionDir,
+                outDir,
+                envConfigDir,
+                {
+                    numberOfScenariosRunInParallel: 1,
+                    environmentNameToBeUsed: environment,
+                    drawDiagrams: false,
+                },
+                [scenarioPath],
+            );
+
+            expect(result).to.be.equal(true);
+        });
     });
 
     describe('Response without content-type', () => {

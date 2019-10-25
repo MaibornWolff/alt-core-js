@@ -1,9 +1,7 @@
 description: 'A simple scenario for testing rest functionality. It expects the client to be authorized'
 actions:
     - name: rest-secure
-      responseValidation:
-        - "heade.code === 200"
-      clientCertificatePath: 'src/tests/integration/rest/resources/certs/alice_cert.pem'
-      clientKeyPath: 'src/tests/integration/rest/resources/certs/alice_key.pem'
+      clientCertificate: 'file:src/tests/integration/rest/resources/certs/alice_cert.pem'
+      clientKey: 'file:src/tests/integration/rest/resources/certs/alice_key.pem'
       headers:
         - Content-Type: application/json

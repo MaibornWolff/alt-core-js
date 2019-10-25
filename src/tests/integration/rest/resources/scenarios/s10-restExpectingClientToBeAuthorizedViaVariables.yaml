@@ -1,0 +1,11 @@
+description: 'A simple scenario for testing rest functionality. It expects the client to be authorized'
+variables:
+  cert: 'file:src/tests/integration/rest/resources/certs/alice_cert.pem'
+  key: 'file:src/tests/integration/rest/resources/certs/alice_key.pem'
+
+actions:
+    - name: rest-secure
+      clientCertificate: '{{cert}}'
+      clientKey: '{{key}}'
+      headers:
+        - Content-Type: application/json

@@ -16,5 +16,5 @@ responseValidation:
   - "res.a === true"
 variables:
   user: testuser
-clientCertificatePath: '../clientCertificate.pem'
-clientKeyPath: '../clientKey.pem'
+clientCertificate: 'file:../clientCertificate.pem'
+clientKey: 'file:../clientKey.pem'
