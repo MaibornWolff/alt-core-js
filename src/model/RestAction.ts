@@ -410,7 +410,9 @@ class RestAction implements Action {
                                 scenario.name,
                                 targetService,
                                 `${response.statusMessage} (${response.statusCode})`,
-                                `${res}`, // TODO: Should this be added in case of binary data?
+                                res instanceof Buffer
+                                    ? res.toString('hex')
+                                    : JSON.stringify(res),
                             );
 
                             validateBody(res, reject);
