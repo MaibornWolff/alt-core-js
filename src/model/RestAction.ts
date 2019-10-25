@@ -32,6 +32,8 @@ export interface RestActionDefinition extends ActionDefinition {
     readonly form?: { [key: string]: string };
     readonly responseValidation?: string[];
     readonly variables?: { [key: string]: string };
+    readonly clientCertificate?: string;
+    readonly clientKey?: string;
     readonly expectBinaryResponse?: boolean;
 }
 
@@ -43,39 +45,39 @@ export function isRestActionDefinition(
 }
 
 class RestAction implements Action {
-    public serviceName: string;
+    public readonly serviceName: string;
 
-    public name: string;
+    public readonly name: string;
 
-    public description: string;
+    public readonly description: string;
 
-    public type = ActionType.REST;
+    public readonly type = ActionType.REST;
 
-    public url: string;
+    public readonly url: string;
 
-    public method: string;
+    public readonly method: string;
 
-    public queryParameters: { [key: string]: string };
+    public readonly queryParameters: { [key: string]: string };
 
-    public restHead: { [key: string]: string };
+    public readonly restHead: { [key: string]: string };
 
-    public data: Map<string, string>;
+    public readonly data: Map<string, string>;
 
-    public dataBinary: string;
+    public readonly dataBinary: string;
 
-    public form: { [key: string]: string };
+    public readonly form: { [key: string]: string };
 
-    public responseValidation: string[];
+    public readonly responseValidation: string[];
 
-    public variables: { [key: string]: string };
+    public readonly variables: { [key: string]: string };
 
-    public invokeEvenOnFail: boolean;
+    public readonly invokeEvenOnFail: boolean;
 
-    public allowFailure: boolean;
+    public readonly allowFailure: boolean;
 
-    public readonly clientCertificatePath?: string;
+    public readonly clientCertificate?: string;
 
-    public readonly clientKeyPath?: string;
+    public readonly clientKey?: string;
 
     private readonly expectBinaryResponse: boolean;
 
@@ -95,8 +97,8 @@ class RestAction implements Action {
         vars = actionDef.variables,
         invokeOnFail = actionDef.invokeEvenOnFail || false,
         allowFailure = actionDef.allowFailure || false,
-        clientCertificatePath = actionDef.clientCertificatePath,
-        clientKeyPath = actionDef.clientKeyPath,
+        clientCertificate = actionDef.clientCertificate,
+        clientKey = actionDef.clientKey,
         expectBinaryResponse = actionDef.expectBinaryResponse || false,
     ) {
         this.name = name;
@@ -113,8 +115,8 @@ class RestAction implements Action {
         this.variables = vars;
         this.invokeEvenOnFail = invokeOnFail;
         this.allowFailure = allowFailure;
-        this.clientCertificatePath = clientCertificatePath;
-        this.clientKeyPath = clientKeyPath;
+        this.clientCertificate = clientCertificate;
+        this.clientKey = clientKey;
         this.expectBinaryResponse = expectBinaryResponse;
     }
 
@@ -152,8 +154,8 @@ class RestAction implements Action {
             actionDef.allowFailure != null
                 ? actionDef.allowFailure
                 : template.allowFailure,
-            actionDef.clientCertificatePath || template.clientCertificatePath,
-            actionDef.clientKeyPath || template.clientKeyPath,
+            actionDef.clientCertificate || template.clientCertificate,
+            actionDef.clientKey || template.clientKey,
             actionDef.expectBinaryResponse != null
                 ? actionDef.expectBinaryResponse
                 : template.expectBinaryResponse,
@@ -317,24 +319,6 @@ class RestAction implements Action {
                   );
         };
 
-        const getClientCertificationConfiguration = (
-            clientCertificatePath: string,
-            clientKeyPath: string,
-        ): { cert?: Buffer; key?: Buffer; rejectUnauthorized?: boolean } => {
-            try {
-                const cert = readFileSync(clientCertificatePath);
-                const key = readFileSync(clientKeyPath);
-                return {
-                    cert,
-                    key,
-                    rejectUnauthorized: false,
-                };
-            } catch (error) {
-                logError(error.message);
-                return {};
-            }
-        };
-
         const promise = new Promise((resolve, reject) => {
             const requestHeaders = this.restHead
                 ? injectEvalAndVarsToMap(this.restHead, scenario.cache, ctx)
@@ -362,7 +346,7 @@ class RestAction implements Action {
                 ? `${baseURL}?${stringify(queryParameters)}`
                 : baseURL;
 
-            let requestOptions = {
+            const requestOptions = {
                 method: this.method,
                 url,
                 headers: requestHeaders,
@@ -372,17 +356,8 @@ class RestAction implements Action {
                 maxAttempts: 3,
                 retryDelay: 1000, // 1s
                 fullResponse: true,
+                ...this.getClientCertificateConfiguration(scenario),
             };
-
-            if (this.clientCertificatePath && this.clientKeyPath) {
-                requestOptions = {
-                    ...requestOptions,
-                    ...getClientCertificationConfiguration(
-                        this.clientCertificatePath,
-                        this.clientKeyPath,
-                    ),
-                };
-            }
 
             request(requestOptions)
                 .then((response: Response) => {
@@ -481,6 +456,51 @@ class RestAction implements Action {
         });
 
         return { promise, cancel: () => console.log('TODO') };
+    }
+
+    private getClientCertificateConfiguration(
+        scenario: Scenario,
+    ):
+        | {
+              cert: Buffer;
+              key: Buffer;
+              rejectUnauthorized: boolean;
+          }
+        | {} {
+        const ctx = { scenario: scenario.name, action: this.name };
+        try {
+            const clientCertificate =
+                this.clientCertificate &&
+                `${injectEvalAndVarsToString(
+                    this.clientCertificate,
+                    scenario.cache,
+                    ctx,
+                )}`;
+            const clientKey =
+                this.clientKey &&
+                `${injectEvalAndVarsToString(
+                    this.clientKey,
+                    scenario.cache,
+                    ctx,
+                )}`;
+            if (clientCertificate && clientKey) {
+                return {
+                    cert: RestAction.readFromFileOrInput(clientCertificate),
+                    key: RestAction.readFromFileOrInput(clientKey),
+                    rejectUnauthorized: false,
+                };
+            }
+        } catch (error) {
+            getLogger(ctx.scenario).error(error.message, ctx);
+        }
+        return {};
+    }
+
+    private static readFromFileOrInput(input: string): Buffer {
+        if (input.startsWith('file:')) {
+            return readFileSync(input.substring(5));
+        }
+        return Buffer.from(input);
     }
 }
 

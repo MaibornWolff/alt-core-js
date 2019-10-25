@@ -24,9 +24,8 @@ interface RunConfiguration {
     drawDiagrams?: boolean;
 }
 
-// TODO: add exact version number for deprecation
 /**
- * @deprecated since 1.x.0, use {@link runMultipleScenariosWithConfig} instead
+ * @deprecated since 1.8.0, use {@link runMultipleScenariosWithConfig} instead
  */
 export const runMultipleSceanriosWithConfig = (
     actionDir: string,
