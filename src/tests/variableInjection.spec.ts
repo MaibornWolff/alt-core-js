@@ -204,4 +204,36 @@ describe('map injection', () => {
 
         expect(result.host).to.equal('{{host}}');
     });
+
+    it('should should be able to replace nested keys', () => {
+        const variableMap = new Map();
+        variableMap.set('host', 'localhost');
+        const result = injectEvalAndVarsToMap(
+            { data: { host: '{{host}}' } },
+            variableMap,
+            {},
+        );
+
+        expect(result.data.host).to.equal('localhost');
+    });
+
+    it('should should be able to replace keys in arrays', () => {
+        const variableMap = new Map();
+        variableMap.set('host', 'localhost');
+        const result = injectEvalAndVarsToMap(['{{host}}'], variableMap, {});
+
+        expect(result[0]).to.equal('localhost');
+    });
+
+    it('should should be able to replace keys in nested arrays and objects', () => {
+        const variableMap = new Map();
+        variableMap.set('host', 'localhost');
+        const result = injectEvalAndVarsToMap(
+            [{ data: [{ host: '{{host}}' }] }],
+            variableMap,
+            {},
+        );
+
+        expect(result[0].data[0].host).to.equal('localhost');
+    });
 });

@@ -31,7 +31,7 @@ export const loadAllScenarios = (
 ): Scenario[] => {
     const loadedScenarios: Scenario[] = [];
 
-    readdirSync(`${path}`).forEach((file: any) => {
+    readdirSync(`${path}`).forEach(file => {
         const scenarioDef = loadYamlConfiguration(`${path}/${file}`);
         if (scenarioDef) {
             // get imports
