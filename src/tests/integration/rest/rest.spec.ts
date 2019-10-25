@@ -396,4 +396,48 @@ describe('Rest Action', () => {
             expect(result).to.be.equal(true);
         });
     });
+
+    describe('Requests Sending arrays as payload', () => {
+        let server: HTTPServer | undefined;
+
+        before(() => {
+            const port = 8080;
+
+            const requestHandler = (
+                request: IncomingMessage,
+                response: ServerResponse,
+            ): void => {
+                response.setHeader('Content-Type', 'application/json');
+                request.on('data', data => {
+                    response.write(data);
+                });
+                request.on('end', () => response.end());
+            };
+
+            server = createHTTPServer(requestHandler);
+            server.listen(port);
+        });
+
+        after(() => {
+            server && server.close();
+        });
+
+        it('should support variable injection into the arrays', async () => {
+            const scenarioPath = `${integrationTestBasePath}scenarios/s11-restArrayBodyVariableInjection.yaml`;
+
+            const result = await runMultipleScenariosWithConfigAsync(
+                actionDir,
+                outDir,
+                envConfigDir,
+                {
+                    numberOfScenariosRunInParallel: 1,
+                    environmentNameToBeUsed: environment,
+                    drawDiagrams: false,
+                },
+                [scenarioPath],
+            );
+
+            expect(result).to.be.equal(true);
+        });
+    });
 });

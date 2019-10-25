@@ -294,7 +294,9 @@ class RestAction implements Action {
                                 );
                                 reject(
                                     new Error(
-                                        `Body validation failed, actual response was ${res}`,
+                                        `Body validation failed, actual response was ${JSON.stringify(
+                                            res,
+                                        )}`,
                                     ),
                                 );
                             }
@@ -302,7 +304,9 @@ class RestAction implements Action {
                             logError(e.message);
                             reject(
                                 new Error(
-                                    `Error during body validation, actual response was ${res}`,
+                                    `Error during body validation, actual response was ${JSON.stringify(
+                                        res,
+                                    )}`,
                                 ),
                             );
                         }
@@ -310,14 +314,12 @@ class RestAction implements Action {
             }
         };
 
-        const generateRequestBody = (): string | null => {
-            if (!this.data) return null;
-            return Array.isArray(this.data)
-                ? JSON.stringify(this.data)
-                : JSON.stringify(
+        const generateRequestBody = (): string | null =>
+            this.data != null
+                ? JSON.stringify(
                       injectEvalAndVarsToMap(this.data, scenario.cache, ctx),
-                  );
-        };
+                  )
+                : null;
 
         const promise = new Promise((resolve, reject) => {
             const requestHeaders = this.restHead
