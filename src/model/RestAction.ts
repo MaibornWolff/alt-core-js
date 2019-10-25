@@ -410,9 +410,7 @@ class RestAction implements Action {
                                 scenario.name,
                                 targetService,
                                 `${response.statusMessage} (${response.statusCode})`,
-                                res instanceof Buffer
-                                    ? res.toString('hex')
-                                    : JSON.stringify(res),
+                                res,
                             );
 
                             validateBody(res, reject);

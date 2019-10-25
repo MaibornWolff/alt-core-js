@@ -10,7 +10,7 @@ function getOutputFile(scenario: string): string {
     return `${OUTPUT_DIR()}/_${scenario}.png`;
 }
 
-function extractPayload(dict: any): string {
+function extractPayload(dict: unknown): string {
     return JSON.stringify(dict, null, 1);
 }
 
@@ -38,7 +38,7 @@ export const addRequest = (
     scenarioId: string,
     target: string,
     url: string,
-    data: any,
+    data: unknown,
 ): void => {
     const targetWithUnderscores = replaceDashes(target);
     const request = `ALT -> ${targetWithUnderscores}: ${url}\nactivate ${targetWithUnderscores}\n${
@@ -56,12 +56,14 @@ export const addSuccessfulResponse = (
     scenarioId: string,
     source: string,
     status: string,
-    body?: string,
+    body?: unknown,
 ): void => {
     doAddResponse(scenarioId, source, status, 'green');
     if (body) {
         const note = `note left\n**${currentTimestamp()}**\n${
-            typeof body === 'object' ? extractPayload(body) : body.substr(0, 30)
+            typeof body === 'string'
+                ? `${body.substr(0, 30)}…`
+                : extractPayload(body)
         }\nend note\n`;
         appendFileSync(getInputFile(scenarioId), note);
     }
@@ -103,7 +105,7 @@ export const addDelay = (scenarioId: string, durationInSec: number): void => {
 export const addWsMessage = (
     scenarioId: string,
     source: string,
-    payload: any,
+    payload: unknown,
 ): void => {
     const sourceWithUnderscores = replaceDashes(source);
     appendFileSync(
@@ -119,7 +121,7 @@ export const addWsMessage = (
 export const addMqttMessage = (
     scenarioId: string,
     topic: string,
-    payload: any,
+    payload: unknown,
 ): void => {
     appendFileSync(
         getInputFile(scenarioId),
