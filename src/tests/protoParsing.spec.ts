@@ -36,7 +36,10 @@ describe('PROTO parsing', () => {
         );
         expect(result).to.have.property('nested');
         expect(result).to.have.property('text');
-        expect(result.nested.nestedText).to.be.equal('hello');
+        expect(
+            result.nested &&
+                (result.nested as { nestedText: string }).nestedText,
+        ).to.be.equal('hello');
         expect(result.text).to.be.equal('world');
     });
 

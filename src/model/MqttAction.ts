@@ -129,7 +129,7 @@ class MqttAction implements Action {
             return true;
         };
 
-        let ctx = { scenario: scenario.name, action: this.topic };
+        const ctx = { scenario: scenario.name, action: this.topic };
         let numberOfRetrievedMessages = 0;
 
         // https://www.npmjs.com/package/mqtt#client

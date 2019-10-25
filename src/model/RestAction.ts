@@ -8,7 +8,7 @@ import {
     addRequest,
     addSuccessfulResponse,
 } from '../diagramDrawing';
-import { getLogger } from '../logging';
+import { getLogger, LoggingContext } from '../logging';
 import {
     injectEvalAndVarsToMap,
     injectEvalAndVarsToString,
@@ -175,7 +175,7 @@ class RestAction implements Action {
     private static parseResponseBody(
         body: string | Buffer,
         contentType: string | undefined,
-        ctx: { scenario: string; action: string },
+        ctx: LoggingContext,
     ): unknown {
         if (typeof body === 'string') {
             if (contentType && contentType.startsWith('application/json')) {
