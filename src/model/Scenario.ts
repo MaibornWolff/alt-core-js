@@ -18,7 +18,7 @@ class Scenario {
     public actions: Action[] = [];
 
     /* internal vars */
-    public cache: Map<string, any>;
+    public cache: Map<string, unknown>;
 
     public constructor(
         fileName: string,

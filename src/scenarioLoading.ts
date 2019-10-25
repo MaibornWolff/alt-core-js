@@ -21,9 +21,7 @@ export const loadScenariosById = (
     if (resultList.length > 0) {
         return resultList;
     }
-    getLogger('unknown').error(
-        `Scenario '${scenarioName}' not found in the directory!`,
-    );
+    getLogger().error(`Scenario '${scenarioName}' not found in the directory!`);
     return process.exit(1);
 };
 

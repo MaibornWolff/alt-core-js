@@ -81,13 +81,13 @@ export const runMultipleScenariosWithConfigAsync = async (
             typeof scenarioPaths === 'undefined' ||
             scenarioPaths.length === 0
         ) {
-            getLogger('unknown').error(
+            getLogger().error(
                 'Please provide correct path(s) to the SCENARIO file!',
             );
             process.exit(1);
         }
         if (typeof actionDir === 'undefined' || actionDir === '') {
-            getLogger('unknown').error(
+            getLogger().error(
                 'Please provide correct path to the ACTION files!',
             );
             process.exit(1);

@@ -1,9 +1,9 @@
-import { getLogger } from './logging';
+import { getLogger, LoggingContext } from './logging';
 
 function injectVarsToString(
     str: string,
-    scenarioVariables: Map<string, any>,
-    ctx: any,
+    scenarioVariables: Map<string, unknown>,
+    ctx: LoggingContext,
 ): string {
     const regex = /{{(\w*)}}/g;
     let result = str;
@@ -15,7 +15,7 @@ function injectVarsToString(
                 `Replacing '${searchValue}' with '${replaceValue}'`,
                 ctx,
             );
-            result = result.replace(searchValue, replaceValue);
+            result = result.replace(searchValue, `${replaceValue}`);
         } else {
             getLogger(ctx.scenario).debug(
                 `Not able to replace {{${variable}}} because no variable with that name found!`,
@@ -29,8 +29,8 @@ function injectVarsToString(
 
 export function injectEvalAndVarsToString(
     str: string,
-    scenarioVariables: Map<string, any>,
-    ctx: any,
+    scenarioVariables: Map<string, unknown>,
+    ctx: LoggingContext,
 ): string | number {
     const afterEvalToString = injectEvaluationToString(
         str,
@@ -59,10 +59,10 @@ export function injectEvalAndVarsToString(
 
 export function injectEvalAndVarsToMap(
     keyValueMap: any,
-    scenarioVariables: Map<string, any>,
-    loggingCtx: any,
+    scenarioVariables: Map<string, unknown>,
+    ctx: LoggingContext,
 ): any {
-    const copy: any = keyValueMap instanceof Array ? [] : {};
+    const copy = keyValueMap instanceof Array ? [] : {};
     Object.assign(copy, keyValueMap);
     for (const mapEntry of Object.entries(copy)) {
         const key = mapEntry[0];
@@ -70,16 +70,12 @@ export function injectEvalAndVarsToMap(
 
         if (value instanceof Object) {
             // contains nested values
-            copy[key] = injectEvalAndVarsToMap(
-                value,
-                scenarioVariables,
-                loggingCtx,
-            );
+            copy[key] = injectEvalAndVarsToMap(value, scenarioVariables, ctx);
         } else if (typeof value === 'string') {
             copy[key] = injectEvalAndVarsToString(
                 value,
                 scenarioVariables,
-                loggingCtx,
+                ctx,
             );
         }
     }
@@ -99,8 +95,8 @@ function searchForMatchingStrings(regex: RegExp, str: string): string[] {
 
 function injectEvaluationToString(
     str: string,
-    ctx: any,
-    vars: Map<string, any>,
+    ctx: LoggingContext,
+    vars: Map<string, unknown>,
 ): string {
     // the vars (scenario variable) should be left available here in order to access
     // and set them from within evaluated expressions
@@ -131,8 +127,8 @@ function injectEvaluationToString(
 
 function injectEvaluationToNumber(
     str: string,
-    ctx: any,
-    vars: Map<string, any>,
+    ctx: LoggingContext,
+    vars: Map<string, unknown>,
 ): [string, boolean] {
     // the vars (scenario variable) should be left available here in order to access
     // and set them from within evaluated expressions

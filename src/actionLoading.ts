@@ -43,7 +43,7 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
         const actionDef = loadYamlConfiguration(`${actionDir}/${file}`);
 
         if (!isValidActionDefinition(actionDef)) {
-            getLogger('unknown').error(
+            getLogger().error(
                 `Invalid action definition: ${JSON.stringify(actionDef)}`,
             );
             return;
@@ -96,7 +96,7 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
                 ),
             );
         } else {
-            getLogger('unknown').error(
+            getLogger().error(
                 `Action definition ${nameFromYamlConfig(file)} of type ${
                     actionDef.type
                 } does not contain a valid action definition for that type.`,

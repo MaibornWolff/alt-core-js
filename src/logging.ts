@@ -26,7 +26,7 @@ const myFormat = printf(
         }`,
 );
 
-export const getLogger = (scenario: string): Logger =>
+export const getLogger = (scenario = 'unknown'): Logger =>
     createLogger({
         level: 'debug',
         format: combine(timestamp(), myFormat),
@@ -38,3 +38,8 @@ export const getLogger = (scenario: string): Logger =>
             }),
         ],
     });
+
+export interface LoggingContext {
+    scenario?: string;
+    action?: string;
+}

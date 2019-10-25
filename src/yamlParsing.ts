@@ -7,12 +7,10 @@ const FILE_SUFFIX = '.yaml';
 export const loadYamlConfiguration = (pathToFile: string): any => {
     if (pathToFile && pathToFile.endsWith(FILE_SUFFIX)) {
         const yamlConfig = safeLoad(readFileSync(pathToFile, 'utf8'));
-        getLogger('unknown').debug(
-            `Successfully loaded YAML config: ${pathToFile}`,
-        );
+        getLogger().debug(`Successfully loaded YAML config: ${pathToFile}`);
         return yamlConfig;
     }
-    getLogger('unknown').warn(`Skipping unsupported file: ${pathToFile}`);
+    getLogger().warn(`Skipping unsupported file: ${pathToFile}`);
     return undefined;
 };
 
