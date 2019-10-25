@@ -2,7 +2,7 @@ description: 'A simple scenario for testing rest functionality. It expects the c
 actions:
   - name: rest-secure
     responseValidation:
-      - "head.code === 401"
+      - 'head.code === 401'
     clientCertificate: 'file:src/tests/integration/rest/resources/certs/bob_cert.pem'
     clientKey: 'file:src/tests/integration/rest/resources/certs/bob_key.pem'
     headers:

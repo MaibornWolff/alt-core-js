@@ -1,9 +1,9 @@
 description: 'A simple scenario for testing WebSocket functionality. It expects the data that is sent to be different from the received data.'
 actions:
-    - name: webSocket
-      expectedNumberOfMessages: 1
-      data:
-          foo: 42
-      messageFilter:
-          - 'msg.foo === 43'
-    - name: sleep
+  - name: webSocket
+    expectedNumberOfMessages: 1
+    data:
+      foo: 42
+    messageFilter:
+      - 'msg.foo === 43'
+  - name: sleep

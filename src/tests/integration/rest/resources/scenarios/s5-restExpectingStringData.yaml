@@ -1,5 +1,5 @@
 description: 'A simple scenario for testing rest functionality. It expects the response to be valid and to contain "foo" as string body.'
 actions:
-    - name: rest
-      responseValidation:
-          - "res.toString() === 'foo'" # .toString() is necessary because currently only validations which begin with 'res.' are considered for body validation
+  - name: rest
+    responseValidation:
+      - "res.toString() === 'foo'" # .toString() is necessary because currently only validations which begin with 'res.' are considered for body validation

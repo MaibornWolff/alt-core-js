@@ -4,8 +4,8 @@ variables:
   key: 'file:src/tests/integration/rest/resources/certs/alice_key.pem'
 
 actions:
-    - name: rest-secure
-      clientCertificate: '{{cert}}'
-      clientKey: '{{key}}'
-      headers:
-        - Content-Type: application/json
+  - name: rest-secure
+    clientCertificate: '{{cert}}'
+    clientKey: '{{key}}'
+    headers:
+      - Content-Type: application/json

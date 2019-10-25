@@ -1,6 +1,6 @@
 description: 'A simple scenario for testing rest functionality. It expects the response to be valid and to contain {"code": 200} as binary body.'
 actions:
-    - name: rest
-      responseValidation:
-          - "res.equals(Buffer.from('{\"code\":200}'))"
-      expectBinaryResponse: true
+  - name: rest
+    responseValidation:
+      - 'res.equals(Buffer.from(''{"code":200}''))'
+    expectBinaryResponse: true

@@ -4,7 +4,7 @@ endpoint: /all
 method: GET
 queryParameters:
   size: 9
-  filter: "{{age}}"
+  filter: '{{age}}'
 headers:
   Content-Type: application/json
 data:
@@ -13,7 +13,7 @@ dataBinary: '../test.txt'
 form:
   file: 'example.xls'
 responseValidation:
-  - "res.a === true"
+  - 'res.a === true'
 variables:
   user: testuser
 clientCertificate: 'file:../clientCertificate.pem'

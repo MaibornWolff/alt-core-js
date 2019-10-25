@@ -1,11 +1,9 @@
-description: "test description"
+description: 'test description'
 loadFactor: 2
 loadVariables:
-- name: do-something
-  data: 
-    userId: [user-$$1...10]
-    vehicles: [{
-      id: [vin$$1...10]
-    }]
+  - name: do-something
+    data:
+      userId: [user-$$1...10]
+      vehicles: [{ id: [vin$$1...10] }]
 actions:
   - name: do-something

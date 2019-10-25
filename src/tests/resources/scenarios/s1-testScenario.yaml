@@ -1,18 +1,18 @@
 import:
-  - "s01-before"
-  - "s02-after"
+  - 's01-before'
+  - 's02-after'
 
-description: "test description"
+description: 'test description'
 
-before: "s01-before"
+before: 's01-before'
 
 actions:
   - name: do-something
-    description: "test something"
+    description: 'test something'
     method: POST
     data:
       userId: 22
     responseValidation:
-    - "saved === true"
+      - 'saved === true'
 
-after: "s02-after"
+after: 's02-after'

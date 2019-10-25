@@ -1,9 +1,9 @@
 description: 'A simple scenario for testing WebSocket functionality. It expects the data that is sent to be echoed.'
 actions:
-    - name: webSocket
-      expectedNumberOfMessages: 1
-      data:
-          foo: 42
-      messageFilter:
-          - 'msg.foo === 42'
-    - name: sleep
+  - name: webSocket
+    expectedNumberOfMessages: 1
+    data:
+      foo: 42
+    messageFilter:
+      - 'msg.foo === 42'
+  - name: sleep

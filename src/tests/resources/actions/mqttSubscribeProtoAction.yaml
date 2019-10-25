@@ -1,6 +1,6 @@
 type: MQTT
-url: "tcp://localhost:1883"
-username: "dummy"
-password: "dummy"
-protoFile: "src/tests/resources/proto/test.proto"
-protoClass: "Test"
+url: 'tcp://localhost:1883'
+username: 'dummy'
+password: 'dummy'
+protoFile: 'src/tests/resources/proto/test.proto'
+protoClass: 'Test'

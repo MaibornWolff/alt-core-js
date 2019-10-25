@@ -1,3 +1,3 @@
-description: "test description"
+description: 'test description'
 actions:
   - name: do-something-before

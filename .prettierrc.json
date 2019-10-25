@@ -1,5 +1,15 @@
 {
   "trailingComma": "all",
   "tabWidth": 4,
-  "singleQuote": true
+  "singleQuote": true,
+  "overrides": [
+    {
+      "files": [
+        "*.yaml"
+      ],
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ]
 }
