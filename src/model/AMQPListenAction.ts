@@ -165,7 +165,7 @@ export class AMQPListenAction implements Action {
             exchange,
             queue,
             routingKey,
-        } = this.getExpandedParameters(scenario.cache, ctx);
+        } = this.expandParameters(scenario.cache, ctx);
 
         const connection = await connect({
             protocol: extractProtocol(url),
@@ -287,7 +287,7 @@ export class AMQPListenAction implements Action {
         return true;
     }
 
-    private getExpandedParameters(
+    private expandParameters(
         scenarioVariables: Map<string, unknown>,
         ctx: LoggingContext,
     ): {
