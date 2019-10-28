@@ -15,7 +15,7 @@ describe('process action', () => {
         const scenario = new Scenario('', { actions: [] }, [], []);
 
         // when
-        underTest.invoke(scenario);
+        await underTest.invoke(scenario).promise;
 
         // then
         expect(scenario.cache.get('foo')).to.be.equal('bar');
@@ -31,7 +31,7 @@ describe('process action', () => {
         const scenario = new Scenario('', { actions: [] }, [], []);
 
         // when
-        underTest.invoke(scenario);
+        await underTest.invoke(scenario).promise;
 
         // then
         expect(scenario.cache.get('foo')).to.be.equal(2);
