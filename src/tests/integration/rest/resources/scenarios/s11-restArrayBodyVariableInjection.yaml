@@ -1,0 +1,12 @@
+description: 'A scenario for testing variable injection into array REST bodies. Regression test for #51.'
+variables:
+  idVariable: '42'
+actions:
+  - name: rest
+    responseValidation:
+      - 'res.id === undefined && res[0].id === "42"'
+    headers:
+      - Content-Type: application/json
+    data:
+      - id: '{{idVariable}}'
+        name: 'some name'
