@@ -5,7 +5,7 @@ import { Action, ActionDefinition } from './Action';
 import { ActionCallback } from './ActionCallback';
 import { ActionType } from './ActionType';
 import { addAMQPReceivedMessage } from '../diagramDrawing';
-import { getLogger } from '../logging';
+import { getLogger, LoggingContext } from '../logging';
 import { Scenario } from './Scenario';
 import { injectEvalAndVarsToString } from '../variableInjection';
 
@@ -158,34 +158,40 @@ export class AMQPListenAction implements Action {
     private async invokeAsync(scenario: Scenario): Promise<void> {
         const ctx = { scenario: scenario.name, action: this.name };
         const logger = getLogger(scenario.name);
-        const expandedURL = injectEvalAndVarsToString(
-            this.url,
-            scenario.cache,
-            ctx,
-        ).toString();
+        const {
+            url,
+            username,
+            password,
+            exchange,
+            queue,
+            routingKey,
+        } = this.getExpandedParameters(scenario.cache, ctx);
+
         const connection = await connect({
-            protocol: extractProtocol(expandedURL),
-            hostname: extractHostname(expandedURL),
-            port: extractPort(expandedURL),
-            vhost: extractVhost(expandedURL),
-            username: this.username,
-            password: this.password,
+            protocol: extractProtocol(url),
+            hostname: extractHostname(url),
+            port: extractPort(url),
+            vhost: extractVhost(url),
+            username,
+            password,
         });
         this.amqpConnection = connection;
         logger.debug(
-            `Successfully established AMQP connection to ${expandedURL}.`,
+            `Successfully established AMQP connection to ${url}.`,
             ctx,
         );
         const channel = await connection.createChannel();
 
-        await channel.checkExchange(this.exchange);
-        await channel.assertQueue(this.queue, {
+        await channel.checkExchange(exchange);
+        await channel.assertQueue(queue, {
             autoDelete: true,
         });
-        await channel.bindQueue(this.queue, this.exchange, this.routingKey);
-        await channel.consume(this.queue, msg => this.onMessage(msg, scenario));
+        await channel.bindQueue(queue, exchange, routingKey);
+        await channel.consume(queue, msg =>
+            this.onMessage(msg, scenario, exchange, routingKey),
+        );
         logger.debug(
-            `Successfully bound queue ${this.queue} to routing key ${this.routingKey} on exchange ${this.exchange}.`,
+            `Successfully bound queue ${queue} to routing key ${routingKey} on exchange ${exchange}.`,
             ctx,
         );
 
@@ -199,7 +205,12 @@ export class AMQPListenAction implements Action {
         });
     }
 
-    private onMessage(msg: ConsumeMessage | null, scenario: Scenario): void {
+    private onMessage(
+        msg: ConsumeMessage | null,
+        scenario: Scenario,
+        exchange: string,
+        routingKey: string,
+    ): void {
         const logger = getLogger(scenario.name);
         const ctx = { scenario: scenario.name, action: this.name };
 
@@ -217,8 +228,8 @@ export class AMQPListenAction implements Action {
             addAMQPReceivedMessage(
                 scenario.name,
                 this.broker,
-                this.exchange,
-                this.routingKey,
+                exchange,
+                routingKey,
                 parsedMessage,
             );
         } else {
@@ -274,6 +285,57 @@ export class AMQPListenAction implements Action {
             });
         }
         return true;
+    }
+
+    private getExpandedParameters(
+        scenarioVariables: Map<string, unknown>,
+        ctx: LoggingContext,
+    ): {
+        url: string;
+        username?: string;
+        password?: string;
+        exchange: string;
+        queue: string;
+        routingKey: string;
+    } {
+        const url = injectEvalAndVarsToString(
+            this.url,
+            scenarioVariables,
+            ctx,
+        ).toString();
+        const username =
+            this.username !== undefined
+                ? injectEvalAndVarsToString(
+                      this.username,
+                      scenarioVariables,
+                      ctx,
+                  ).toString()
+                : undefined;
+        const password =
+            this.password !== undefined
+                ? injectEvalAndVarsToString(
+                      this.password,
+                      scenarioVariables,
+                      ctx,
+                  ).toString()
+                : undefined;
+        const exchange = injectEvalAndVarsToString(
+            this.exchange,
+            scenarioVariables,
+            ctx,
+        ).toString();
+        const queue = injectEvalAndVarsToString(
+            this.queue,
+            scenarioVariables,
+            ctx,
+        ).toString();
+        const routingKey = injectEvalAndVarsToString(
+            this.routingKey,
+            scenarioVariables,
+            ctx,
+        ).toString();
+
+        return { url, username, password, exchange, queue, routingKey };
     }
 }
 
