@@ -35,7 +35,7 @@ export class NodeJSAction implements Action {
 
     readonly description: string;
 
-    readonly type: ActionType.NODE_JS;
+    readonly type = ActionType.NODE_JS;
 
     readonly invokeEvenOnFail: boolean;
 
