@@ -10,7 +10,6 @@ export const nodeGlobals = {
     global,
     module,
     process,
-    queueMicrotask,
     require,
     setImmediate,
     setInterval,
