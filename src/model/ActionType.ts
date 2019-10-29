@@ -5,7 +5,7 @@ export enum ActionType {
     MQTT,
     MQTT_PUBLISH,
     AMQP_LISTEN,
-    PROCESS,
+    NODE_JS,
 }
 
 export type ActionTypeType = keyof typeof ActionType;

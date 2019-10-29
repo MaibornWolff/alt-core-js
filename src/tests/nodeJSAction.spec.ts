@@ -2,14 +2,14 @@ import 'mocha';
 import { expect } from 'chai';
 import { URL } from 'url';
 
-import { ProcessAction } from '../model/ProcessAction';
+import { NodeJSAction } from '../model/NodeJSAction';
 import { Scenario } from '../model/Scenario';
 
-describe('process action', () => {
+describe('Node.js action', () => {
     it('should assign a constant expression to the given variable', async () => {
         // given
-        const underTest = new ProcessAction('processAction', {
-            type: 'PROCESS',
+        const underTest = new NodeJSAction('nodeJSAction', {
+            type: 'NODE_JS',
             variables: { foo: '"bar"' },
         });
 
@@ -24,8 +24,8 @@ describe('process action', () => {
 
     it('should assign the result of a simple calculation to the given variable', async () => {
         // given
-        const underTest = new ProcessAction('processAction', {
-            type: 'PROCESS',
+        const underTest = new NodeJSAction('nodeJSAction', {
+            type: 'NODE_JS',
             variables: { foo: '1 + 1' },
         });
 
@@ -40,8 +40,8 @@ describe('process action', () => {
 
     it('should use the scenario variable in a simple expression', async () => {
         // given
-        const underTest = new ProcessAction('processAction', {
-            type: 'PROCESS',
+        const underTest = new NodeJSAction('nodeJSAction', {
+            type: 'NODE_JS',
             variables: { foo: '1 + {{increment}}' },
         });
 
@@ -58,8 +58,8 @@ describe('process action', () => {
 
     it('should use all scenario variables referenced in the given expression', async () => {
         // given
-        const underTest = new ProcessAction('processAction', {
-            type: 'PROCESS',
+        const underTest = new NodeJSAction('nodeJSAction', {
+            type: 'NODE_JS',
             variables: {
                 foo:
                     '1 + {{increment}} + {{anotherIncrement}} + {{yetAnotherIncrement}}',
@@ -81,8 +81,8 @@ describe('process action', () => {
 
     it("should be able to access node's default globals", async () => {
         // given
-        const underTest = new ProcessAction('processAction', {
-            type: 'PROCESS',
+        const underTest = new NodeJSAction('nodeJSAction', {
+            type: 'NODE_JS',
             variables: {
                 foo: 'Buffer.from("bar")',
             },
@@ -99,8 +99,8 @@ describe('process action', () => {
 
     it('should be able to require modules in expressions', async () => {
         // given
-        const underTest = new ProcessAction('processAction', {
-            type: 'PROCESS',
+        const underTest = new NodeJSAction('nodeJSAction', {
+            type: 'NODE_JS',
             variables: {
                 foo: `const { URL } = require("url"); new URL("http://this.is.a.test")`,
             },

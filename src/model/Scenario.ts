@@ -7,7 +7,7 @@ import { WebSocketAction } from './WebSocketAction';
 import { MqttAction } from './MqttAction';
 import { MqttPublishAction } from './MqttPublishAction';
 import { AMQPListenAction } from './AMQPListenAction';
-import { ProcessAction } from './ProcessAction';
+import { NodeJSAction } from './NodeJSAction';
 
 class Scenario {
     /* retrieved from the file name */
@@ -93,11 +93,11 @@ class Scenario {
                             ),
                         );
                         break;
-                    case ActionType.PROCESS:
+                    case ActionType.NODE_JS:
                         this.actions.push(
-                            ProcessAction.fromTemplate(
+                            NodeJSAction.fromTemplate(
                                 actionDef,
-                                actionTemplate as ProcessAction,
+                                actionTemplate as NodeJSAction,
                             ),
                         );
                         break;

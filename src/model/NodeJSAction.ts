@@ -4,38 +4,38 @@ import { ActionType } from './ActionType';
 import { Scenario } from './Scenario';
 import { injectVariableAccessAndEvaluate } from '../variableInjection';
 
-export interface ProcessActionDefinition extends ActionDefinition {
+export interface NodeJSActionDefinition extends ActionDefinition {
     variables: { [key: string]: string };
 }
 
-export function isValidProcessActionDefinition(
+export function isValidNodeJSActionDefinition(
     actionDef: ActionDefinition,
-): actionDef is ProcessActionDefinition {
-    if (actionDef.type !== 'PROCESS') {
+): actionDef is NodeJSActionDefinition {
+    if (actionDef.type !== 'NODE_JS') {
         return false;
     }
-    const processActionDef = actionDef as Partial<ProcessActionDefinition>;
+    const nodeJSActionDef = actionDef as Partial<NodeJSActionDefinition>;
 
     if (
-        processActionDef.variables === null ||
-        typeof processActionDef.variables !== 'object'
+        nodeJSActionDef.variables === null ||
+        typeof nodeJSActionDef.variables !== 'object'
     ) {
         return false;
     }
     return (
-        Object.entries(processActionDef.variables).find(
+        Object.entries(nodeJSActionDef.variables).find(
             ([variable, expression]) =>
                 typeof expression !== 'string' || typeof variable !== 'string',
         ) === undefined
     );
 }
 
-export class ProcessAction implements Action {
+export class NodeJSAction implements Action {
     readonly name: string;
 
     readonly description: string;
 
-    readonly type: ActionType.PROCESS;
+    readonly type: ActionType.NODE_JS;
 
     readonly invokeEvenOnFail: boolean;
 
@@ -50,7 +50,7 @@ export class ProcessAction implements Action {
             invokeEvenOnFail = false,
             allowFailure = false,
             variables,
-        }: ProcessActionDefinition,
+        }: NodeJSActionDefinition,
     ) {
         this.name = name;
         this.description = description;
@@ -60,21 +60,21 @@ export class ProcessAction implements Action {
     }
 
     public static fromTemplate(
-        processDefinition: Partial<ProcessActionDefinition>,
-        template: ProcessAction,
-    ): ProcessAction {
-        return new ProcessAction(template.name, {
-            description: processDefinition.description || template.description,
-            type: 'PROCESS',
+        nodeJSDefinition: Partial<NodeJSActionDefinition>,
+        template: NodeJSAction,
+    ): NodeJSAction {
+        return new NodeJSAction(template.name, {
+            description: nodeJSDefinition.description || template.description,
+            type: 'NODE_JS',
             invokeEvenOnFail:
-                processDefinition.invokeEvenOnFail != null
-                    ? processDefinition.invokeEvenOnFail
+                nodeJSDefinition.invokeEvenOnFail != null
+                    ? nodeJSDefinition.invokeEvenOnFail
                     : template.invokeEvenOnFail,
             allowFailure:
-                processDefinition.allowFailure != null
-                    ? processDefinition.allowFailure
+                nodeJSDefinition.allowFailure != null
+                    ? nodeJSDefinition.allowFailure
                     : template.allowFailure,
-            variables: processDefinition.variables || template.variables,
+            variables: nodeJSDefinition.variables || template.variables,
         });
     }
 
