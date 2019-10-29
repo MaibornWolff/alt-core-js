@@ -1,8 +1,10 @@
 import 'mocha';
 import { expect } from 'chai';
+import { URL } from 'url';
 import {
     injectEvalAndVarsToMap,
     injectEvalAndVarsToString,
+    injectVariableAccessAndEvaluate,
 } from '../variableInjection';
 
 describe('string injection', () => {
@@ -235,5 +237,104 @@ describe('map injection', () => {
         );
 
         expect(result[0].data[0].host).to.equal('localhost');
+    });
+});
+
+describe('variable access injection and evaluation', () => {
+    it('should return the result of evaluating the given simple expression', () => {
+        // given
+        const expression = '"bar"';
+
+        // when
+        const result = injectVariableAccessAndEvaluate(
+            expression,
+            new Map<string, unknown>(),
+        );
+
+        // then
+        expect(result).to.equal('bar');
+    });
+
+    it('should return the result of the last expression of the evaluated code', () => {
+        // given
+        const expression = '"bar"; 1; "foo";';
+
+        // when
+        const result = injectVariableAccessAndEvaluate(
+            expression,
+            new Map<string, unknown>(),
+        );
+
+        // then
+        expect(result).to.equal('foo');
+    });
+
+    it('should return the result of evaluating the given complex expression', () => {
+        // given
+        const expression = 'const foo = (str) => str + ", baz"; foo("bar");';
+
+        // when
+        const result = injectVariableAccessAndEvaluate(
+            expression,
+            new Map<string, unknown>(),
+        );
+
+        // then
+        expect(result).to.equal('bar, baz');
+    });
+
+    it('should be able to access node globals', () => {
+        // given
+        const expression = 'Buffer.from("bar")';
+
+        // when
+        const result = injectVariableAccessAndEvaluate(
+            expression,
+            new Map<string, unknown>(),
+        );
+
+        // then
+        expect(result).to.eql(Buffer.from('bar'));
+    });
+
+    it('should be able to require modules', () => {
+        // given
+        const expression =
+            'const { URL } = require("url"); new URL("http://this.is.a.test")';
+
+        // when
+        const result = injectVariableAccessAndEvaluate(
+            expression,
+            new Map<string, unknown>(),
+        );
+
+        // then
+        expect(result).to.eql(new URL('http://this.is.a.test'));
+    });
+
+    it('should be able to access variables', () => {
+        // given
+        const expression = '{{aVariable}} + 41';
+        const variables = new Map<string, unknown>();
+        variables.set('aVariable', 1);
+
+        // when
+        const result = injectVariableAccessAndEvaluate(expression, variables);
+
+        // then
+        expect(result).to.equal(42);
+    });
+
+    it('should be able to access complex variables', () => {
+        // given
+        const expression = '{{aVariable}}.base64Slice()';
+        const variables = new Map<string, unknown>();
+        variables.set('aVariable', Buffer.from('bar'));
+
+        // when
+        const result = injectVariableAccessAndEvaluate(expression, variables);
+
+        // then
+        expect(result).to.equal('YmFy');
     });
 });
