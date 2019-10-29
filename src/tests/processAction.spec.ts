@@ -36,4 +36,22 @@ describe('process action', () => {
         // then
         expect(scenario.cache.get('foo')).to.be.equal(2);
     });
+
+    it('should use the scenario variable in a simple expression', async () => {
+        // given
+        const underTest = new ProcessAction('processAction', {
+            type: 'PROCESS',
+            variables: { foo: '1 + {{increment}}' },
+        });
+
+        const scenario = new Scenario('', { actions: [] }, [], []);
+
+        scenario.cache.set('increment', 1);
+
+        // when
+        await underTest.invoke(scenario).promise;
+
+        // then
+        expect(scenario.cache.get('foo')).to.be.equal(2);
+    });
 });

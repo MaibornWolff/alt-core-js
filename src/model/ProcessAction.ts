@@ -7,6 +7,30 @@ export interface ProcessActionDefinition extends ActionDefinition {
     variables: { [key: string]: string };
 }
 
+export function isValidProcessActionDefinition(
+    actionDef: ActionDefinition,
+): actionDef is ProcessActionDefinition {
+    if (actionDef.type !== 'PROCESS') {
+        return false;
+    }
+    const processActionDef = actionDef as Partial<ProcessActionDefinition>;
+
+    if (
+        processActionDef.variables === null ||
+        typeof processActionDef.variables !== 'object'
+    ) {
+        return false;
+    } else {
+        return (
+            Object.entries(processActionDef.variables).find(
+                ([variable, expression]) =>
+                    typeof expression !== 'string' ||
+                    typeof variable !== 'string',
+            ) === undefined
+        );
+    }
+}
+
 export class ProcessAction implements Action {
     readonly name: string;
 
@@ -34,6 +58,25 @@ export class ProcessAction implements Action {
         this.invokeEvenOnFail = invokeEvenOnFail;
         this.allowFailure = allowFailure;
         this.variables = variables;
+    }
+
+    public static fromTemplate(
+        processDefinition: Partial<ProcessActionDefinition>,
+        template: ProcessAction,
+    ): ProcessAction {
+        return new ProcessAction(template.name, {
+            description: processDefinition.description || template.description,
+            type: 'PROCESS',
+            invokeEvenOnFail:
+                processDefinition.invokeEvenOnFail != null
+                    ? processDefinition.invokeEvenOnFail
+                    : template.invokeEvenOnFail,
+            allowFailure:
+                processDefinition.allowFailure != null
+                    ? processDefinition.allowFailure
+                    : template.allowFailure,
+            variables: processDefinition.variables || template.variables,
+        });
     }
 
     invoke(scenario: Scenario): ActionCallback {

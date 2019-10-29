@@ -7,6 +7,7 @@ import { WebSocketAction } from './WebSocketAction';
 import { MqttAction } from './MqttAction';
 import { MqttPublishAction } from './MqttPublishAction';
 import { AMQPListenAction } from './AMQPListenAction';
+import { ProcessAction } from './ProcessAction';
 
 class Scenario {
     /* retrieved from the file name */
@@ -92,6 +93,13 @@ class Scenario {
                             ),
                         );
                         break;
+                    case ActionType.PROCESS:
+                        this.actions.push(
+                            ProcessAction.fromTemplate(
+                                actionDef,
+                                actionTemplate as ProcessAction,
+                            ),
+                        );
                     default:
                         getLogger(this.name).error(
                             `Action template ${actionTemplate.name} is of unknown type ${actionTemplate.type}`,
