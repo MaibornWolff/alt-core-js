@@ -1,4 +1,4 @@
-import { createReadStream, PathLike, readFileSync } from 'fs';
+import { createReadStream, PathLike, readFileSync, ReadStream } from 'fs';
 import { IncomingHttpHeaders } from 'http';
 import { stringify } from 'querystring';
 import { Response } from 'request';
@@ -17,7 +17,6 @@ import { Action, ActionDefinition } from './Action';
 import { ActionCallback } from './ActionCallback';
 import { ActionType } from './ActionType';
 import { Scenario } from './Scenario';
-import { ReadStream } from 'tty';
 
 // TODO: Implement correctly
 export interface RestActionDefinition extends ActionDefinition {
