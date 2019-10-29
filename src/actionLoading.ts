@@ -25,6 +25,10 @@ import {
     AMQPListenAction,
     AMQPListenActionDefinition,
 } from './model/AMQPListenAction';
+import {
+    isValidProcessActionDefinition,
+    ProcessAction,
+} from './model/ProcessAction';
 
 const isTimerAction = (actionDef: ActionDefinition): boolean =>
     actionDef && actionDef.type === ActionType[ActionType.TIMER];
@@ -94,6 +98,10 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
                     getURL(actionDef, envConfig),
                     actionDef,
                 ),
+            );
+        } else if (isValidProcessActionDefinition(actionDef)) {
+            loadedActions.push(
+                new ProcessAction(nameFromYamlConfig(file), actionDef),
             );
         } else {
             getLogger().error(

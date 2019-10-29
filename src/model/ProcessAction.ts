@@ -41,7 +41,7 @@ export class ProcessAction implements Action {
 
     readonly allowFailure: boolean;
 
-    readonly variables: { [key: string]: string };
+    private readonly variables: { [key: string]: string };
 
     public constructor(
         name: string,
