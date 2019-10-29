@@ -100,6 +100,7 @@ class Scenario {
                                 actionTemplate as ProcessAction,
                             ),
                         );
+                        break;
                     default:
                         getLogger(this.name).error(
                             `Action template ${actionTemplate.name} is of unknown type ${actionTemplate.type}`,
@@ -120,7 +121,7 @@ class Scenario {
                 .forEach(s => s.actions.forEach(a => this.actions.push(a)));
         }
 
-        this.cache = new Map<string, any>(
+        this.cache = new Map<string, unknown>(
             yamlConfig.variables ? Object.entries(yamlConfig.variables) : [],
         );
     }

@@ -20,15 +20,13 @@ export function isValidProcessActionDefinition(
         typeof processActionDef.variables !== 'object'
     ) {
         return false;
-    } else {
-        return (
-            Object.entries(processActionDef.variables).find(
-                ([variable, expression]) =>
-                    typeof expression !== 'string' ||
-                    typeof variable !== 'string',
-            ) === undefined
-        );
     }
+    return (
+        Object.entries(processActionDef.variables).find(
+            ([variable, expression]) =>
+                typeof expression !== 'string' || typeof variable !== 'string',
+        ) === undefined
+    );
 }
 
 export class ProcessAction implements Action {
