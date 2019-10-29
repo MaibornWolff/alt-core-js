@@ -1,9 +1,11 @@
 import 'mocha';
-import { expect } from 'chai';
+import { expect, use } from 'chai';
 import { URL } from 'url';
-
+import * as chaiAsPromised from 'chai-as-promised';
 import { NodeJSAction } from '../model/NodeJSAction';
 import { Scenario } from '../model/Scenario';
+
+use(chaiAsPromised);
 
 describe('Node.js action', () => {
     it('should assign a constant expression to the given variable', async () => {
@@ -115,5 +117,61 @@ describe('Node.js action', () => {
         expect(scenario.cache.get('foo')).to.be.eql(
             new URL('http://this.is.a.test'),
         );
+    });
+
+    it('should be able to set several variables', async () => {
+        // given
+        const underTest = new NodeJSAction('nodeJSAction', {
+            type: 'NODE_JS',
+            variables: {
+                foo: '"bar"',
+                baz: '42',
+            },
+        });
+
+        const scenario = new Scenario('', { actions: [] }, [], []);
+
+        // when
+        await underTest.invoke(scenario).promise;
+
+        // then
+        expect(scenario.cache.get('foo')).to.be.equal('bar');
+        expect(scenario.cache.get('baz')).to.be.equal(42);
+    });
+
+    it('should fail if one of the expressions throws', async () => {
+        // given
+        const underTest = new NodeJSAction('nodeJSAction', {
+            type: 'NODE_JS',
+            variables: {
+                foo: 'throw new Error("foo")',
+            },
+        });
+
+        const scenario = new Scenario('', { actions: [] }, [], []);
+
+        // when
+        const result = underTest.invoke(scenario).promise;
+
+        // then
+        await expect(result).to.be.rejectedWith('foo');
+    });
+
+    it('should fail if one of the expressions is invalid syntax', async () => {
+        // given
+        const underTest = new NodeJSAction('nodeJSAction', {
+            type: 'NODE_JS',
+            variables: {
+                foo: '"',
+            },
+        });
+
+        const scenario = new Scenario('', { actions: [] }, [], []);
+
+        // when
+        const result = underTest.invoke(scenario).promise;
+
+        // then
+        await expect(result).to.be.rejectedWith('Invalid or unexpected token');
     });
 });
