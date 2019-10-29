@@ -20,31 +20,41 @@ describe('REST action loading', () => {
         expect(result).to.exist;
         expect(result && result.name).to.be.equal('restAction');
         expect(result && result.type).to.be.equal(ActionType.REST);
+        const resultAsRestAction = result as RestAction;
+
         expect((result as RestAction).url).to.be.equal(
             'https://localhost:8080/all',
         );
-        expect((result as RestAction).serviceName).to.be.equal('my-service');
-        expect((result as RestAction).method).to.be.equal('GET');
-        expect((result as RestAction).queryParameters).to.deep.equal({
+        expect(resultAsRestAction.serviceName).to.be.equal('my-service');
+        expect(resultAsRestAction.method).to.be.equal('GET');
+        expect(resultAsRestAction.queryParameters).to.deep.equal({
             size: 9,
             filter: '{{age}}',
         });
-        expect((result as RestAction).restHead['Content-Type']).to.be.equal(
-            'application/json',
-        );
-        expect((result as RestAction).data[param]).to.be.equal('value');
-        expect((result as RestAction).dataBinary).to.be.equal('../test.txt');
-        expect((result as RestAction).form[file]).to.be.equal('example.xls');
-        expect((result as RestAction).responseValidation).to.have.lengthOf(1);
-        expect((result as RestAction).responseValidation[0]).to.be.equal(
-            'res.a === true',
-        );
-        expect((result as RestAction).variables).to.have.property('user');
-        expect((result as RestAction).variables[user]).to.be.equal('testuser');
-        expect((result as RestAction).clientCertificate).to.be.equal(
+        expect(
+            resultAsRestAction.restHead &&
+                resultAsRestAction.restHead['Content-Type'],
+        ).to.be.equal('application/json');
+        expect(
+            resultAsRestAction.data && resultAsRestAction.data[param],
+        ).to.be.equal('value');
+        expect(resultAsRestAction.dataBinary).to.be.equal('../test.txt');
+        expect(
+            resultAsRestAction.form && resultAsRestAction.form[file],
+        ).to.be.equal('example.xls');
+        expect(resultAsRestAction.responseValidation).to.have.lengthOf(1);
+        expect(
+            resultAsRestAction.responseValidation &&
+                resultAsRestAction.responseValidation[0],
+        ).to.be.equal('res.a === true');
+        expect(resultAsRestAction.variables).to.have.property('user');
+        expect(
+            resultAsRestAction.variables && resultAsRestAction.variables[user],
+        ).to.be.equal('testuser');
+        expect(resultAsRestAction.clientCertificate).to.be.equal(
             'file:../clientCertificate.pem',
         );
-        expect((result as RestAction).clientKey).to.be.equal(
+        expect(resultAsRestAction.clientKey).to.be.equal(
             'file:../clientKey.pem',
         );
     });

@@ -440,4 +440,47 @@ describe('Rest Action', () => {
             expect(result).to.be.equal(true);
         });
     });
+
+    describe('Requests using a variable as payload', () => {
+        let server: HTTPServer | undefined;
+
+        before(() => {
+            const port = 8080;
+
+            const requestHandler = (
+                request: IncomingMessage,
+                response: ServerResponse,
+            ): void => {
+                request.on('data', data => {
+                    response.write(data);
+                });
+                request.on('end', () => response.end());
+            };
+
+            server = createHTTPServer(requestHandler);
+            server.listen(port);
+        });
+
+        after(() => {
+            server && server.close();
+        });
+
+        it('should send the given variable as payload', async () => {
+            const scenarioPath = `${integrationTestBasePath}scenarios/s12-restUsingVariableAsPayload.yaml`;
+
+            const result = await runMultipleScenariosWithConfigAsync(
+                actionDir,
+                outDir,
+                envConfigDir,
+                {
+                    numberOfScenariosRunInParallel: 1,
+                    environmentNameToBeUsed: environment,
+                    drawDiagrams: false,
+                },
+                [scenarioPath],
+            );
+
+            expect(result).to.be.equal(true);
+        });
+    });
 });

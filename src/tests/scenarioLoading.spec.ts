@@ -56,21 +56,23 @@ describe('Scenario loading', () => {
         expect(result[0]).to.have.property('description');
         expect(result[0].description).to.be.equal('test description');
         expect(result[0]).to.have.property('actions');
-        expect((result[0].actions[0] as RestAction).data['userId']).to.be.equal(
-            'user-1',
-        );
+        const fistRestAction = result[0].actions[0] as RestAction;
         expect(
-            (result[0].actions[0] as RestAction).data['vehicles'][0]['id'],
+            fistRestAction.data && fistRestAction.data['userId'],
+        ).to.be.equal('user-1');
+        expect(
+            fistRestAction.data && fistRestAction.data['vehicles'][0]['id'],
         ).to.be.equal('vin1');
 
+        const secondRestAction = result[1].actions[0] as RestAction;
         expect(result[1]).to.have.property('description');
         expect(result[1].description).to.be.equal('test description');
         expect(result[1]).to.have.property('actions');
-        expect((result[1].actions[0] as RestAction).data['userId']).to.be.equal(
-            'user-2',
-        );
         expect(
-            (result[1].actions[0] as RestAction).data['vehicles'][0]['id'],
+            secondRestAction.data && secondRestAction.data['userId'],
+        ).to.be.equal('user-2');
+        expect(
+            secondRestAction.data && secondRestAction.data['vehicles'][0]['id'],
         ).to.be.equal('vin2');
     });
 
@@ -151,9 +153,8 @@ describe('Scenario loading', () => {
             testActionCatalog,
         );
         expect(result[0].actions).to.have.lengthOf(1);
-        expect((result[0].actions[0] as RestAction).data['userId']).to.be.equal(
-            22,
-        );
+        const restAction = result[0].actions[0] as RestAction;
+        expect(restAction.data && restAction.data['userId']).to.be.equal(22);
     });
 
     it('should be able to concat action array properties', () => {

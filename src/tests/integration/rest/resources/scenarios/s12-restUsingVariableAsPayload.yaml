@@ -1,0 +1,12 @@
+description: 'A scenario for testing using a variable as payload'
+
+actions:
+  - name: node
+    variables:
+      someVar: 'const buf = Buffer.allocUnsafe(4); buf.writeInt32LE(-123456); buf;'
+
+  - name: rest
+    responseValidation:
+      - 'res.readInt32LE() === -123456'
+    variableAsPayload: someVar
+    expectBinaryResponse: true

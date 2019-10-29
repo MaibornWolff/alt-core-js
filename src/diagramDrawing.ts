@@ -61,13 +61,14 @@ export const addSuccessfulResponse = (
     doAddResponse(scenarioId, source, status, 'green');
     if (body) {
         const note = `note left\n**${currentTimestamp()}**\n${
-            typeof body === 'string'
-                ? `${body.substr(0, 30)}…`
-                : extractPayload(body)
+            typeof body === 'string' ? trim(body, 30) : extractPayload(body)
         }\nend note\n`;
         appendFileSync(getInputFile(scenarioId), note);
     }
 };
+
+const trim = (text: string, length: number): string =>
+    text.length > length ? `${text.substring(0, length - 1)}...` : text;
 
 export const addFailedResponse = (
     scenarioId: string,
