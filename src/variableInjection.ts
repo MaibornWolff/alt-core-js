@@ -1,5 +1,6 @@
 import { runInNewContext } from 'vm';
 import { getLogger, LoggingContext } from './logging';
+import { nodeGlobals } from './nodeGlobals';
 
 export function injectVariableAccessAndEvaluate(
     expression: string,
@@ -12,12 +13,14 @@ export function injectVariableAccessAndEvaluate(
         expression,
     ).reduce((previousString, variable) => {
         variables[variable] = scenarioVariables.get(variable);
-
         const searchValue = `{{${variable}}}`;
-        return previousString.replace(searchValue, `${variable}`);
+        return previousString.replace(searchValue, variable);
     }, expression);
 
-    return runInNewContext(expressionWithVariables, variables);
+    return runInNewContext(expressionWithVariables, {
+        ...nodeGlobals,
+        ...variables,
+    });
 }
 
 function injectVarsToString(
