@@ -1,4 +1,24 @@
+import { runInNewContext } from 'vm';
 import { getLogger, LoggingContext } from './logging';
+
+export function injectVariableAccessAndEvaluate(
+    expression: string,
+    scenarioVariables: Map<string, unknown>,
+): unknown {
+    const regex = /{{(\w*)}}/g;
+    const variables: { [key: string]: unknown } = {};
+    const expressionWithVariables = searchForMatchingStrings(
+        regex,
+        expression,
+    ).reduce((previousString, variable) => {
+        variables[variable] = scenarioVariables.get(variable);
+
+        const searchValue = `{{${variable}}}`;
+        return previousString.replace(searchValue, `${variable}`);
+    }, expression);
+
+    return runInNewContext(expressionWithVariables, variables);
+}
 
 function injectVarsToString(
     str: string,

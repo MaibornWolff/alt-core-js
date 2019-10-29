@@ -1,7 +1,8 @@
 import { ActionDefinition, Action } from './Action';
+import { ActionCallback } from './ActionCallback';
 import { ActionType } from './ActionType';
 import { Scenario } from './Scenario';
-import { ActionCallback } from './ActionCallback';
+import { injectVariableAccessAndEvaluate } from '../variableInjection';
 
 export interface ProcessActionDefinition extends ActionDefinition {
     variables: { [key: string]: string };
@@ -85,7 +86,13 @@ export class ProcessAction implements Action {
             promise: new Promise(resolve => {
                 Object.entries(this.variables).forEach(
                     ([variable, expression]) => {
-                        scenarioVariables.set(variable, eval(expression));
+                        scenarioVariables.set(
+                            variable,
+                            injectVariableAccessAndEvaluate(
+                                expression,
+                                scenarioVariables,
+                            ),
+                        );
                     },
                 );
                 resolve();
