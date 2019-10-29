@@ -26,25 +26,25 @@ function injectVarsToString(
     ctx: LoggingContext,
 ): string {
     const regex = /{{(\w*)}}/g;
-    let result = str;
-    searchForMatchingStrings(regex, result).forEach(variable => {
-        const replaceValue = scenarioVariables.get(variable);
-        if (replaceValue) {
-            const searchValue = `{{${variable}}}`;
-            getLogger(ctx.scenario).debug(
-                `Replacing '${searchValue}' with '${replaceValue}'`,
-                ctx,
-            );
-            result = result.replace(searchValue, `${replaceValue}`);
-        } else {
+    return searchForMatchingStrings(regex, str).reduce(
+        (previousString, variable) => {
+            const replaceValue = scenarioVariables.get(variable);
+            if (replaceValue !== undefined) {
+                const searchValue = `{{${variable}}}`;
+                getLogger(ctx.scenario).debug(
+                    `Replacing '${searchValue}' with '${replaceValue}'`,
+                    ctx,
+                );
+                return previousString.replace(searchValue, `${replaceValue}`);
+            }
             getLogger(ctx.scenario).debug(
                 `Not able to replace {{${variable}}} because no variable with that name found!`,
                 ctx,
             );
-        }
-    });
-
-    return result;
+            return previousString;
+        },
+        str,
+    );
 }
 
 export function injectEvalAndVarsToString(
