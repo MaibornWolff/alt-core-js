@@ -16,6 +16,10 @@ export function isValidNodeJSActionDefinition(
     }
     const nodeJSActionDef = actionDef as Partial<NodeJSActionDefinition>;
 
+    if (typeof nodeJSActionDef.variables === 'undefined') {
+        return true;
+    }
+
     if (
         nodeJSActionDef.variables === null ||
         typeof nodeJSActionDef.variables !== 'object'
