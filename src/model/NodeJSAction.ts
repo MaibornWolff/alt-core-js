@@ -5,7 +5,7 @@ import { Scenario } from './Scenario';
 import { injectVariableAccessAndEvaluate } from '../variableInjection';
 
 export interface NodeJSActionDefinition extends ActionDefinition {
-    variables: { [key: string]: string };
+    variables?: { [key: string]: string };
 }
 
 export function isValidNodeJSActionDefinition(
@@ -56,7 +56,7 @@ export class NodeJSAction implements Action {
         this.description = description;
         this.invokeEvenOnFail = invokeEvenOnFail;
         this.allowFailure = allowFailure;
-        this.variables = variables;
+        this.variables = variables || {};
     }
 
     public static fromTemplate(
