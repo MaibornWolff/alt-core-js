@@ -18,8 +18,8 @@ function currentTimestamp(): string {
     return new Date().toISOString();
 }
 
-function replaceDashes(str: string): string {
-    return str.replace(new RegExp('-', 'g'), '_');
+function enquote(str: string): string {
+    return `"${str}"`;
 }
 
 export const initDiagramCreation = (scenarioId: string): void => {
@@ -40,8 +40,8 @@ export const addRequest = (
     url: string,
     data: unknown,
 ): void => {
-    const targetWithUnderscores = replaceDashes(target);
-    const request = `ALT -> ${targetWithUnderscores}: ${url}\nactivate ${targetWithUnderscores}\n${
+    const enquotedTarget = enquote(target);
+    const request = `ALT -> ${enquotedTarget}: ${url}\nactivate ${enquotedTarget}\n${
         data
             ? `note right\n**${currentTimestamp()}**\n${extractPayload(
                   data,
@@ -88,10 +88,10 @@ const doAddResponse = (
     status: string,
     color: string,
 ): void => {
-    const sourceWithUnderscores = replaceDashes(source);
+    const enquotedSource = enquote(source);
     appendFileSync(
         getInputFile(scenarioId),
-        `${sourceWithUnderscores} --> ALT: <color ${color}>${status}</color>\ndeactivate ${sourceWithUnderscores}\n`,
+        `${enquotedSource} --> ALT: <color ${color}>${status}</color>\ndeactivate ${enquotedSource}\n`,
     );
 };
 
@@ -107,10 +107,10 @@ export const addWsMessage = (
     source: string,
     payload: unknown,
 ): void => {
-    const sourceWithUnderscores = replaceDashes(source);
+    const enquotedSource = enquote(source);
     appendFileSync(
         getInputFile(scenarioId),
-        `${sourceWithUnderscores} -[#0000FF]->o ALT : [WS]\n`,
+        `${enquotedSource} -[#0000FF]->o ALT : [WS]\n`,
     );
     const note = `note left #aqua\n**${currentTimestamp()}**\n${extractPayload(
         payload,
@@ -155,10 +155,10 @@ export const addAMQPReceivedMessage = (
     routingKey: string,
     payload: unknown,
 ): void => {
-    const sourceWithUnderscores = replaceDashes(source);
+    const enquotedSource = enquote(source);
     appendFileSync(
         getInputFile(scenarioId),
-        `${sourceWithUnderscores} -[#FF6600]->o ALT : ${exchange}/${routingKey}\n`,
+        `${enquotedSource} -[#FF6600]->o ALT : ${exchange}/${routingKey}\n`,
     );
     const note = `note left #FF6600\n**${currentTimestamp()}**\n${extractPayload(
         payload,
