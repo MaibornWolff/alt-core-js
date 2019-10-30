@@ -25,6 +25,10 @@ import {
     AMQPListenAction,
     AMQPListenActionDefinition,
 } from './model/AMQPListenAction';
+import {
+    isValidNodeJSActionDefinition,
+    NodeJSAction,
+} from './model/NodeJSAction';
 
 const isTimerAction = (actionDef: ActionDefinition): boolean =>
     actionDef && actionDef.type === ActionType[ActionType.TIMER];
@@ -94,6 +98,10 @@ export const loadAllActions = (actionDir: string, envConfig: any): Action[] => {
                     getURL(actionDef, envConfig),
                     actionDef,
                 ),
+            );
+        } else if (isValidNodeJSActionDefinition(actionDef)) {
+            loadedActions.push(
+                new NodeJSAction(nameFromYamlConfig(file), actionDef),
             );
         } else {
             getLogger().error(

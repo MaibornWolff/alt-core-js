@@ -7,6 +7,7 @@ import { WebSocketAction } from './WebSocketAction';
 import { MqttAction } from './MqttAction';
 import { MqttPublishAction } from './MqttPublishAction';
 import { AMQPListenAction } from './AMQPListenAction';
+import { NodeJSAction } from './NodeJSAction';
 
 class Scenario {
     /* retrieved from the file name */
@@ -92,6 +93,14 @@ class Scenario {
                             ),
                         );
                         break;
+                    case ActionType.NODE_JS:
+                        this.actions.push(
+                            NodeJSAction.fromTemplate(
+                                actionDef,
+                                actionTemplate as NodeJSAction,
+                            ),
+                        );
+                        break;
                     default:
                         getLogger(this.name).error(
                             `Action template ${actionTemplate.name} is of unknown type ${actionTemplate.type}`,
@@ -112,7 +121,7 @@ class Scenario {
                 .forEach(s => s.actions.forEach(a => this.actions.push(a)));
         }
 
-        this.cache = new Map<string, any>(
+        this.cache = new Map<string, unknown>(
             yamlConfig.variables ? Object.entries(yamlConfig.variables) : [],
         );
     }
