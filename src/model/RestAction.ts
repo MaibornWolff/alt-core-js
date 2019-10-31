@@ -1,4 +1,4 @@
-import { createReadStream, PathLike, readFileSync } from 'fs';
+import { createReadStream, PathLike, readFileSync, ReadStream } from 'fs';
 import { IncomingHttpHeaders } from 'http';
 import { stringify } from 'querystring';
 import { Response } from 'request';
@@ -30,6 +30,7 @@ export interface RestActionDefinition extends ActionDefinition {
     readonly data?: Map<string, string>;
     readonly dataBinary?: PathLike;
     readonly form?: { [key: string]: string };
+    readonly variableAsPayload?: string;
     readonly responseValidation?: string[];
     readonly variables?: { [key: string]: string };
     readonly clientCertificate?: string;
@@ -45,39 +46,41 @@ export function isRestActionDefinition(
 }
 
 class RestAction implements Action {
-    public readonly serviceName: string;
+    readonly serviceName: string;
 
-    public readonly name: string;
+    readonly name: string;
 
-    public readonly description: string;
+    readonly description: string;
 
-    public readonly type = ActionType.REST;
+    readonly type = ActionType.REST;
 
-    public readonly url: string;
+    readonly url: string;
 
-    public readonly method: string;
+    readonly method: string;
 
-    public readonly queryParameters: { [key: string]: string };
+    readonly queryParameters?: { [key: string]: string };
 
-    public readonly restHead: { [key: string]: string };
+    readonly restHead?: { [key: string]: string };
 
-    public readonly data: Map<string, string>;
+    readonly data?: Map<string, string>;
 
-    public readonly dataBinary: string;
+    readonly dataBinary?: string;
 
-    public readonly form: { [key: string]: string };
+    readonly form?: { [key: string]: string };
 
-    public readonly responseValidation: string[];
+    private readonly variableAsPayload?: string;
 
-    public readonly variables: { [key: string]: string };
+    readonly responseValidation?: string[];
 
-    public readonly invokeEvenOnFail: boolean;
+    readonly variables?: { [key: string]: string };
 
-    public readonly allowFailure: boolean;
+    readonly invokeEvenOnFail: boolean;
 
-    public readonly clientCertificate?: string;
+    readonly allowFailure: boolean;
 
-    public readonly clientKey?: string;
+    readonly clientCertificate?: string;
+
+    readonly clientKey?: string;
 
     private readonly expectBinaryResponse: boolean;
 
@@ -93,6 +96,7 @@ class RestAction implements Action {
         restData = actionDef.data,
         restDataBinary = actionDef.dataBinary,
         restForm = actionDef.form,
+        variableAsPayload = actionDef.variableAsPayload,
         validators = actionDef.responseValidation || [],
         vars = actionDef.variables,
         invokeOnFail = actionDef.invokeEvenOnFail || false,
@@ -111,6 +115,7 @@ class RestAction implements Action {
         this.data = restData;
         this.dataBinary = restDataBinary;
         this.form = restForm;
+        this.variableAsPayload = variableAsPayload;
         this.responseValidation = [...validators];
         this.variables = vars;
         this.invokeEvenOnFail = invokeOnFail;
@@ -140,6 +145,7 @@ class RestAction implements Action {
             this.loadData(template, actionDef),
             actionDef.dataBinary || template.dataBinary,
             template.form ? { ...template.form, ...actionDef.form } : null,
+            template.variableAsPayload || actionDef.variableAsPayload,
             template.responseValidation
                 ? template.responseValidation.concat(
                       actionDef.responseValidation || [],
@@ -314,23 +320,52 @@ class RestAction implements Action {
             }
         };
 
-        const generateRequestBody = (): string | null =>
-            this.data != null
-                ? JSON.stringify(
-                      injectEvalAndVarsToMap(this.data, scenario.cache, ctx),
-                  )
-                : null;
+        const generateRequestBody = (
+            reject: (reason?: unknown) => void,
+        ): {
+            body: unknown;
+            bodyForDiagram?: unknown;
+        } => {
+            if (this.data !== undefined) {
+                const data = injectEvalAndVarsToMap(
+                    this.data,
+                    scenario.cache,
+                    ctx,
+                );
+                return { body: JSON.stringify(data), bodyForDiagram: data };
+            }
+            if (this.dataBinary !== undefined) {
+                return { body: createReadStream(this.dataBinary) };
+            }
+            if (this.variableAsPayload !== undefined) {
+                const body = scenario.cache.get(this.variableAsPayload);
+                if (
+                    typeof body !== 'string' &&
+                    !(body instanceof Buffer) &&
+                    !(body instanceof ReadStream)
+                ) {
+                    reject(
+                        new Error(
+                            `Variable ${this.variableAsPayload} is not of type String, Buffer or ReadStream and cannot be used as payload.`,
+                        ),
+                    );
+                    return { body: null };
+                }
+                return {
+                    body,
+                    bodyForDiagram: body,
+                };
+            }
+            return { body: null };
+        };
 
         const promise = new Promise((resolve, reject) => {
             const requestHeaders = this.restHead
                 ? injectEvalAndVarsToMap(this.restHead, scenario.cache, ctx)
                 : null;
-            const requestBody = generateRequestBody();
+            const requestBody = generateRequestBody(reject);
             const requestForm = this.form
                 ? injectEvalAndVarsToMap(this.form, scenario.cache, ctx)
-                : null;
-            const binaryData = this.dataBinary
-                ? createReadStream(this.dataBinary)
                 : null;
             const baseURL = `${injectEvalAndVarsToString(
                 this.url,
@@ -352,7 +387,7 @@ class RestAction implements Action {
                 method: this.method,
                 url,
                 headers: requestHeaders,
-                body: requestBody || binaryData,
+                body: requestBody.body,
                 encoding: this.expectBinaryResponse ? null : undefined,
                 form: requestForm,
                 maxAttempts: 3,
@@ -373,7 +408,7 @@ class RestAction implements Action {
                         `          ${
                             requestForm
                                 ? JSON.stringify(requestForm)
-                                : requestBody || '-'
+                                : requestBody.body || '-'
                         }`,
                     );
 
@@ -381,7 +416,7 @@ class RestAction implements Action {
                         scenario.name,
                         targetService,
                         `${response.request.method} ${response.request.path}`,
-                        requestBody && JSON.parse(requestBody),
+                        requestBody.bodyForDiagram,
                     );
 
                     if (
