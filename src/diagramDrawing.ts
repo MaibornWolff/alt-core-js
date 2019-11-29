@@ -33,8 +33,43 @@ function getOutputFile(scenario: string): string {
     return `${OUTPUT_DIR()}/_${scenario}.png`;
 }
 
-function extractPayload(dict: unknown): string {
-    return JSON.stringify(dict, null, 1);
+function objectFromEntries(arr: [string, unknown][]): object {
+    return Object.assign({}, ...Array.from(arr, ([k, v]) => ({ [k]: v })));
+}
+
+function hideFields(dict: object, hiddenFields: string[]): object {
+    return objectFromEntries(
+        Object.entries(dict).map(([key, value]) =>
+            hiddenFields.includes(key) ? [key, '***'] : [key, value],
+        ),
+    );
+}
+
+function applyDiagramConfiguration(
+    dict: unknown,
+    diagramConfiguration: DiagramConfiguration,
+): unknown {
+    const { hiddenFields } = diagramConfiguration;
+    return typeof dict === 'object' &&
+        dict !== null &&
+        hiddenFields !== undefined &&
+        hiddenFields.length !== 0
+        ? hideFields(dict, hiddenFields)
+        : dict;
+}
+
+export function extractPayload(
+    dict: unknown,
+    diagramConfiguration: DiagramConfiguration,
+): string {
+    if (Buffer.isBuffer(dict)) {
+        return `binary data (${(dict as Buffer).length} bytes)`;
+    }
+    return JSON.stringify(
+        applyDiagramConfiguration(dict, diagramConfiguration),
+        null,
+        1,
+    );
 }
 
 function currentTimestamp(): string {
@@ -69,6 +104,7 @@ export const addRequest = (
         data
             ? `note right\n**${currentTimestamp()}**\n${extractPayload(
                   data,
+                  diagramConfiguration,
               )}\nend note\n`
             : ''
     }`;
@@ -86,7 +122,9 @@ export const addSuccessfulResponse = (
     doAddResponse(scenarioId, source, status, 'green');
     if (body) {
         const note = `note left\n**${currentTimestamp()}**\n${
-            typeof body === 'string' ? trim(body, 30) : extractPayload(body)
+            typeof body === 'string'
+                ? trim(body, 30)
+                : extractPayload(body, diagramConfiguration)
         }\nend note\n`;
         appendFileSync(getInputFile(scenarioId), note);
     }
@@ -105,7 +143,10 @@ export const addFailedResponse = (
     doAddResponse(scenarioId, source, status, 'red');
     appendFileSync(
         getInputFile(scenarioId),
-        `note right:  <color red>${body}</color>\n||20||\n`,
+        `note right:  <color red>${extractPayload(
+            body,
+            diagramConfiguration,
+        )}</color>\n||20||\n`,
     );
 };
 
@@ -142,6 +183,7 @@ export const addWsMessage = (
     );
     const note = `note left #aqua\n**${currentTimestamp()}**\n${extractPayload(
         payload,
+        diagramConfiguration,
     )}\nend note\n`;
     appendFileSync(getInputFile(scenarioId), note);
 };
@@ -158,6 +200,7 @@ export const addMqttMessage = (
     );
     const note = `note right #99FF99\n**${currentTimestamp()}**\n${extractPayload(
         payload,
+        diagramConfiguration,
     )}\nend note\n`;
     appendFileSync(getInputFile(scenarioId), note);
 };
@@ -174,6 +217,7 @@ export const addMqttPublishMessage = (
     );
     const note = `note left #99FF99\n**${currentTimestamp()}**\n${extractPayload(
         JSON.parse(payload),
+        diagramConfiguration,
     )}\nend note\n`;
     appendFileSync(getInputFile(scenarioId), note);
 };
@@ -193,6 +237,7 @@ export const addAMQPReceivedMessage = (
     );
     const note = `note left #FF6600\n**${currentTimestamp()}**\n${extractPayload(
         payload,
+        diagramConfiguration,
     )}\nend note\n`;
     appendFileSync(getInputFile(scenarioId), note);
 };
