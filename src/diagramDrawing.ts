@@ -37,39 +37,70 @@ function objectFromEntries(arr: [string, unknown][]): object {
     return Object.assign({}, ...Array.from(arr, ([k, v]) => ({ [k]: v })));
 }
 
-function hideFields(dict: object, hiddenFields: string[]): object {
+function hideFields(payload: object, hiddenFields: string[]): object {
     return objectFromEntries(
-        Object.entries(dict).map(([key, value]) =>
+        Object.entries(payload).map(([key, value]) =>
             hiddenFields.includes(key) ? [key, '***'] : [key, value],
         ),
     );
 }
 
-function applyDiagramConfiguration(
-    dict: unknown,
-    diagramConfiguration: DiagramConfiguration,
+function hideFieldsIfNeeded(
+    payload: unknown,
+    hiddenFields?: string[],
 ): unknown {
-    const { hiddenFields } = diagramConfiguration;
-    return typeof dict === 'object' &&
-        dict !== null &&
+    return typeof payload === 'object' &&
+        payload !== null &&
         hiddenFields !== undefined &&
         hiddenFields.length !== 0
-        ? hideFields(dict, hiddenFields)
-        : dict;
+        ? hideFields(payload, hiddenFields)
+        : payload;
 }
 
-export function formatPayload(
-    dict: unknown,
+function hidePlaintextIfNeeded(payload: string, hidePlaintext = false): string {
+    return hidePlaintext ? '***' : payload;
+}
+
+function formatBinaryPayload(payload: Buffer): string {
+    return `binary data (${(payload as Buffer).length} bytes)`;
+}
+
+function trim(text: string, length: number): string {
+    return text.length > length ? `${text.substring(0, length - 3)}...` : text;
+}
+
+function formatPlaintextPayload(
+    payload: string,
     diagramConfiguration: DiagramConfiguration,
 ): string {
-    if (Buffer.isBuffer(dict)) {
-        return `binary data (${(dict as Buffer).length} bytes)`;
-    }
+    return trim(
+        hidePlaintextIfNeeded(payload, diagramConfiguration.hidePlaintext),
+        30,
+    );
+}
+
+function formatObjectPayload(
+    payload: unknown,
+    diagramConfiguration: DiagramConfiguration,
+): string {
     return JSON.stringify(
-        applyDiagramConfiguration(dict, diagramConfiguration),
+        hideFieldsIfNeeded(payload, diagramConfiguration.hiddenFields),
         null,
         1,
     );
+}
+
+export function formatPayload(
+    payload: unknown,
+    diagramConfiguration: DiagramConfiguration,
+): string {
+    if (Buffer.isBuffer(payload)) {
+        return formatBinaryPayload(payload);
+    }
+    if (typeof payload === 'string') {
+        return formatPlaintextPayload(payload, diagramConfiguration);
+    }
+    return formatObjectPayload(payload, diagramConfiguration);
 }
 
 function currentTimestamp(): string {
@@ -121,17 +152,13 @@ export const addSuccessfulResponse = (
 ): void => {
     doAddResponse(scenarioId, source, status, 'green');
     if (body) {
-        const note = `note left\n**${currentTimestamp()}**\n${
-            typeof body === 'string'
-                ? trim(body, 30)
-                : formatPayload(body, diagramConfiguration)
-        }\nend note\n`;
+        const note = `note left\n**${currentTimestamp()}**\n${formatPayload(
+            body,
+            diagramConfiguration,
+        )}\nend note\n`;
         appendFileSync(getInputFile(scenarioId), note);
     }
 };
-
-const trim = (text: string, length: number): string =>
-    text.length > length ? `${text.substring(0, length - 1)}...` : text;
 
 export const addFailedResponse = (
     scenarioId: string,

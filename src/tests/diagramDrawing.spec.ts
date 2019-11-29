@@ -30,5 +30,38 @@ describe('Diagram drawing', () => {
             // then
             expect(result).to.equal('binary data (10 bytes)');
         });
+
+        it('should not trim plaintext if it isnot too long', () => {
+            // given
+            const data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+
+            // when
+            const result = formatPayload(data, {});
+
+            // then
+            expect(result).to.equal('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+        });
+
+        it('should trim plaintext if it is too long', () => {
+            // given
+            const data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+
+            // when
+            const result = formatPayload(data, {});
+
+            // then
+            expect(result).to.equal('aaaaaaaaaaaaaaaaaaaaaaaaaaa...');
+        });
+
+        it('should hide plaintext if configured to', () => {
+            // given
+            const data = 'abcdefg';
+
+            // when
+            const result = formatPayload(data, { hidePlaintext: true });
+
+            // then
+            expect(result).to.equal('***');
+        });
     });
 });
