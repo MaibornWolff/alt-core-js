@@ -3,15 +3,17 @@ import { ActionType, ActionTypeType } from './ActionType';
 import { ActionCallback } from './ActionCallback';
 import { isArrayOfStrings } from '../util';
 
+interface DiagramConfiguration {
+    readonly hiddenFields?: string[];
+    readonly hidePlaintext?: boolean;
+}
+
 export interface ActionDefinition {
     readonly description?: string;
     readonly type: ActionTypeType;
     readonly invokeEvenOnFail?: boolean;
     readonly allowFailure?: boolean;
-    readonly diagramConfiguration?: {
-        hiddenFields?: string[];
-        hidePlaintext?: boolean;
-    };
+    readonly diagramConfiguration?: DiagramConfiguration;
 }
 
 export function isValidActionDefinition(
