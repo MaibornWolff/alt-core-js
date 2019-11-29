@@ -10,6 +10,7 @@ describe('Diagram drawing', () => {
             const diagramConfiguration = {
                 hiddenFields: ['foo', 'bar', 'baz'],
             };
+
             // when
             const result = formatPayload(data, diagramConfiguration);
 
@@ -22,6 +23,7 @@ describe('Diagram drawing', () => {
         it('should only output metadata for binary data (Buffers)', () => {
             // given
             const data = Buffer.from('foobarleet');
+
             // when
             const result = formatPayload(data, {});
 
