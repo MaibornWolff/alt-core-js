@@ -116,23 +116,20 @@ class MqttPublishAction implements Action {
         let ctx = { scenario: scenario.name, action: this.topic };
 
         // https://www.npmjs.com/package/mqtt#client
-        const client = connect(
-            this.url,
-            {
-                username: this.username,
-                password: this.password,
-                keepalive: 60,
-                clientId:
-                    this.name +
-                    Math.random()
-                        .toString(16)
-                        .substr(2, 8),
-                clean: true,
-                reconnectPeriod: 1000,
-                connectTimeout: 30000,
-                resubscribe: true,
-            },
-        );
+        const client = connect(this.url, {
+            username: this.username,
+            password: this.password,
+            keepalive: 60,
+            clientId:
+                this.name +
+                Math.random()
+                    .toString(16)
+                    .substr(2, 8),
+            clean: true,
+            reconnectPeriod: 1000,
+            connectTimeout: 30000,
+            resubscribe: true,
+        });
 
         client.on('connect', () => {
             logDebug(`MQTT connection to ${this.url} successfully opened`);

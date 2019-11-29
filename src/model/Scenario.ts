@@ -107,7 +107,9 @@ class Scenario {
                         );
                 }
             } else {
-                getLogger(this.name).error(
+                getLogger(
+                    this.name,
+                ).error(
                     `Could not find any Action definition for: ${actionDef.name}`,
                     { scenario: this.name },
                 );

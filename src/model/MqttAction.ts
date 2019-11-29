@@ -133,23 +133,20 @@ class MqttAction implements Action {
         let numberOfRetrievedMessages = 0;
 
         // https://www.npmjs.com/package/mqtt#client
-        const client = connect(
-            this.url,
-            {
-                username: this.username,
-                password: this.password,
-                keepalive: 60,
-                clientId:
-                    this.name +
-                    Math.random()
-                        .toString(16)
-                        .substr(2, 8),
-                clean: true,
-                reconnectPeriod: 1000,
-                connectTimeout: 30000,
-                resubscribe: true,
-            },
-        );
+        const client = connect(this.url, {
+            username: this.username,
+            password: this.password,
+            keepalive: 60,
+            clientId:
+                this.name +
+                Math.random()
+                    .toString(16)
+                    .substr(2, 8),
+            clean: true,
+            reconnectPeriod: 1000,
+            connectTimeout: 30000,
+            resubscribe: true,
+        });
 
         client.on('connect', () => {
             logDebug(
