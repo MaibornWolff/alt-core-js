@@ -414,6 +414,7 @@ class RestAction implements Action {
                         targetService,
                         `${response.request.method} ${response.request.path}`,
                         requestBody.bodyForDiagram,
+                        this.diagramConfiguration,
                     );
 
                     if (
@@ -445,6 +446,7 @@ class RestAction implements Action {
                                 targetService,
                                 `${response.statusMessage} (${response.statusCode})`,
                                 res,
+                                this.diagramConfiguration,
                             );
 
                             validateBody(res, reject);
@@ -455,6 +457,8 @@ class RestAction implements Action {
                                 scenario.name,
                                 targetService,
                                 `${response.statusMessage} (${response.statusCode})`,
+                                undefined,
+                                this.diagramConfiguration,
                             );
                         }
 
@@ -467,6 +471,8 @@ class RestAction implements Action {
                             scenario.name,
                             targetService,
                             `${response.statusMessage} (${response.statusCode})`,
+                            undefined,
+                            this.diagramConfiguration,
                         );
                         resolve();
                     } else {
@@ -479,6 +485,7 @@ class RestAction implements Action {
                             targetService,
                             `${response.statusMessage} (${response.statusCode})`,
                             response.body,
+                            this.diagramConfiguration,
                         );
                         reject();
                     }

@@ -239,6 +239,7 @@ export class AMQPListenAction implements Action {
                 exchange,
                 routingKey,
                 parsedMessage,
+                this.diagramConfiguration,
             );
         } else {
             logger.debug(

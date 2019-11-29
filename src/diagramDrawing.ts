@@ -62,6 +62,7 @@ export const addRequest = (
     target: string,
     url: string,
     data: unknown,
+    diagramConfiguration: DiagramConfiguration,
 ): void => {
     const enquotedTarget = enquote(target);
     const request = `ALT -> ${enquotedTarget}: ${url}\nactivate ${enquotedTarget}\n${
@@ -79,7 +80,8 @@ export const addSuccessfulResponse = (
     scenarioId: string,
     source: string,
     status: string,
-    body?: unknown,
+    body: unknown,
+    diagramConfiguration: DiagramConfiguration,
 ): void => {
     doAddResponse(scenarioId, source, status, 'green');
     if (body) {
@@ -98,6 +100,7 @@ export const addFailedResponse = (
     source: string,
     status: string,
     body: string,
+    diagramConfiguration: DiagramConfiguration,
 ): void => {
     doAddResponse(scenarioId, source, status, 'red');
     appendFileSync(
@@ -130,6 +133,7 @@ export const addWsMessage = (
     scenarioId: string,
     source: string,
     payload: unknown,
+    diagramConfiguration: DiagramConfiguration,
 ): void => {
     const enquotedSource = enquote(source);
     appendFileSync(
@@ -146,6 +150,7 @@ export const addMqttMessage = (
     scenarioId: string,
     topic: string,
     payload: unknown,
+    diagramConfiguration: DiagramConfiguration,
 ): void => {
     appendFileSync(
         getInputFile(scenarioId),
@@ -161,6 +166,7 @@ export const addMqttPublishMessage = (
     scenarioId: string,
     topic: string,
     payload: any,
+    diagramConfiguration: DiagramConfiguration,
 ): void => {
     appendFileSync(
         getInputFile(scenarioId),
@@ -178,6 +184,7 @@ export const addAMQPReceivedMessage = (
     exchange: string,
     routingKey: string,
     payload: unknown,
+    diagramConfiguration: DiagramConfiguration,
 ): void => {
     const enquotedSource = enquote(source);
     appendFileSync(

@@ -188,7 +188,12 @@ class MqttAction implements Action {
                         this.expectedNumberOfMessages
                     }): ${JSON.stringify(msgObj)}`,
                 );
-                addMqttMessage(scenario.name, topic, msgObj);
+                addMqttMessage(
+                    scenario.name,
+                    topic,
+                    msgObj,
+                    this.diagramConfiguration,
+                );
             } else {
                 logDebug(
                     `Irrelevant MQTT update received: ${JSON.stringify(

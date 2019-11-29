@@ -208,7 +208,12 @@ class WebSocketAction implements Action {
                 logDebug(
                     `Relevant WS message received (${this.receivedMessages.size}/${this.expectedNumberOfMessages}): ${data}`,
                 );
-                addWsMessage(scenario.name, this.serviceName, parsedMessage);
+                addWsMessage(
+                    scenario.name,
+                    this.serviceName,
+                    parsedMessage,
+                    this.diagramConfiguration,
+                );
             }
         });
 

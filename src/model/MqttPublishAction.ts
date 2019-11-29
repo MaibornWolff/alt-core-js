@@ -172,6 +172,7 @@ class MqttPublishAction implements Action {
                         scenario.name,
                         topic,
                         `{"payload":${dataString}}`,
+                        this.diagramConfiguration,
                     );
                     client.end();
                 }
