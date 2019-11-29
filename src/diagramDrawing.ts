@@ -58,7 +58,7 @@ function applyDiagramConfiguration(
         : dict;
 }
 
-export function extractPayload(
+export function formatPayload(
     dict: unknown,
     diagramConfiguration: DiagramConfiguration,
 ): string {
@@ -102,7 +102,7 @@ export const addRequest = (
     const enquotedTarget = enquote(target);
     const request = `ALT -> ${enquotedTarget}: ${url}\nactivate ${enquotedTarget}\n${
         data
-            ? `note right\n**${currentTimestamp()}**\n${extractPayload(
+            ? `note right\n**${currentTimestamp()}**\n${formatPayload(
                   data,
                   diagramConfiguration,
               )}\nend note\n`
@@ -124,7 +124,7 @@ export const addSuccessfulResponse = (
         const note = `note left\n**${currentTimestamp()}**\n${
             typeof body === 'string'
                 ? trim(body, 30)
-                : extractPayload(body, diagramConfiguration)
+                : formatPayload(body, diagramConfiguration)
         }\nend note\n`;
         appendFileSync(getInputFile(scenarioId), note);
     }
@@ -143,7 +143,7 @@ export const addFailedResponse = (
     doAddResponse(scenarioId, source, status, 'red');
     appendFileSync(
         getInputFile(scenarioId),
-        `note right:  <color red>${extractPayload(
+        `note right:  <color red>${formatPayload(
             body,
             diagramConfiguration,
         )}</color>\n||20||\n`,
@@ -181,7 +181,7 @@ export const addWsMessage = (
         getInputFile(scenarioId),
         `${enquotedSource} -[#0000FF]->o ALT : [WS]\n`,
     );
-    const note = `note left #aqua\n**${currentTimestamp()}**\n${extractPayload(
+    const note = `note left #aqua\n**${currentTimestamp()}**\n${formatPayload(
         payload,
         diagramConfiguration,
     )}\nend note\n`;
@@ -198,7 +198,7 @@ export const addMqttMessage = (
         getInputFile(scenarioId),
         `MQTT -[#green]->o ALT : ${topic}\n`,
     );
-    const note = `note right #99FF99\n**${currentTimestamp()}**\n${extractPayload(
+    const note = `note right #99FF99\n**${currentTimestamp()}**\n${formatPayload(
         payload,
         diagramConfiguration,
     )}\nend note\n`;
@@ -215,7 +215,7 @@ export const addMqttPublishMessage = (
         getInputFile(scenarioId),
         `ALT -[#green]->o MQTT : ${topic}\n`,
     );
-    const note = `note left #99FF99\n**${currentTimestamp()}**\n${extractPayload(
+    const note = `note left #99FF99\n**${currentTimestamp()}**\n${formatPayload(
         JSON.parse(payload),
         diagramConfiguration,
     )}\nend note\n`;
@@ -235,7 +235,7 @@ export const addAMQPReceivedMessage = (
         getInputFile(scenarioId),
         `${enquotedSource} -[#FF6600]->o ALT : ${exchange}/${routingKey}\n`,
     );
-    const note = `note left #FF6600\n**${currentTimestamp()}**\n${extractPayload(
+    const note = `note left #FF6600\n**${currentTimestamp()}**\n${formatPayload(
         payload,
         diagramConfiguration,
     )}\nend note\n`;

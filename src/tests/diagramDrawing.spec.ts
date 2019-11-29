@@ -1,9 +1,9 @@
 import 'mocha';
 import { expect } from 'chai';
-import { extractPayload } from '../diagramDrawing';
+import { formatPayload } from '../diagramDrawing';
 
 describe('Diagram drawing', () => {
-    describe('Payload extraction', () => {
+    describe('Payload formatting', () => {
         it('should hide all fields given as hiddenFields', () => {
             // given
             const data = { foo: 'abc', bar: 1, baz: null, notHiddenField: 42 };
@@ -11,7 +11,7 @@ describe('Diagram drawing', () => {
                 hiddenFields: ['foo', 'bar', 'baz'],
             };
             // when
-            const result = extractPayload(data, diagramConfiguration);
+            const result = formatPayload(data, diagramConfiguration);
 
             // then
             expect(result).to.equal(
@@ -23,7 +23,7 @@ describe('Diagram drawing', () => {
             // given
             const data = Buffer.from('foobarleet');
             // when
-            const result = extractPayload(data, {});
+            const result = formatPayload(data, {});
 
             // then
             expect(result).to.equal('binary data (10 bytes)');
