@@ -85,9 +85,9 @@ export class AMQPListenAction implements Action {
 
     private numberOfReceivedMessages = 0;
 
-    private amqpConnection?: Connection = undefined;
-
     private readonly diagramConfiguration: DiagramConfiguration;
+
+    private amqpConnection?: Connection = undefined;
 
     public constructor(
         name: string,
