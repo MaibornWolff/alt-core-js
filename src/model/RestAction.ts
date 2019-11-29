@@ -7,6 +7,7 @@ import {
     addFailedResponse,
     addRequest,
     addSuccessfulResponse,
+    DiagramConfiguration,
 } from '../diagramDrawing';
 import { getLogger, LoggingContext } from '../logging';
 import {
@@ -36,6 +37,7 @@ export interface RestActionDefinition extends ActionDefinition {
     readonly clientCertificate?: string;
     readonly clientKey?: string;
     readonly expectBinaryResponse?: boolean;
+    readonly diagramConfiguration?: DiagramConfiguration;
 }
 
 // TODO: Implement correctly
@@ -84,6 +86,8 @@ class RestAction implements Action {
 
     private readonly expectBinaryResponse: boolean;
 
+    private readonly diagramConfiguration: DiagramConfiguration;
+
     public constructor(
         name: string,
         desc = name,
@@ -97,13 +101,14 @@ class RestAction implements Action {
         restDataBinary = actionDef.dataBinary,
         restForm = actionDef.form,
         variableAsPayload = actionDef.variableAsPayload,
-        validators = actionDef.responseValidation || [],
+        validators = actionDef.responseValidation ?? [],
         vars = actionDef.variables,
-        invokeOnFail = actionDef.invokeEvenOnFail || false,
-        allowFailure = actionDef.allowFailure || false,
+        invokeOnFail = actionDef.invokeEvenOnFail ?? false,
+        allowFailure = actionDef.allowFailure ?? false,
         clientCertificate = actionDef.clientCertificate,
         clientKey = actionDef.clientKey,
-        expectBinaryResponse = actionDef.expectBinaryResponse || false,
+        expectBinaryResponse = actionDef.expectBinaryResponse ?? false,
+        diagramConfiguration = actionDef.diagramConfiguration ?? {},
     ) {
         this.name = name;
         this.description = desc;
@@ -123,6 +128,7 @@ class RestAction implements Action {
         this.clientCertificate = clientCertificate;
         this.clientKey = clientKey;
         this.expectBinaryResponse = expectBinaryResponse;
+        this.diagramConfiguration = diagramConfiguration;
     }
 
     public static fromTemplate(
@@ -131,40 +137,31 @@ class RestAction implements Action {
     ): RestAction {
         return new RestAction(
             actionDef.name,
-            actionDef.description || actionDef.name,
+            actionDef.description ?? actionDef.name,
             actionDef,
             template.url,
             template.serviceName,
-            actionDef.method || template.method,
-            template.queryParameters
-                ? { ...template.queryParameters, ...actionDef.queryParameters }
-                : actionDef.queryParameters,
+            actionDef.method ?? template.method,
+            { ...template.queryParameters, ...actionDef.queryParameters },
             template.restHead
                 ? { ...template.restHead, ...actionDef.headers }
                 : actionDef.restHead,
             this.loadData(template, actionDef),
-            actionDef.dataBinary || template.dataBinary,
+            actionDef.dataBinary ?? template.dataBinary,
             template.form ? { ...template.form, ...actionDef.form } : null,
-            template.variableAsPayload || actionDef.variableAsPayload,
+            actionDef.variableAsPayload ?? template.variableAsPayload,
             template.responseValidation
                 ? template.responseValidation.concat(
                       actionDef.responseValidation || [],
                   )
                 : actionDef.responseValidation,
-            template.variables
-                ? { ...template.variables, ...actionDef.variables }
-                : actionDef.variables,
-            actionDef.invokeEvenOnFail != null
-                ? actionDef.invokeEvenOnFail
-                : template.invokeEvenOnFail,
-            actionDef.allowFailure != null
-                ? actionDef.allowFailure
-                : template.allowFailure,
-            actionDef.clientCertificate || template.clientCertificate,
-            actionDef.clientKey || template.clientKey,
-            actionDef.expectBinaryResponse != null
-                ? actionDef.expectBinaryResponse
-                : template.expectBinaryResponse,
+            { ...template.variables, ...actionDef.variables },
+            actionDef.invokeEvenOnFail ?? template.invokeEvenOnFail,
+            actionDef.allowFailure ?? template.allowFailure,
+            actionDef.clientCertificate ?? template.clientCertificate,
+            actionDef.clientKey ?? template.clientKey,
+            actionDef.expectBinaryResponse ?? template.expectBinaryResponse,
+            actionDef.diagramConfiguration ?? template.diagramConfiguration,
         );
     }
 

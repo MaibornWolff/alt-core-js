@@ -4,7 +4,11 @@ import { runInNewContext } from 'vm';
 import { Action, ActionDefinition } from './Action';
 import { ActionCallback } from './ActionCallback';
 import { ActionType } from './ActionType';
-import { addAMQPReceivedMessage } from '../diagramDrawing';
+import {
+    addAMQPReceivedMessage,
+    DiagramConfiguration,
+    isValidDiagramConfiguration,
+} from '../diagramDrawing';
 import { getLogger, LoggingContext } from '../logging';
 import { Scenario } from './Scenario';
 import { isArrayOfStrings } from '../util';
@@ -21,6 +25,7 @@ export interface AMQPListenActionDefinition extends ActionDefinition {
     readonly password?: string;
     readonly expectedNumberOfMessages: number;
     readonly messageFilter?: string[];
+    readonly diagramConfiguration?: DiagramConfiguration;
 }
 
 export function isValidAMQPListenActionDefinition(
@@ -41,7 +46,11 @@ export function isValidAMQPListenActionDefinition(
         ['string', 'undefined'].includes(typeof amqpListenActionDef.password) &&
         typeof amqpListenActionDef.expectedNumberOfMessages === 'number' &&
         (typeof amqpListenActionDef.messageFilter === 'undefined' ||
-            isArrayOfStrings(amqpListenActionDef.messageFilter))
+            isArrayOfStrings(amqpListenActionDef.messageFilter)) &&
+        (typeof amqpListenActionDef.diagramConfiguration === 'undefined' ||
+            isValidDiagramConfiguration(
+                amqpListenActionDef.diagramConfiguration,
+            ))
     );
 }
 
@@ -78,6 +87,8 @@ export class AMQPListenAction implements Action {
 
     private amqpConnection?: Connection = undefined;
 
+    private readonly diagramConfiguration: DiagramConfiguration;
+
     public constructor(
         name: string,
         url: string,
@@ -93,6 +104,7 @@ export class AMQPListenAction implements Action {
             routingKey,
             expectedNumberOfMessages,
             messageFilter,
+            diagramConfiguration = {},
         }: AMQPListenActionDefinition,
     ) {
         this.name = name;
@@ -108,6 +120,7 @@ export class AMQPListenAction implements Action {
         this.routingKey = routingKey;
         this.expectedNumberOfMessages = expectedNumberOfMessages;
         this.messageFilter = messageFilter;
+        this.diagramConfiguration = diagramConfiguration;
     }
 
     public static fromTemplate(
@@ -115,27 +128,25 @@ export class AMQPListenAction implements Action {
         template: AMQPListenAction,
     ): AMQPListenAction {
         return new AMQPListenAction(template.name, template.url, {
-            description: amqpDefinition.description || template.description,
+            description: amqpDefinition.description ?? template.description,
             type: 'AMQP_LISTEN',
             invokeEvenOnFail:
-                amqpDefinition.invokeEvenOnFail != null
-                    ? amqpDefinition.invokeEvenOnFail
-                    : template.invokeEvenOnFail,
-            allowFailure:
-                amqpDefinition.allowFailure != null
-                    ? amqpDefinition.allowFailure
-                    : template.allowFailure,
+                amqpDefinition.invokeEvenOnFail ?? template.invokeEvenOnFail,
+            allowFailure: amqpDefinition.allowFailure ?? template.allowFailure,
             broker: template.broker,
-            username: amqpDefinition.username || template.username,
-            password: amqpDefinition.password || template.password,
-            exchange: amqpDefinition.exchange || template.exchange,
-            queue: amqpDefinition.queue || template.queue,
-            routingKey: amqpDefinition.routingKey || template.routingKey,
+            username: amqpDefinition.username ?? template.username,
+            password: amqpDefinition.password ?? template.password,
+            exchange: amqpDefinition.exchange ?? template.exchange,
+            queue: amqpDefinition.queue ?? template.queue,
+            routingKey: amqpDefinition.routingKey ?? template.routingKey,
             expectedNumberOfMessages:
-                amqpDefinition.expectedNumberOfMessages ||
+                amqpDefinition.expectedNumberOfMessages ??
                 template.expectedNumberOfMessages,
             messageFilter:
-                amqpDefinition.messageFilter || template.messageFilter,
+                amqpDefinition.messageFilter ?? template.messageFilter,
+            diagramConfiguration:
+                amqpDefinition.diagramConfiguration ??
+                template.diagramConfiguration,
         });
     }
 

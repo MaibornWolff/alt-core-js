@@ -1,6 +1,29 @@
 import { appendFileSync, createWriteStream, writeFileSync } from 'fs';
 import { generate } from 'node-plantuml';
 import { OUTPUT_DIR } from '.';
+import { isArrayOfStrings } from './util';
+
+export interface DiagramConfiguration {
+    readonly hiddenFields?: string[];
+    readonly hidePlaintext?: boolean;
+}
+
+export function isValidDiagramConfiguration(
+    toBeValidated: unknown,
+): toBeValidated is DiagramConfiguration {
+    if (typeof toBeValidated !== 'object' || toBeValidated === null) {
+        return false;
+    }
+    const diagramConfiguration = toBeValidated as DiagramConfiguration;
+
+    return (
+        ['boolean', 'undefined'].includes(
+            typeof diagramConfiguration.hidePlaintext,
+        ) &&
+        (typeof diagramConfiguration.hiddenFields === 'undefined' ||
+            isArrayOfStrings(diagramConfiguration.hiddenFields))
+    );
+}
 
 function getInputFile(scenario: string): string {
     return `${OUTPUT_DIR()}/_${scenario}.input`;
