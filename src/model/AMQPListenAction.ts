@@ -7,6 +7,7 @@ import { ActionType } from './ActionType';
 import { addAMQPReceivedMessage } from '../diagramDrawing';
 import { getLogger, LoggingContext } from '../logging';
 import { Scenario } from './Scenario';
+import { isArrayOfStrings } from '../util';
 import { injectEvalAndVarsToString } from '../variableInjection';
 
 export interface AMQPListenActionDefinition extends ActionDefinition {
@@ -42,10 +43,6 @@ export function isValidAMQPListenActionDefinition(
         (typeof amqpListenActionDef.messageFilter === 'undefined' ||
             isArrayOfStrings(amqpListenActionDef.messageFilter))
     );
-}
-
-function isArrayOfStrings(input: unknown): input is string[] {
-    return Array.isArray(input) && input.every(it => typeof it === 'string');
 }
 
 export class AMQPListenAction implements Action {
