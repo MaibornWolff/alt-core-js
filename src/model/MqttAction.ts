@@ -1,6 +1,6 @@
 import { connect } from 'mqtt';
 import { runInNewContext } from 'vm';
-import { addMqttMessage } from '../diagramDrawing';
+import { addMqttMessage, DiagramConfiguration } from '../diagramDrawing';
 import { getLogger } from '../logging';
 import { decodeProto } from '../protoParsing';
 import { injectEvalAndVarsToString } from '../variableInjection';
@@ -40,22 +40,25 @@ class MqttAction implements Action {
 
     private protoClass: string;
 
+    private readonly diagramConfiguration: DiagramConfiguration;
+
     public constructor(
         name: string,
         desc = name,
-        mqttDefinition: any,
-        url = mqttDefinition.url,
-        username = mqttDefinition.username,
-        password = mqttDefinition.password,
-        topic = mqttDefinition.topic,
-        durationInSec = mqttDefinition.durationInSec,
-        expectedNumberOfMessages = mqttDefinition.expectedNumberOfMessages,
-        messageType = mqttDefinition.messageType,
-        messageFilter = mqttDefinition.messageFilter,
-        protoFile = mqttDefinition.protoFile,
-        protoClass = mqttDefinition.protoClass,
-        invokeEvenOnFail = mqttDefinition.invokeEvenOnFail,
-        allowFailure = mqttDefinition.allowFailure,
+        actionDef: any,
+        url = actionDef.url,
+        username = actionDef.username,
+        password = actionDef.password,
+        topic = actionDef.topic,
+        durationInSec = actionDef.durationInSec,
+        expectedNumberOfMessages = actionDef.expectedNumberOfMessages,
+        messageType = actionDef.messageType,
+        messageFilter = actionDef.messageFilter,
+        protoFile = actionDef.protoFile,
+        protoClass = actionDef.protoClass,
+        invokeEvenOnFail = actionDef.invokeEvenOnFail,
+        allowFailure = actionDef.allowFailure,
+        diagramConfiguration = actionDef.diagramConfiguration ?? {},
     ) {
         this.name = name;
         this.url = url;
@@ -71,16 +74,17 @@ class MqttAction implements Action {
         this.description = desc;
         this.invokeEvenOnFail = invokeEvenOnFail;
         this.allowFailure = allowFailure;
+        this.diagramConfiguration = diagramConfiguration;
     }
 
     public static fromTemplate(
-        mqttDefinition: any,
+        mqttListenDefinition: any,
         template: MqttAction,
     ): MqttAction {
         return new MqttAction(
             template.name,
-            mqttDefinition.description || mqttDefinition.name,
-            { ...template, ...mqttDefinition },
+            mqttListenDefinition.description || mqttListenDefinition.name,
+            { ...template, ...mqttListenDefinition },
         );
     }
 
@@ -133,23 +137,20 @@ class MqttAction implements Action {
         let numberOfRetrievedMessages = 0;
 
         // https://www.npmjs.com/package/mqtt#client
-        const client = connect(
-            this.url,
-            {
-                username: this.username,
-                password: this.password,
-                keepalive: 60,
-                clientId:
-                    this.name +
-                    Math.random()
-                        .toString(16)
-                        .substr(2, 8),
-                clean: true,
-                reconnectPeriod: 1000,
-                connectTimeout: 30000,
-                resubscribe: true,
-            },
-        );
+        const client = connect(this.url, {
+            username: this.username,
+            password: this.password,
+            keepalive: 60,
+            clientId:
+                this.name +
+                Math.random()
+                    .toString(16)
+                    .substr(2, 8),
+            clean: true,
+            reconnectPeriod: 1000,
+            connectTimeout: 30000,
+            resubscribe: true,
+        });
 
         client.on('connect', () => {
             logDebug(
@@ -187,7 +188,12 @@ class MqttAction implements Action {
                         this.expectedNumberOfMessages
                     }): ${JSON.stringify(msgObj)}`,
                 );
-                addMqttMessage(scenario.name, topic, msgObj);
+                addMqttMessage(
+                    scenario.name,
+                    topic,
+                    msgObj,
+                    this.diagramConfiguration,
+                );
             } else {
                 logDebug(
                     `Irrelevant MQTT update received: ${JSON.stringify(

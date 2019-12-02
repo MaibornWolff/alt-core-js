@@ -1,17 +1,15 @@
 import * as pad from 'pad';
 import { Logger, createLogger, format, transports } from 'winston';
 import { OUTPUT_DIR } from '.';
+import { trim } from './util';
 
 const { combine, timestamp, printf } = format;
 
-const trim = (text: string, length: number): string =>
-    text.length > length ? `${text.substring(0, length - 1)}…` : text;
-
 const trimAndPadLeft = (text: string, length: number): string =>
-    pad(trim(text, length), length);
+    pad(trim(text, length, '…'), length);
 
 const trimAndPadRight = (text: string, length: number): string =>
-    pad(length, trim(text, length));
+    pad(length, trim(text, length, '…'));
 
 const myFormat = printf(
     (info): string =>

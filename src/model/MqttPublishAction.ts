@@ -1,6 +1,6 @@
 import * as hexdump from 'hexdump-nodejs';
 import { connect } from 'mqtt';
-import { addMqttPublishMessage } from '../diagramDrawing';
+import { addMqttPublishMessage, DiagramConfiguration } from '../diagramDrawing';
 import { getLogger } from '../logging';
 import { encodeProto } from '../protoParsing';
 import {
@@ -37,19 +37,22 @@ class MqttPublishAction implements Action {
 
     public allowFailure = false;
 
+    private readonly diagramConfiguration: DiagramConfiguration;
+
     public constructor(
         name: string,
         desc = name,
-        mqttDefinition: any,
-        url = mqttDefinition.url,
-        username = mqttDefinition.username,
-        password = mqttDefinition.password,
-        topic = mqttDefinition.topic,
-        data = mqttDefinition.data,
-        protoFile = mqttDefinition.protoFile,
-        protoClass = mqttDefinition.protoClass,
-        invokeEvenOnFail = mqttDefinition.invokeEvenOnFail,
-        allowFailure = mqttDefinition.allowFailure,
+        actionDef: any,
+        url = actionDef.url,
+        username = actionDef.username,
+        password = actionDef.password,
+        topic = actionDef.topic,
+        data = actionDef.data,
+        protoFile = actionDef.protoFile,
+        protoClass = actionDef.protoClass,
+        invokeEvenOnFail = actionDef.invokeEvenOnFail,
+        allowFailure = actionDef.allowFailure,
+        diagramConfiguration = actionDef.diagramConfiguration ?? {},
     ) {
         this.name = name;
         this.url = url;
@@ -62,16 +65,17 @@ class MqttPublishAction implements Action {
         this.description = desc;
         this.invokeEvenOnFail = invokeEvenOnFail;
         this.allowFailure = allowFailure;
+        this.diagramConfiguration = diagramConfiguration;
     }
 
     public static fromTemplate(
-        mqttDefinition: any,
+        mqttPublishDefinition: any,
         template: MqttPublishAction,
     ): MqttPublishAction {
         return new MqttPublishAction(
             template.name,
-            mqttDefinition.description || mqttDefinition.name,
-            { ...template, ...mqttDefinition },
+            mqttPublishDefinition.description || mqttPublishDefinition.name,
+            { ...template, ...mqttPublishDefinition },
         );
     }
 
@@ -116,23 +120,20 @@ class MqttPublishAction implements Action {
         let ctx = { scenario: scenario.name, action: this.topic };
 
         // https://www.npmjs.com/package/mqtt#client
-        const client = connect(
-            this.url,
-            {
-                username: this.username,
-                password: this.password,
-                keepalive: 60,
-                clientId:
-                    this.name +
-                    Math.random()
-                        .toString(16)
-                        .substr(2, 8),
-                clean: true,
-                reconnectPeriod: 1000,
-                connectTimeout: 30000,
-                resubscribe: true,
-            },
-        );
+        const client = connect(this.url, {
+            username: this.username,
+            password: this.password,
+            keepalive: 60,
+            clientId:
+                this.name +
+                Math.random()
+                    .toString(16)
+                    .substr(2, 8),
+            clean: true,
+            reconnectPeriod: 1000,
+            connectTimeout: 30000,
+            resubscribe: true,
+        });
 
         client.on('connect', () => {
             logDebug(`MQTT connection to ${this.url} successfully opened`);
@@ -171,6 +172,7 @@ class MqttPublishAction implements Action {
                         scenario.name,
                         topic,
                         `{"payload":${dataString}}`,
+                        this.diagramConfiguration,
                     );
                     client.end();
                 }

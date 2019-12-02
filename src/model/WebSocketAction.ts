@@ -1,7 +1,7 @@
 import { stringify } from 'querystring';
 import { runInNewContext } from 'vm';
 import * as WebSocket from 'ws';
-import { addWsMessage } from '../diagramDrawing';
+import { addWsMessage, DiagramConfiguration } from '../diagramDrawing';
 import { getLogger } from '../logging';
 import {
     injectEvalAndVarsToMap,
@@ -24,6 +24,7 @@ export interface WebSocketActionDefinition extends ActionDefinition {
     readonly data?: any;
     readonly expectedNumberOfMessages: number;
     readonly messageFilter?: string[];
+    readonly diagramConfiguration?: DiagramConfiguration;
 }
 
 // TODO: Implement correctly
@@ -58,6 +59,8 @@ class WebSocketAction implements Action {
 
     private messageFilter: string[];
 
+    private readonly diagramConfiguration: DiagramConfiguration;
+
     private receivedMessages: Set<string>;
 
     private wsInstance: WebSocket;
@@ -65,15 +68,16 @@ class WebSocketAction implements Action {
     public constructor(
         name: string,
         desc = name,
-        wsDefinition: any,
+        actionDef: any,
         serviceName: string,
         url: string,
-        headers = wsDefinition.headers,
-        data = wsDefinition.data,
-        expectedNumberOfMessages = wsDefinition.expectedNumberOfMessages,
-        messageFilter = wsDefinition.messageFilter,
-        invokeEvenOnFail = wsDefinition.invokeEvenOnFail,
-        allowFailure = wsDefinition.allowFailure,
+        headers = actionDef.headers,
+        data = actionDef.data,
+        expectedNumberOfMessages = actionDef.expectedNumberOfMessages,
+        messageFilter = actionDef.messageFilter,
+        invokeEvenOnFail = actionDef.invokeEvenOnFail,
+        allowFailure = actionDef.allowFailure,
+        diagramConfiguration = actionDef.diagramConfiguration ?? {},
     ) {
         this.name = name;
         this.serviceName = serviceName;
@@ -85,6 +89,7 @@ class WebSocketAction implements Action {
         this.description = desc;
         this.invokeEvenOnFail = invokeEvenOnFail;
         this.allowFailure = allowFailure;
+        this.diagramConfiguration = diagramConfiguration;
 
         this.receivedMessages = new Set<string>();
     }
@@ -106,10 +111,11 @@ class WebSocketAction implements Action {
                   }
                 : wsDefinition.restHead,
             this.loadData(template, wsDefinition),
-            wsDefinition.expectedNumberOfMessages ||
+            wsDefinition.expectedNumberOfMessages ??
                 template.expectedNumberOfMessages,
-            wsDefinition.invokeEvenOnFail || template.invokeEvenOnFail,
-            wsDefinition.allowFailure || template.allowFailure,
+            wsDefinition.invokeEvenOnFail ?? template.invokeEvenOnFail,
+            wsDefinition.allowFailure ?? template.allowFailure,
+            wsDefinition.diagramConfiguration ?? template.diagramConfiguration,
         );
     }
 
@@ -202,7 +208,12 @@ class WebSocketAction implements Action {
                 logDebug(
                     `Relevant WS message received (${this.receivedMessages.size}/${this.expectedNumberOfMessages}): ${data}`,
                 );
-                addWsMessage(scenario.name, this.serviceName, parsedMessage);
+                addWsMessage(
+                    scenario.name,
+                    this.serviceName,
+                    parsedMessage,
+                    this.diagramConfiguration,
+                );
             }
         });
 
