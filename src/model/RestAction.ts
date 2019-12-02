@@ -60,7 +60,7 @@ class RestAction implements Action {
 
     readonly method: string;
 
-    readonly queryParameters?: { [key: string]: string };
+    readonly queryParameters: { [key: string]: string };
 
     readonly restHead?: { [key: string]: string };
 
@@ -95,7 +95,7 @@ class RestAction implements Action {
         url: string,
         serviceName: string,
         restMethod = actionDef.method,
-        queryParameters = actionDef.queryParameters,
+        queryParameters = actionDef.queryParameters ?? {},
         restHeaders = actionDef.headers,
         restData = actionDef.data,
         restDataBinary = actionDef.dataBinary,
@@ -369,13 +369,14 @@ class RestAction implements Action {
                 scenario.cache,
                 ctx,
             )}`;
-            const queryParameters = this.queryParameters
-                ? injectEvalAndVarsToMap(
-                      this.queryParameters,
-                      scenario.cache,
-                      ctx,
-                  )
-                : undefined;
+            const queryParameters =
+                Object.entries(this.queryParameters).length > 0
+                    ? injectEvalAndVarsToMap(
+                          this.queryParameters,
+                          scenario.cache,
+                          ctx,
+                      )
+                    : undefined;
             const url = queryParameters
                 ? `${baseURL}?${stringify(queryParameters)}`
                 : baseURL;
