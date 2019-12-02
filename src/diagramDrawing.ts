@@ -1,7 +1,7 @@
 import { appendFileSync, createWriteStream, writeFileSync } from 'fs';
 import { generate } from 'node-plantuml';
 import { OUTPUT_DIR } from '.';
-import { isArrayOfStrings } from './util';
+import { isArrayOfStrings, objectFromEntries, trim } from './util';
 
 export interface DiagramConfiguration {
     readonly hiddenFields?: string[];
@@ -33,10 +33,6 @@ function getOutputFile(scenario: string): string {
     return `${OUTPUT_DIR()}/_${scenario}.png`;
 }
 
-function objectFromEntries(arr: [string, unknown][]): object {
-    return Object.assign({}, ...Array.from(arr, ([k, v]) => ({ [k]: v })));
-}
-
 function hideFields(payload: object, hiddenFields: string[]): object {
     return objectFromEntries(
         Object.entries(payload).map(([key, value]) =>
@@ -63,10 +59,6 @@ function hidePlaintextIfNeeded(payload: string, hidePlaintext = false): string {
 
 function formatBinaryPayload(payload: Buffer): string {
     return `binary data (${(payload as Buffer).length} bytes)`;
-}
-
-function trim(text: string, length: number): string {
-    return text.length > length ? `${text.substring(0, length - 3)}...` : text;
 }
 
 function formatPlaintextPayload(
