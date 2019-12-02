@@ -33,10 +33,12 @@ function getOutputFile(scenario: string): string {
     return `${OUTPUT_DIR()}/_${scenario}.png`;
 }
 
+const hidingText = '***';
+
 function hideFields(payload: object, hiddenFields: string[]): object {
     return objectFromEntries(
         Object.entries(payload).map(([key, value]) =>
-            hiddenFields.includes(key) ? [key, '***'] : [key, value],
+            hiddenFields.includes(key) ? [key, hidingText] : [key, value],
         ),
     );
 }
@@ -54,7 +56,7 @@ function hideFieldsIfNeeded(
 }
 
 function hidePlaintextIfNeeded(payload: string, hidePlaintext = false): string {
-    return hidePlaintext ? '***' : payload;
+    return hidePlaintext ? hidingText : payload;
 }
 
 function formatBinaryPayload(payload: Buffer): string {
