@@ -1,7 +1,7 @@
 import * as hexdump from 'hexdump-nodejs';
 import { connect } from 'mqtt';
 import { addMqttPublishMessage, DiagramConfiguration } from '../diagramDrawing';
-import { getLogger } from '../logging';
+import { getLogger, LoggingContext } from '../logging';
 import { encodeProto } from '../protoParsing';
 import {
     injectEvalAndVarsToMap,
@@ -119,10 +119,15 @@ class MqttPublishAction implements Action {
 
         let ctx = { scenario: scenario.name, action: this.topic };
 
+        const { url, username, password } = this.expandParameters(
+            scenario.cache,
+            ctx,
+        );
+
         // https://www.npmjs.com/package/mqtt#client
-        const client = connect(this.url, {
-            username: this.username,
-            password: this.password,
+        const client = connect(url, {
+            username: username,
+            password: password,
             keepalive: 60,
             clientId:
                 this.name +
@@ -189,6 +194,33 @@ class MqttPublishAction implements Action {
                 ctx,
             );
         });
+    }
+
+    private expandParameters(
+        scenarioVariables: Map<string, unknown>,
+        ctx: LoggingContext,
+    ): {
+        url: string;
+        username: string;
+        password: string;
+    } {
+        const url = injectEvalAndVarsToString(
+            this.url,
+            scenarioVariables,
+            ctx,
+        ).toString();
+        const username = injectEvalAndVarsToString(
+            this.username,
+            scenarioVariables,
+            ctx,
+        ).toString();
+        const password = injectEvalAndVarsToString(
+            this.password,
+            scenarioVariables,
+            ctx,
+        ).toString();
+
+        return { url, username, password };
     }
 }
 
