@@ -126,8 +126,8 @@ class MqttPublishAction implements Action {
 
         // https://www.npmjs.com/package/mqtt#client
         const client = connect(url, {
-            username: username,
-            password: password,
+            username,
+            password,
             keepalive: 60,
             clientId:
                 this.name +
