@@ -1,7 +1,12 @@
 import { expect } from 'chai';
 import 'mocha';
 import { resolve } from 'path';
-import { decodeProto, encodeProto, resolveImportPath } from '../protoParsing';
+import {
+    decodeProto,
+    encodeProto,
+    resolveImportPath,
+    encodeProtoWithEncoding,
+} from '../protoParsing';
 
 describe('PROTO parsing', () => {
     const TEST_PROTO = 'src/tests/resources/proto/test.proto';
@@ -51,5 +56,23 @@ describe('PROTO parsing', () => {
         expect(result).to.be.equal(
             resolve('src/tests/resources/proto/other.proto'),
         );
+    });
+
+    it('can encode simple nested messages into proto buffers base64 encoded', () => {
+        const result = encodeProtoWithEncoding(
+            TEST_PROTO,
+            {
+                nested: {
+                    nestedText: 'hello',
+                },
+                other: {
+                    sometext: 'beautiful',
+                },
+                text: 'world',
+            },
+            'Test',
+            'base64',
+        );
+        expect(result).to.be.equal('CgcKBWhlbGxvEgsKCWJlYXV0aWZ1bBoFd29ybGQ=');
     });
 });

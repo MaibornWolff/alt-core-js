@@ -2,7 +2,7 @@ import * as hexdump from 'hexdump-nodejs';
 import { connect } from 'mqtt';
 import { addMqttPublishMessage, DiagramConfiguration } from '../diagramDrawing';
 import { getLogger, LoggingContext } from '../logging';
-import { encodeProto } from '../protoParsing';
+import { encodeProto, encodeProtoWithEncoding } from '../protoParsing';
 import {
     injectEvalAndVarsToMap,
     injectEvalAndVarsToString,
@@ -33,6 +33,8 @@ class MqttPublishAction implements Action {
 
     private protoClass: string;
 
+    private protoEncoding: string;
+
     public invokeEvenOnFail = false;
 
     public allowFailure = false;
@@ -50,6 +52,7 @@ class MqttPublishAction implements Action {
         data = actionDef.data,
         protoFile = actionDef.protoFile,
         protoClass = actionDef.protoClass,
+        protoEncoding = actionDef.protoEncoding,
         invokeEvenOnFail = actionDef.invokeEvenOnFail,
         allowFailure = actionDef.allowFailure,
         diagramConfiguration = actionDef.diagramConfiguration ?? {},
@@ -62,6 +65,7 @@ class MqttPublishAction implements Action {
         this.data = data;
         this.protoFile = protoFile;
         this.protoClass = protoClass;
+        this.protoEncoding = protoEncoding;
         this.description = desc;
         this.invokeEvenOnFail = invokeEvenOnFail;
         this.allowFailure = allowFailure;
@@ -90,10 +94,17 @@ class MqttPublishAction implements Action {
     public encodeProtoPayload(
         scenarioVariables: Map<string, any>,
         ctx = {},
-    ): [Buffer, string] {
+    ): [Buffer | string, string] {
         const data = injectEvalAndVarsToMap(this.data, scenarioVariables, ctx);
         return [
-            encodeProto(this.protoFile, data, this.protoClass),
+            this.protoEncoding
+                ? encodeProtoWithEncoding(
+                      this.protoFile,
+                      data,
+                      this.protoClass,
+                      this.protoEncoding,
+                  )
+                : encodeProto(this.protoFile, data, this.protoClass),
             JSON.stringify(data),
         ];
     }
