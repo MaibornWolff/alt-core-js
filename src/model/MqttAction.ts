@@ -36,6 +36,19 @@ class MqttAction implements Action {
 
     private messageFilter: string[];
 
+    private messageEncoding?:
+        | 'ascii'
+        | 'utf8'
+        | 'utf-8'
+        | 'utf16le'
+        | 'ucs2'
+        | 'ucs-2'
+        | 'base64'
+        | 'latin1'
+        | 'binary'
+        | 'hex'
+        | undefined;
+
     private protoFile: string;
 
     private protoClass: string;
@@ -54,6 +67,18 @@ class MqttAction implements Action {
         expectedNumberOfMessages = actionDef.expectedNumberOfMessages,
         messageType = actionDef.messageType,
         messageFilter = actionDef.messageFilter,
+        messageEncoding?:
+            | 'ascii'
+            | 'utf8'
+            | 'utf-8'
+            | 'utf16le'
+            | 'ucs2'
+            | 'ucs-2'
+            | 'base64'
+            | 'latin1'
+            | 'binary'
+            | 'hex'
+            | undefined,
         protoFile = actionDef.protoFile,
         protoClass = actionDef.protoClass,
         invokeEvenOnFail = actionDef.invokeEvenOnFail,
@@ -69,6 +94,7 @@ class MqttAction implements Action {
         this.expectedNumberOfMessages = expectedNumberOfMessages;
         this.messageType = messageType;
         this.messageFilter = messageFilter;
+        this.messageEncoding = messageEncoding;
         this.protoFile = protoFile;
         this.protoClass = protoClass;
         this.description = desc;
@@ -156,11 +182,16 @@ class MqttAction implements Action {
             logDebug(
                 `MQTT connection to ${this.url} successfully opened for ${this.durationInSec}s`,
             );
-            client.subscribe(this.topic, (error, granted) => {
+
+            const topic = injectEvalAndVarsToString(
+                this.topic,
+                scenario.cache,
+                ctx,
+            ).toString();
+
+            client.subscribe(topic, (error, granted) => {
                 if (error) {
-                    logError(
-                        `Error while subscribing to ${this.topic}: ${error}`,
-                    );
+                    logError(`Error while subscribing to ${topic}: ${error}`);
                     reject();
                 } else {
                     logDebug(
@@ -172,13 +203,23 @@ class MqttAction implements Action {
             setTimeout(() => client.end(), this.durationInSec * 1000);
         });
 
-        client.on('message', (topic, message) => {
+        client.on('message', (topic, message: Buffer | string) => {
             let msgObj = {};
 
             if (messageType === 'json') {
                 msgObj = JSON.parse(message.toString());
             } else if (messageType === 'proto') {
-                msgObj = this.decodeProtoPayload(message);
+                if (message instanceof Buffer)
+                    msgObj = this.decodeProtoPayload(message);
+                else if (typeof message === 'string') {
+                    msgObj = this.decodeProtoPayload(
+                        Buffer.from(message as string, this.messageEncoding),
+                    );
+                } else {
+                    logDebug(
+                        'Unrecognised proto message payload type. Either Buffer or "string" is supported.',
+                    );
+                }
             }
 
             if (isMessageRelevant(msgObj)) {
