@@ -216,8 +216,5 @@ function buildExpHelpers(vars: Map<string, any>): unknown {
         timestampPlusMinutes(minutes: number): number {
             return Date.now() + minutes * 60e3;
         },
-        testCommit() {
-            return null;
-        },
     };
 }
