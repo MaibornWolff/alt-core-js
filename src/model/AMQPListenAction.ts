@@ -1,4 +1,4 @@
-import { connect, ConsumeMessage, Connection } from 'amqplib';
+import { connect, Connection, ConsumeMessage } from 'amqplib';
 import { URL } from 'url';
 import { runInNewContext } from 'vm';
 import { Action, ActionDefinition } from './Action';
@@ -6,6 +6,7 @@ import { ActionCallback } from './ActionCallback';
 import { ActionType } from './ActionType';
 import {
     addAMQPReceivedMessage,
+    addMissingAMQPMessage,
     DiagramConfiguration,
     isValidDiagramConfiguration,
 } from '../diagramDrawing';
@@ -204,11 +205,11 @@ export class AMQPListenAction implements Action {
         );
 
         await new Promise((resolve, reject) => {
-            connection.on('error', err => reject(err));
+            connection.on('error', err => this.onError(scenario, reject, err));
             connection.on('close', () =>
                 this.onClose(scenario, resolve, reject),
             );
-            channel.on('error', err => reject(err));
+            channel.on('error', err => this.onError(scenario, reject, err));
             channel.on('close', () => this.onClose(scenario, resolve, reject));
         });
     }
@@ -261,7 +262,9 @@ export class AMQPListenAction implements Action {
         logger.debug(`Successfully closed AMQP connection.`, ctx);
 
         if (this.numberOfReceivedMessages !== this.expectedNumberOfMessages) {
-            reject(
+            this.onError(
+                scenario,
+                reject,
                 new Error(
                     `Received an unexpected number of messages: ${this.numberOfReceivedMessages} (expected: ${this.expectedNumberOfMessages})`,
                 ),
@@ -269,6 +272,21 @@ export class AMQPListenAction implements Action {
         } else {
             resolve();
         }
+    }
+
+    private onError(
+        scenario: Scenario,
+        reject: (reason?: Error) => void,
+        err?: Error,
+    ): void {
+        addMissingAMQPMessage(
+            scenario.name,
+            this.exchange,
+            this.routingKey,
+            this.expectedNumberOfMessages,
+            this.numberOfReceivedMessages,
+        );
+        reject(err);
     }
 
     private isMessageRelevant(msg: unknown, scenario: Scenario): boolean {

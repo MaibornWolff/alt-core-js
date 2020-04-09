@@ -1,6 +1,10 @@
 import { connect } from 'mqtt';
 import { runInNewContext } from 'vm';
-import { addMqttMessage, DiagramConfiguration } from '../diagramDrawing';
+import {
+    addMissingMQTTMessage,
+    addMqttMessage,
+    DiagramConfiguration,
+} from '../diagramDrawing';
 import { getLogger } from '../logging';
 import { decodeProto } from '../protoParsing';
 import { injectEvalAndVarsToString } from '../variableInjection';
@@ -31,6 +35,8 @@ class MqttAction implements Action {
     private durationInSec: number;
 
     private expectedNumberOfMessages: number;
+
+    private numberOfReceivedMessages = 0;
 
     private messageType: string;
 
@@ -160,7 +166,6 @@ class MqttAction implements Action {
         };
 
         const ctx = { scenario: scenario.name, action: this.topic };
-        let numberOfRetrievedMessages = 0;
 
         // https://www.npmjs.com/package/mqtt#client
         const client = connect(this.url, {
@@ -192,6 +197,12 @@ class MqttAction implements Action {
             client.subscribe(topic, (error, granted) => {
                 if (error) {
                     logError(`Error while subscribing to ${topic}: ${error}`);
+                    addMissingMQTTMessage(
+                        scenario.name,
+                        this.topic,
+                        this.expectedNumberOfMessages,
+                        this.numberOfReceivedMessages,
+                    );
                     reject();
                 } else {
                     logDebug(
@@ -223,11 +234,13 @@ class MqttAction implements Action {
             }
 
             if (isMessageRelevant(msgObj)) {
-                numberOfRetrievedMessages++;
+                this.numberOfReceivedMessages++;
                 logDebug(
-                    `Relevant MQTT update received (${numberOfRetrievedMessages}/${
-                        this.expectedNumberOfMessages
-                    }): ${JSON.stringify(msgObj)}`,
+                    `Relevant MQTT update received (${
+                        this.numberOfReceivedMessages
+                    }/${this.expectedNumberOfMessages}): ${JSON.stringify(
+                        msgObj,
+                    )}`,
                 );
                 addMqttMessage(
                     scenario.name,
@@ -250,9 +263,17 @@ class MqttAction implements Action {
 
         client.on('close', () => {
             logDebug(`MQTT connection closed!`);
-            if (numberOfRetrievedMessages !== this.expectedNumberOfMessages) {
+            if (
+                this.numberOfReceivedMessages !== this.expectedNumberOfMessages
+            ) {
+                addMissingMQTTMessage(
+                    scenario.name,
+                    this.topic,
+                    this.expectedNumberOfMessages,
+                    this.numberOfReceivedMessages,
+                );
                 logError(
-                    `Unexpected number of MQTT updates retrieved: ${numberOfRetrievedMessages} (expected: ${this.expectedNumberOfMessages})`,
+                    `Unexpected number of MQTT updates retrieved: ${this.numberOfReceivedMessages} (expected: ${this.expectedNumberOfMessages})`,
                 );
                 reject();
             } else {
@@ -261,6 +282,12 @@ class MqttAction implements Action {
         });
 
         client.on('error', error => {
+            addMissingMQTTMessage(
+                scenario.name,
+                this.topic,
+                this.expectedNumberOfMessages,
+                this.numberOfReceivedMessages,
+            );
             logError(`Error during connection: ${error}`);
             reject();
         });

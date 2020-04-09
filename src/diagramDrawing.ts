@@ -101,7 +101,7 @@ function currentTimestamp(): string {
     return new Date().toISOString();
 }
 
-function enquote(str: string): string {
+function quote(str: string): string {
     return `"${str}"`;
 }
 
@@ -124,7 +124,7 @@ export const addRequest = (
     data: unknown,
     diagramConfiguration: DiagramConfiguration,
 ): void => {
-    const enquotedTarget = enquote(target);
+    const enquotedTarget = quote(target);
     const request = `ALT -> ${enquotedTarget}: ${url}\nactivate ${enquotedTarget}\n${
         data
             ? `note right\n**${currentTimestamp()}**\n${formatPayload(
@@ -177,7 +177,7 @@ const doAddResponse = (
     status: string,
     color: string,
 ): void => {
-    const enquotedSource = enquote(source);
+    const enquotedSource = quote(source);
     appendFileSync(
         getInputFile(scenarioId),
         `${enquotedSource} --> ALT: <color ${color}>${status}</color>\ndeactivate ${enquotedSource}\n`,
@@ -197,7 +197,7 @@ export const addWsMessage = (
     payload: unknown,
     diagramConfiguration: DiagramConfiguration,
 ): void => {
-    const enquotedSource = enquote(source);
+    const enquotedSource = quote(source);
     appendFileSync(
         getInputFile(scenarioId),
         `${enquotedSource} -[#0000FF]->o ALT : [WS]\n`,
@@ -251,7 +251,7 @@ export const addAMQPReceivedMessage = (
     payload: unknown,
     diagramConfiguration: DiagramConfiguration,
 ): void => {
-    const enquotedSource = enquote(source);
+    const enquotedSource = quote(source);
     appendFileSync(
         getInputFile(scenarioId),
         `${enquotedSource} -[#FF6600]->o ALT : ${exchange}/${routingKey}\n`,
@@ -261,6 +261,53 @@ export const addAMQPReceivedMessage = (
         diagramConfiguration,
     )}\nend note\n`;
     appendFileSync(getInputFile(scenarioId), note);
+};
+
+export const addMissingAMQPMessage = (
+    scenarioId: string,
+    exchange: string,
+    routingKey: string,
+    expectedMessages: number,
+    receivedMessages: number,
+): void => {
+    addMissingAsyncMessage(
+        scenarioId,
+        `${exchange}/${routingKey}`,
+        'AMQP',
+        expectedMessages,
+        receivedMessages,
+    );
+};
+
+export const addMissingMQTTMessage = (
+    scenarioId: string,
+    topic: string,
+    expectedMessages: number,
+    receivedMessages: number,
+): void => {
+    addMissingAsyncMessage(
+        scenarioId,
+        topic,
+        'MQTT',
+        expectedMessages,
+        receivedMessages,
+    );
+};
+
+export const addMissingAsyncMessage = (
+    scenarioId: string,
+    asyncInfo: string,
+    source: string,
+    expectedMessages: number,
+    receivedMessages: number,
+): void => {
+    const quotedSource = quote(source);
+    appendFileSync(
+        getInputFile(scenarioId),
+        `${quotedSource} -[#red]->x ALT : ${asyncInfo})\n
+        note right:  <color red>Missing msgs. expected: ${expectedMessages}, received: ${receivedMessages}</color>\
+        \n||20||\\n`,
+    );
 };
 
 export const generateSequenceDiagram = (scenarioId: string): Promise<void> =>
