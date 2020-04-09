@@ -1,4 +1,5 @@
-<h1 align="center">Acceptance & Load Testing (ALT) Framework</h1> 
+<h1 align="center">Acceptance & Load Testing (ALT) Framework
+</h1>
 
 <div align="center">
 
@@ -12,7 +13,8 @@
 Simple test framework supporting execution of different `scenarios` based on `action` templates. The framework supports
 definition of different action types in a *yaml* format, including e.g. which endpoints have to be called with which parameters
 as well as defining validation rules to be applied on the responses. It also supports detailed report creation of the test
-results.
+results. For more detailed documentation, check out the [wiki](https://github.com/MaibornWolff/alt-core-js/wiki)!
+
 
 ## Features
 
@@ -146,7 +148,7 @@ to the `console` while detailed log containing Actions' paramters, results and s
 are stored under `out/`: each scenario logs into its own `.log` file!
 
 ### Diagrams
-The framework can automatically create sequence diagrams from the given scenario definition which also be saved in `out/`;
+The framework can automatically create sequence diagrams from the given scenario definition which are also saved in `out/`;
 
 ## Build locally
 
