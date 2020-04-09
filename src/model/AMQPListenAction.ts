@@ -277,7 +277,7 @@ export class AMQPListenAction implements Action {
     private onError(
         scenario: Scenario,
         reject: (reason?: Error) => void,
-        err?: Error,
+        err: Error,
     ): void {
         addMissingAMQPMessage(
             scenario.name,
@@ -285,6 +285,7 @@ export class AMQPListenAction implements Action {
             this.routingKey,
             this.expectedNumberOfMessages,
             this.numberOfReceivedMessages,
+            err.message,
         );
         reject(err);
     }

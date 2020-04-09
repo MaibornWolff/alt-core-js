@@ -202,6 +202,7 @@ class MqttAction implements Action {
                         this.topic,
                         this.expectedNumberOfMessages,
                         this.numberOfReceivedMessages,
+                        error.message,
                     );
                     reject();
                 } else {
@@ -266,15 +267,15 @@ class MqttAction implements Action {
             if (
                 this.numberOfReceivedMessages !== this.expectedNumberOfMessages
             ) {
+                const errorMsg = `Unexpected number of MQTT messages received: ${this.numberOfReceivedMessages} (expected: ${this.expectedNumberOfMessages})`;
                 addMissingMQTTMessage(
                     scenario.name,
                     this.topic,
                     this.expectedNumberOfMessages,
                     this.numberOfReceivedMessages,
+                    errorMsg,
                 );
-                logError(
-                    `Unexpected number of MQTT updates retrieved: ${this.numberOfReceivedMessages} (expected: ${this.expectedNumberOfMessages})`,
-                );
+                logError(errorMsg);
                 reject();
             } else {
                 resolve();
@@ -287,6 +288,7 @@ class MqttAction implements Action {
                 this.topic,
                 this.expectedNumberOfMessages,
                 this.numberOfReceivedMessages,
+                error.message,
             );
             logError(`Error during connection: ${error}`);
             reject();

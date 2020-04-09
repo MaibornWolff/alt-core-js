@@ -269,6 +269,7 @@ export const addMissingAMQPMessage = (
     routingKey: string,
     expectedMessages: number,
     receivedMessages: number,
+    errorMsg: string,
 ): void => {
     addMissingAsyncMessage(
         scenarioId,
@@ -276,6 +277,7 @@ export const addMissingAMQPMessage = (
         'AMQP',
         expectedMessages,
         receivedMessages,
+        errorMsg,
     );
 };
 
@@ -284,6 +286,7 @@ export const addMissingMQTTMessage = (
     topic: string,
     expectedMessages: number,
     receivedMessages: number,
+    errorMsg: string,
 ): void => {
     addMissingAsyncMessage(
         scenarioId,
@@ -291,6 +294,7 @@ export const addMissingMQTTMessage = (
         'MQTT',
         expectedMessages,
         receivedMessages,
+        errorMsg,
     );
 };
 
@@ -300,14 +304,19 @@ export const addMissingAsyncMessage = (
     source: string,
     expectedMessages: number,
     receivedMessages: number,
+    errorMsg: string,
 ): void => {
     const quotedSource = quote(source);
     appendFileSync(
         getInputFile(scenarioId),
-        `${quotedSource} -[#red]->x ALT : ${asyncInfo})\n
-        note right:  <color red>Missing msgs. expected: ${expectedMessages}, received: ${receivedMessages}</color>\
-        \n||20||\\n`,
+        `${quotedSource} -[#red]->x ALT : ${asyncInfo}\n
+        `,
     );
+
+    const note = `note right #FF0000\n**${currentTimestamp()}**\n\n
+${errorMsg}\n\n
+Expected Messages:${expectedMessages}\nReceived Messages: ${receivedMessages}\nend note\n`;
+    appendFileSync(getInputFile(scenarioId), note);
 };
 
 export const generateSequenceDiagram = (scenarioId: string): Promise<void> =>
