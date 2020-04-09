@@ -1,4 +1,4 @@
-# Acceptance & Load Testing (ALT) Framework
+<h1 align="center">Acceptance & Load Testing (ALT) Framework</h1> 
 
 <div align="center">
 
@@ -10,7 +10,7 @@
 </div>
 
 Simple test framework supporting execution of different `scenarios` based on `action` templates. The framework supports
-definition of different action types in an *yaml* format, including e.g. which endpoints have to be called with which parameters
+definition of different action types in a *yaml* format, including e.g. which endpoints have to be called with which parameters
 as well as defining validation rules to be applied on the responses. It also supports detailed report creation of the test
 results.
 
@@ -19,7 +19,7 @@ results.
 - simple definition of reusable [REST](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#rest), [MQTT](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#mqtt-subscribe), [WS](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#websocket), etc. action templates
 - ...
 - using [Variables](https://github.com/MaibornWolff/alt-core-js/wiki/Features#variables) across multiple actions
-- [validation](https://github.com/MaibornWolff/alt-core-js/wiki/Features#response-validation) of respone payload from a [REST](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#rest) action
+- [validation](https://github.com/MaibornWolff/alt-core-js/wiki/Features#response-validation) of response payload from a [REST](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#rest) action
 - ...
 - automatic retries of [REST](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#rest) requests
 - automatic reconnections of [WS](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#websocket) sessions
@@ -140,9 +140,13 @@ run-my-scenario:
 
 ## Reporting
 
+### Logging
 During the executing there are 2 kind of logging: basic information on which Scenario/Action is being executed is logged
 to the `console` while detailed log containing Actions' paramters, results and stack traces are logged to `files` which
 are stored under `out/`: each scenario logs into its own `.log` file!
+
+### Diagrams
+The framework can automatically create sequence diagrams from the given scenario definition which also be saved in `out/`;
 
 ## Build locally
 
