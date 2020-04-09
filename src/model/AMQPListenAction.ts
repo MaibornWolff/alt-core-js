@@ -176,42 +176,59 @@ export class AMQPListenAction implements Action {
             routingKey,
         } = this.expandParameters(scenario.cache, ctx);
 
-        const connection = await connect({
-            protocol: extractProtocol(url),
-            hostname: extractHostname(url),
-            port: extractPort(url),
-            vhost: extractVhost(url),
-            username,
-            password,
-        });
-        this.amqpConnection = connection;
-        logger.debug(
-            `Successfully established AMQP connection to ${url}.`,
-            ctx,
-        );
-        const channel = await connection.createChannel();
-
-        await channel.checkExchange(exchange);
-        await channel.assertQueue(queue, {
-            autoDelete: true,
-        });
-        await channel.bindQueue(queue, exchange, routingKey);
-        await channel.consume(queue, msg =>
-            this.onMessage(msg, scenario, exchange, routingKey),
-        );
-        logger.debug(
-            `Successfully bound queue ${queue} to routing key ${routingKey} on exchange ${exchange}.`,
-            ctx,
-        );
-
-        await new Promise((resolve, reject) => {
-            connection.on('error', err => this.onError(scenario, reject, err));
-            connection.on('close', () =>
-                this.onClose(scenario, resolve, reject),
+        try {
+            const connection = await connect({
+                protocol: extractProtocol(url),
+                hostname: extractHostname(url),
+                port: extractPort(url),
+                vhost: extractVhost(url),
+                username,
+                password,
+            });
+            this.amqpConnection = connection;
+            logger.debug(
+                `Successfully established AMQP connection to ${url}.`,
+                ctx,
             );
-            channel.on('error', err => this.onError(scenario, reject, err));
-            channel.on('close', () => this.onClose(scenario, resolve, reject));
-        });
+            const channel = await connection.createChannel();
+
+            await channel.checkExchange(exchange);
+            await channel.assertQueue(queue, {
+                autoDelete: true,
+            });
+            await channel.bindQueue(queue, exchange, routingKey);
+            await channel.consume(queue, msg =>
+                this.onMessage(msg, scenario, exchange, routingKey),
+            );
+            logger.debug(
+                `Successfully bound queue ${queue} to routing key ${routingKey} on exchange ${exchange}.`,
+                ctx,
+            );
+
+            await new Promise((resolve, reject) => {
+                connection.on('error', err =>
+                    this.onError(scenario, reject, err),
+                );
+                connection.on('close', () =>
+                    this.onClose(scenario, resolve, reject),
+                );
+                channel.on('error', err => this.onError(scenario, reject, err));
+                channel.on('close', () =>
+                    this.onClose(scenario, resolve, reject),
+                );
+            });
+        } catch (e) {
+            logger.error('Error establishing AMQP connection', ctx);
+            addMissingAMQPMessage(
+                scenario.name,
+                exchange,
+                routingKey,
+                this.expectedNumberOfMessages,
+                this.numberOfReceivedMessages,
+                e,
+            );
+            throw e;
+        }
     }
 
     private onMessage(

@@ -112,6 +112,7 @@ export const initDiagramCreation = (scenarioId: string): void => {
         'autonumber',
         'skinparam handwritten false',
         'control MQTT',
+        'control AMQP',
         'actor ALT #red\n',
     ];
     appendFileSync(getInputFile(scenarioId), initValues.join('\n'));
