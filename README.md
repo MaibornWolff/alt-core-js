@@ -10,11 +10,17 @@
 
 </div>
 
-Simple test framework supporting execution of different `scenarios` based on `action` templates. The framework supports
-definition of different action types in a *yaml* format, including e.g. which endpoints have to be called with which parameters
-as well as defining validation rules to be applied on the responses. It also supports detailed report creation of the test
-results. For more detailed documentation, check out the [wiki](https://github.com/MaibornWolff/alt-core-js/wiki)!
+The ALT framework is designed to test logic that spans multiple services/endpoints
+which might use different technologies and protocols. 
 
+It does so by executing `scenarios` (1 scenario = 1 complete use case) which are composed of `actions`
+(e.g. 1 action could be a call to and response from a service).
+
+The framework supports the definition of different action types in a *yaml* format,
+including e.g. which endpoints have to be called with which parameters
+as well as defining validation rules to be applied on the responses.
+It also supports detailed report creation of the test results.
+For more detailed documentation, check out the [wiki](https://github.com/MaibornWolff/alt-core-js/wiki)!
 
 ## Features
 
@@ -63,7 +69,7 @@ responseValidation:
 ```
 
 In order to execute those `actions` we need a 'playbook' that defines which `action` should be executed in which order: 
-this is exactly what a `scenario` (see [Scenarios](todo)) is made for:
+this is exactly what a `scenario` (see [Scenarios](https://github.com/MaibornWolff/alt-core-js/wiki/Scenarios)) is made for:
 
 ### *src/scenarios/s1-my-first-scenario.yaml*
 
