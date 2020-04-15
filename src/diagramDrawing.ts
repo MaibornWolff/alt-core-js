@@ -178,10 +178,10 @@ const doAddResponse = (
     status: string,
     color: string,
 ): void => {
-    const enquotedSource = quote(source);
+    const quotedSource = quote(source);
     appendFileSync(
         getInputFile(scenarioId),
-        `${enquotedSource} --> ALT: <color ${color}>${status}</color>\ndeactivate ${enquotedSource}\n`,
+        `${quotedSource} --> ALT: <color ${color}>${status}</color>\ndeactivate ${quotedSource}\n`,
     );
 };
 
@@ -198,10 +198,10 @@ export const addWsMessage = (
     payload: unknown,
     diagramConfiguration: DiagramConfiguration,
 ): void => {
-    const enquotedSource = quote(source);
+    const quotedSource = quote(source);
     appendFileSync(
         getInputFile(scenarioId),
-        `${enquotedSource} -[#0000FF]->o ALT : [WS]\n`,
+        `${quotedSource} -[#0000FF]->o ALT : [WS]\n`,
     );
     const note = `note left #aqua\n**${currentTimestamp()}**\n${formatPayload(
         payload,
@@ -252,10 +252,10 @@ export const addAMQPReceivedMessage = (
     payload: unknown,
     diagramConfiguration: DiagramConfiguration,
 ): void => {
-    const enquotedSource = quote(source);
+    const quotedSource = quote(source);
     appendFileSync(
         getInputFile(scenarioId),
-        `${enquotedSource} -[#FF6600]->o ALT : ${exchange}/${routingKey}\n`,
+        `${quotedSource} -[#FF6600]->o ALT : ${exchange}/${routingKey}\n`,
     );
     const note = `note left #FF6600\n**${currentTimestamp()}**\n${formatPayload(
         payload,
