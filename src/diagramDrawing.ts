@@ -125,8 +125,8 @@ export const addRequest = (
     data: unknown,
     diagramConfiguration: DiagramConfiguration,
 ): void => {
-    const enquotedTarget = quote(target);
-    const request = `ALT -> ${enquotedTarget}: ${url}\nactivate ${enquotedTarget}\n${
+    const quotedTarget = quote(target);
+    const request = `ALT -> ${quotedTarget}: ${url}\nactivate ${quotedTarget}\n${
         data
             ? `note right\n**${currentTimestamp()}**\n${formatPayload(
                   data,
