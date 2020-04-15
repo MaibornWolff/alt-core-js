@@ -227,7 +227,7 @@ export class AMQPListenAction implements Action {
                 this.numberOfReceivedMessages,
                 e,
             );
-            throw e;
+            await Promise.reject(e);
         }
     }
 
