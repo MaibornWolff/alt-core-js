@@ -1,4 +1,4 @@
-import { connect, ConsumeMessage, Connection } from 'amqplib';
+import { connect, Connection, ConsumeMessage } from 'amqplib';
 import { URL } from 'url';
 import { runInNewContext } from 'vm';
 import { Action, ActionDefinition } from './Action';
@@ -6,6 +6,7 @@ import { ActionCallback } from './ActionCallback';
 import { ActionType } from './ActionType';
 import {
     addAMQPReceivedMessage,
+    addMissingAMQPMessage,
     DiagramConfiguration,
     isValidDiagramConfiguration,
 } from '../diagramDrawing';
@@ -175,42 +176,59 @@ export class AMQPListenAction implements Action {
             routingKey,
         } = this.expandParameters(scenario.cache, ctx);
 
-        const connection = await connect({
-            protocol: extractProtocol(url),
-            hostname: extractHostname(url),
-            port: extractPort(url),
-            vhost: extractVhost(url),
-            username,
-            password,
-        });
-        this.amqpConnection = connection;
-        logger.debug(
-            `Successfully established AMQP connection to ${url}.`,
-            ctx,
-        );
-        const channel = await connection.createChannel();
-
-        await channel.checkExchange(exchange);
-        await channel.assertQueue(queue, {
-            autoDelete: true,
-        });
-        await channel.bindQueue(queue, exchange, routingKey);
-        await channel.consume(queue, msg =>
-            this.onMessage(msg, scenario, exchange, routingKey),
-        );
-        logger.debug(
-            `Successfully bound queue ${queue} to routing key ${routingKey} on exchange ${exchange}.`,
-            ctx,
-        );
-
-        await new Promise((resolve, reject) => {
-            connection.on('error', err => reject(err));
-            connection.on('close', () =>
-                this.onClose(scenario, resolve, reject),
+        try {
+            const connection = await connect({
+                protocol: extractProtocol(url),
+                hostname: extractHostname(url),
+                port: extractPort(url),
+                vhost: extractVhost(url),
+                username,
+                password,
+            });
+            this.amqpConnection = connection;
+            logger.debug(
+                `Successfully established AMQP connection to ${url}.`,
+                ctx,
             );
-            channel.on('error', err => reject(err));
-            channel.on('close', () => this.onClose(scenario, resolve, reject));
-        });
+            const channel = await connection.createChannel();
+
+            await channel.checkExchange(exchange);
+            await channel.assertQueue(queue, {
+                autoDelete: true,
+            });
+            await channel.bindQueue(queue, exchange, routingKey);
+            await channel.consume(queue, msg =>
+                this.onMessage(msg, scenario, exchange, routingKey),
+            );
+            logger.debug(
+                `Successfully bound queue ${queue} to routing key ${routingKey} on exchange ${exchange}.`,
+                ctx,
+            );
+
+            await new Promise((resolve, reject) => {
+                connection.on('error', err =>
+                    this.onError(scenario, reject, err),
+                );
+                connection.on('close', () =>
+                    this.onClose(scenario, resolve, reject),
+                );
+                channel.on('error', err => this.onError(scenario, reject, err));
+                channel.on('close', () =>
+                    this.onClose(scenario, resolve, reject),
+                );
+            });
+        } catch (e) {
+            logger.error('Error establishing AMQP connection', ctx);
+            addMissingAMQPMessage(
+                scenario.name,
+                exchange,
+                routingKey,
+                this.expectedNumberOfMessages,
+                this.numberOfReceivedMessages,
+                e,
+            );
+            await Promise.reject(e);
+        }
     }
 
     private onMessage(
@@ -261,7 +279,9 @@ export class AMQPListenAction implements Action {
         logger.debug(`Successfully closed AMQP connection.`, ctx);
 
         if (this.numberOfReceivedMessages !== this.expectedNumberOfMessages) {
-            reject(
+            this.onError(
+                scenario,
+                reject,
                 new Error(
                     `Received an unexpected number of messages: ${this.numberOfReceivedMessages} (expected: ${this.expectedNumberOfMessages})`,
                 ),
@@ -269,6 +289,22 @@ export class AMQPListenAction implements Action {
         } else {
             resolve();
         }
+    }
+
+    private onError(
+        scenario: Scenario,
+        reject: (reason?: Error) => void,
+        err: Error,
+    ): void {
+        addMissingAMQPMessage(
+            scenario.name,
+            this.exchange,
+            this.routingKey,
+            this.expectedNumberOfMessages,
+            this.numberOfReceivedMessages,
+            err.message,
+        );
+        reject(err);
     }
 
     private isMessageRelevant(msg: unknown, scenario: Scenario): boolean {

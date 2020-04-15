@@ -101,7 +101,7 @@ function currentTimestamp(): string {
     return new Date().toISOString();
 }
 
-function enquote(str: string): string {
+function quote(str: string): string {
     return `"${str}"`;
 }
 
@@ -112,6 +112,7 @@ export const initDiagramCreation = (scenarioId: string): void => {
         'autonumber',
         'skinparam handwritten false',
         'control MQTT',
+        'control AMQP',
         'actor ALT #red\n',
     ];
     appendFileSync(getInputFile(scenarioId), initValues.join('\n'));
@@ -124,8 +125,8 @@ export const addRequest = (
     data: unknown,
     diagramConfiguration: DiagramConfiguration,
 ): void => {
-    const enquotedTarget = enquote(target);
-    const request = `ALT -> ${enquotedTarget}: ${url}\nactivate ${enquotedTarget}\n${
+    const quotedTarget = quote(target);
+    const request = `ALT -> ${quotedTarget}: ${url}\nactivate ${quotedTarget}\n${
         data
             ? `note right\n**${currentTimestamp()}**\n${formatPayload(
                   data,
@@ -177,10 +178,10 @@ const doAddResponse = (
     status: string,
     color: string,
 ): void => {
-    const enquotedSource = enquote(source);
+    const quotedSource = quote(source);
     appendFileSync(
         getInputFile(scenarioId),
-        `${enquotedSource} --> ALT: <color ${color}>${status}</color>\ndeactivate ${enquotedSource}\n`,
+        `${quotedSource} --> ALT: <color ${color}>${status}</color>\ndeactivate ${quotedSource}\n`,
     );
 };
 
@@ -197,10 +198,10 @@ export const addWsMessage = (
     payload: unknown,
     diagramConfiguration: DiagramConfiguration,
 ): void => {
-    const enquotedSource = enquote(source);
+    const quotedSource = quote(source);
     appendFileSync(
         getInputFile(scenarioId),
-        `${enquotedSource} -[#0000FF]->o ALT : [WS]\n`,
+        `${quotedSource} -[#0000FF]->o ALT : [WS]\n`,
     );
     const note = `note left #aqua\n**${currentTimestamp()}**\n${formatPayload(
         payload,
@@ -251,15 +252,71 @@ export const addAMQPReceivedMessage = (
     payload: unknown,
     diagramConfiguration: DiagramConfiguration,
 ): void => {
-    const enquotedSource = enquote(source);
+    const quotedSource = quote(source);
     appendFileSync(
         getInputFile(scenarioId),
-        `${enquotedSource} -[#FF6600]->o ALT : ${exchange}/${routingKey}\n`,
+        `${quotedSource} -[#FF6600]->o ALT : ${exchange}/${routingKey}\n`,
     );
     const note = `note left #FF6600\n**${currentTimestamp()}**\n${formatPayload(
         payload,
         diagramConfiguration,
     )}\nend note\n`;
+    appendFileSync(getInputFile(scenarioId), note);
+};
+
+export const addMissingAMQPMessage = (
+    scenarioId: string,
+    exchange: string,
+    routingKey: string,
+    expectedMessages: number,
+    receivedMessages: number,
+    errorMsg: string,
+): void => {
+    addMissingAsyncMessage(
+        scenarioId,
+        `${exchange}/${routingKey}`,
+        'AMQP',
+        expectedMessages,
+        receivedMessages,
+        errorMsg,
+    );
+};
+
+export const addMissingMQTTMessage = (
+    scenarioId: string,
+    topic: string,
+    expectedMessages: number,
+    receivedMessages: number,
+    errorMsg: string,
+): void => {
+    addMissingAsyncMessage(
+        scenarioId,
+        topic,
+        'MQTT',
+        expectedMessages,
+        receivedMessages,
+        errorMsg,
+    );
+};
+
+export const addMissingAsyncMessage = (
+    scenarioId: string,
+    asyncInfo: string,
+    source: string,
+    expectedMessages: number,
+    receivedMessages: number,
+    errorMsg: string,
+): void => {
+    const quotedSource = quote(source);
+    appendFileSync(
+        getInputFile(scenarioId),
+        `${quotedSource} -[#red]->x ALT : ${asyncInfo}\n
+        `,
+    );
+
+    const note = `note right #FF0000\n**${currentTimestamp()}**\n\n
+${errorMsg}\n\n
+Expected Messages:${expectedMessages}\nReceived Messages: ${receivedMessages}\nend note\n`;
     appendFileSync(getInputFile(scenarioId), note);
 };
 

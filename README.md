@@ -1,21 +1,33 @@
-# Acceptance & Load Testing (ALT) Framework
+<h1 align="center">Acceptance & Load Testing (ALT) Framework
+</h1>
+
+<div align="center">
 
 ![GitHub](https://img.shields.io/github/license/MaibornWolff/alt-core-js.svg)
 [![Npm Version](http://img.shields.io/npm/v/@maibornwolff/alt-core-js.svg)](https://www.npmjs.com/package/@maibornwolff/alt-core-js)
 [![Docker Runner](https://img.shields.io/badge/Docker%20Runner-1.43-brightgreen.svg)](https://hub.docker.com/r/maibornwolff/alt-runner-image/tags/)
 [![CircleCI](https://circleci.com/gh/MaibornWolff/alt-core-js.svg?style=svg)](https://circleci.com/gh/MaibornWolff/alt-core-js)
 
-Simple test framework supporting execution of different `scenarios` based on `action` templates. The framework supports
-definition of different action types in an *yaml* format, including e.g. which endpoints have to be called with which parameters
-as well as defining validation rules to be applied on the responses. It also supports detailed report creation of the test
-results.
+</div>
+
+The ALT framework is designed to test logic that spans multiple services/endpoints
+which might use different technologies and protocols. 
+
+It does so by executing `scenarios` (1 scenario = 1 complete use case) which are composed of `actions`
+(e.g. 1 action could be a call to and response from a service).
+
+The framework supports the definition of different action types in a *yaml* format,
+including e.g. which endpoints have to be called with which parameters
+as well as defining validation rules to be applied on the responses.
+It also supports detailed report creation of the test results.
+For more detailed documentation, check out the [wiki](https://github.com/MaibornWolff/alt-core-js/wiki)!
 
 ## Features
 
 - simple definition of reusable [REST](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#rest), [MQTT](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#mqtt-subscribe), [WS](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#websocket), etc. action templates
 - ...
 - using [Variables](https://github.com/MaibornWolff/alt-core-js/wiki/Features#variables) across multiple actions
-- [validation](https://github.com/MaibornWolff/alt-core-js/wiki/Features#response-validation) of respone payload from a [REST](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#rest) action
+- [validation](https://github.com/MaibornWolff/alt-core-js/wiki/Features#response-validation) of response payload from a [REST](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#rest) action
 - ...
 - automatic retries of [REST](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#rest) requests
 - automatic reconnections of [WS](https://github.com/MaibornWolff/alt-core-js/wiki/Action-Templates#websocket) sessions
@@ -57,7 +69,7 @@ responseValidation:
 ```
 
 In order to execute those `actions` we need a 'playbook' that defines which `action` should be executed in which order: 
-this is exactly what a `scenario` (see [Scenarios](todo)) is made for:
+this is exactly what a `scenario` (see [Scenarios](https://github.com/MaibornWolff/alt-core-js/wiki/Scenarios)) is made for:
 
 ### *src/scenarios/s1-my-first-scenario.yaml*
 
@@ -136,9 +148,13 @@ run-my-scenario:
 
 ## Reporting
 
+### Logging
 During the executing there are 2 kind of logging: basic information on which Scenario/Action is being executed is logged
 to the `console` while detailed log containing Actions' paramters, results and stack traces are logged to `files` which
 are stored under `out/`: each scenario logs into its own `.log` file!
+
+### Diagrams
+The framework can automatically create sequence diagrams from the given scenario definition which are also saved in `out/`;
 
 ## Build locally
 
