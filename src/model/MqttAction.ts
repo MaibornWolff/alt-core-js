@@ -87,8 +87,8 @@ class MqttAction implements Action {
             | undefined,
         protoFile = actionDef.protoFile,
         protoClass = actionDef.protoClass,
-        invokeEvenOnFail = actionDef.invokeEvenOnFail,
-        allowFailure = actionDef.allowFailure,
+        invokeEvenOnFail = actionDef.invokeEvenOnFail ?? false,
+        allowFailure = actionDef.allowFailure ?? false,
         diagramConfiguration = actionDef.diagramConfiguration ?? {},
     ) {
         this.name = name;

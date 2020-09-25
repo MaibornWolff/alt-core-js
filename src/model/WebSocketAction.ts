@@ -75,8 +75,8 @@ class WebSocketAction implements Action {
         data = actionDef.data,
         expectedNumberOfMessages = actionDef.expectedNumberOfMessages,
         messageFilter = actionDef.messageFilter,
-        invokeEvenOnFail = actionDef.invokeEvenOnFail,
-        allowFailure = actionDef.allowFailure,
+        invokeEvenOnFail = actionDef.invokeEvenOnFail ?? false,
+        allowFailure = actionDef.allowFailure ?? false,
         diagramConfiguration = actionDef.diagramConfiguration ?? {},
     ) {
         this.name = name;
