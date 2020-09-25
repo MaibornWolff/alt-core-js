@@ -317,12 +317,12 @@ function printResults(): void {
         );
 
         result.forEach((res: TestResult) => {
-            if (res.successful) {
+            if (res.successful === true) {
                 getLogger(scenario).info(
                     ` OK: ${pad(res.action, 50)} ${res.duration} ms`,
                     ctx,
                 );
-            } else if (res.allowFailure) {
+            } else if (res.allowFailure === true) {
                 getLogger(scenario).info(
                     `IGN: ${pad(res.action, 50)} ${res.duration} ms`,
                     ctx,
