@@ -113,6 +113,7 @@ class WebSocketAction implements Action {
             this.loadData(template, wsDefinition),
             wsDefinition.expectedNumberOfMessages ??
                 template.expectedNumberOfMessages,
+            wsDefinition.messageFilter,
             wsDefinition.invokeEvenOnFail ?? template.invokeEvenOnFail,
             wsDefinition.allowFailure ?? template.allowFailure,
             wsDefinition.diagramConfiguration ?? template.diagramConfiguration,
