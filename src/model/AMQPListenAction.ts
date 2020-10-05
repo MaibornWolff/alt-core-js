@@ -218,15 +218,18 @@ export class AMQPListenAction implements Action {
                 );
             });
         } catch (e) {
-            logger.error('Error establishing AMQP connection', ctx);
-            addMissingAMQPMessage(
-                scenario.name,
-                exchange,
-                routingKey,
-                this.expectedNumberOfMessages,
-                this.numberOfReceivedMessages,
-                e,
-            );
+            if (!(e instanceof UnexpectedNumberOfMessagesError)) {
+                logger.error('Error establishing AMQP connection', ctx);
+                addMissingAMQPMessage(
+                    scenario.name,
+                    exchange,
+                    routingKey,
+                    this.expectedNumberOfMessages,
+                    this.numberOfReceivedMessages,
+                    e,
+                );
+            }
+
             await Promise.reject(e);
         }
     }
@@ -282,8 +285,9 @@ export class AMQPListenAction implements Action {
             this.onError(
                 scenario,
                 reject,
-                new Error(
-                    `Received an unexpected number of messages: ${this.numberOfReceivedMessages} (expected: ${this.expectedNumberOfMessages})`,
+                new UnexpectedNumberOfMessagesError(
+                    this.numberOfReceivedMessages,
+                    this.expectedNumberOfMessages,
                 ),
             );
         } else {
@@ -407,4 +411,17 @@ function extractPort(url: string): number | undefined {
 function extractVhost(url: string): string | undefined {
     const path = new URL(url).pathname;
     return path ? path.substr(1) : undefined;
+}
+
+class UnexpectedNumberOfMessagesError extends Error {
+    constructor(
+        numberOfReceivedMessages?: number,
+        expectedNumberOfMessages?: number,
+    ) {
+        super(
+            `Received an unexpected number of messages: ${numberOfReceivedMessages} (expected: ${expectedNumberOfMessages})`,
+        );
+        Object.setPrototypeOf(this, new.target.prototype);
+        this.name = UnexpectedNumberOfMessagesError.name;
+    }
 }
