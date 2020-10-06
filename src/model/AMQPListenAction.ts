@@ -5,11 +5,13 @@ import { Action, ActionDefinition } from './Action';
 import { ActionCallback } from './ActionCallback';
 import { ActionType } from './ActionType';
 import {
-    addAMQPReceivedMessage,
-    addMissingAMQPMessage,
     DiagramConfiguration,
     isValidDiagramConfiguration,
-} from '../diagramDrawing';
+} from '../diagramDrawing/diagramDrawing';
+import {
+    addAMQPReceivedMessage,
+    addMissingAMQPMessage,
+} from '../diagramDrawing/amqp';
 import { getLogger, LoggingContext } from '../logging';
 import { Scenario } from './Scenario';
 import { isArrayOfStrings } from '../util';

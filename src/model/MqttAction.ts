@@ -1,10 +1,7 @@
 import { connect } from 'mqtt';
 import { runInNewContext } from 'vm';
-import {
-    addMissingMQTTMessage,
-    addMqttMessage,
-    DiagramConfiguration,
-} from '../diagramDrawing';
+import { DiagramConfiguration } from '../diagramDrawing/diagramDrawing';
+import { addMissingMQTTMessage, addMqttMessage } from '../diagramDrawing/mqtt';
 import { getLogger, LoggingContext } from '../logging';
 import { decodeProto } from '../protoParsing';
 import { injectEvalAndVarsToString } from '../variableInjection';

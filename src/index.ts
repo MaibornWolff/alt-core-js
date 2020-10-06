@@ -1,7 +1,10 @@
 import * as pad from 'pad';
 import { stringify } from 'querystring';
 import { loadAllActions } from './actionLoading';
-import { generateSequenceDiagram, initDiagramCreation } from './diagramDrawing';
+import {
+    generateSequenceDiagram,
+    initDiagramCreation,
+} from './diagramDrawing/diagramDrawing';
 import { getLogger } from './logging';
 import { Action } from './model/Action';
 import { ActionType } from './model/ActionType';

@@ -1,6 +1,7 @@
 import * as hexdump from 'hexdump-nodejs';
 import { connect } from 'mqtt';
-import { addMqttPublishMessage, DiagramConfiguration } from '../diagramDrawing';
+import { DiagramConfiguration } from '../diagramDrawing/diagramDrawing';
+import { addMqttPublishMessage } from '../diagramDrawing/mqtt';
 import { getLogger, LoggingContext } from '../logging';
 import { encodeProto, encodeProtoWithEncoding } from '../protoParsing';
 import {

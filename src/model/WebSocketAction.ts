@@ -1,7 +1,8 @@
 import { stringify } from 'querystring';
 import { runInNewContext } from 'vm';
 import * as WebSocket from 'ws';
-import { addWsMessage, DiagramConfiguration } from '../diagramDrawing';
+import { DiagramConfiguration } from '../diagramDrawing/diagramDrawing';
+import { addWsMessage } from '../diagramDrawing/ws';
 import { getLogger } from '../logging';
 import {
     injectEvalAndVarsToMap,

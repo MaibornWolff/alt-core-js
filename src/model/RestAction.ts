@@ -3,12 +3,15 @@ import { IncomingHttpHeaders } from 'http';
 import { stringify } from 'querystring';
 import { Response } from 'request';
 import * as request from 'requestretry';
+import { DiagramConfiguration } from '../diagramDrawing/diagramDrawing';
 import {
+    addSuccessfulResponseBody,
+    addValidationFailureResponseBody,
     addFailedResponse,
-    addRequest,
     addSuccessfulResponse,
-    DiagramConfiguration,
-} from '../diagramDrawing';
+    addSuccessfulResponseArrow,
+    addRequest,
+} from '../diagramDrawing/rest';
 import { getLogger, LoggingContext } from '../logging';
 import {
     injectEvalAndVarsToMap,
@@ -277,40 +280,28 @@ class RestAction implements Action {
             }
         };
 
-        const validateBody = (
-            res: unknown,
-            reject: (reason?: unknown) => void,
-        ): void => {
+        const validateBody = (res: unknown): void => {
             if (registeredValidations) {
                 registeredValidations
                     .filter(v => v.startsWith('res.'))
                     .forEach(validation => {
+                        let validationResult;
                         try {
-                            const validationResult = eval(validation);
-                            if (validationResult) {
-                                logDebug(
-                                    `Body validation (${validation}): ${validationResult}`,
-                                );
-                            } else {
-                                logError(
-                                    `Body validation (${validation}): ${validationResult}`,
-                                );
-                                reject(
-                                    new Error(
-                                        `Body validation failed, actual response was ${JSON.stringify(
-                                            res,
-                                        )}`,
-                                    ),
-                                );
-                            }
+                            validationResult = eval(validation);
                         } catch (e) {
                             logError(e.message);
-                            reject(
-                                new Error(
-                                    `Error during body validation, actual response was ${JSON.stringify(
-                                        res,
-                                    )}`,
-                                ),
+                            throw new Error(`Error parsing validation`);
+                        }
+                        if (validationResult) {
+                            logDebug(
+                                `Body validation (${validation}): ${validationResult}`,
+                            );
+                        } else {
+                            logError(
+                                `Body validation (${validation}): ${validationResult}`,
+                            );
+                            throw new Error(
+                                `Incoming response body failed validation: (${validation})}`,
                             );
                         }
                     });
@@ -436,23 +427,44 @@ class RestAction implements Action {
                         updateScenarioCache({ head });
 
                         const contentType = response.headers['content-type'];
-                        if (response.body != null) {
-                            const res = RestAction.parseResponseBody(
+                        if (
+                            response.body !== null &&
+                            response.body !== undefined
+                        ) {
+                            const parsedResponseBody = RestAction.parseResponseBody(
                                 response.body,
                                 contentType,
                                 ctx,
                             );
-                            addSuccessfulResponse(
+
+                            addSuccessfulResponseArrow(
                                 scenario.name,
                                 targetService,
                                 `${response.statusMessage} (${response.statusCode})`,
-                                res,
-                                this.diagramConfiguration,
                             );
 
-                            validateBody(res, reject);
+                            try {
+                                validateBody(parsedResponseBody);
+                                addSuccessfulResponseBody(
+                                    scenario.name,
+                                    parsedResponseBody,
+                                    this.diagramConfiguration,
+                                );
+                            } catch (e) {
+                                addValidationFailureResponseBody(
+                                    scenario.name,
+                                    {
+                                        errorMsg: e.message,
+                                        responseBody: parsedResponseBody,
+                                    },
+                                    this.diagramConfiguration,
+                                );
+                                reject(e);
+                            }
 
-                            updateScenarioCache({ res });
+                            updateScenarioCache({
+                                res: parsedResponseBody,
+                            });
                         } else {
                             addSuccessfulResponse(
                                 scenario.name,
