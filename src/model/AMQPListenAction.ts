@@ -14,6 +14,7 @@ import { getLogger, LoggingContext } from '../logging';
 import { Scenario } from './Scenario';
 import { isArrayOfStrings } from '../util';
 import { injectEvalAndVarsToString } from '../variableInjection';
+import { UnexpectedNumberOfMessagesError } from './error/UnexpectedNumberOfMessagesError';
 
 export interface AMQPListenActionDefinition extends ActionDefinition {
     readonly type: 'AMQP_LISTEN';
@@ -411,17 +412,4 @@ function extractPort(url: string): number | undefined {
 function extractVhost(url: string): string | undefined {
     const path = new URL(url).pathname;
     return path ? path.substr(1) : undefined;
-}
-
-class UnexpectedNumberOfMessagesError extends Error {
-    constructor(
-        numberOfReceivedMessages?: number,
-        expectedNumberOfMessages?: number,
-    ) {
-        super(
-            `Received an unexpected number of messages: ${numberOfReceivedMessages} (expected: ${expectedNumberOfMessages})`,
-        );
-        Object.setPrototypeOf(this, new.target.prototype);
-        this.name = UnexpectedNumberOfMessagesError.name;
-    }
 }
