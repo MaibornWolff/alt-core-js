@@ -301,7 +301,7 @@ class RestAction implements Action {
                                 `Body validation (${validation}): ${validationResult}`,
                             );
                             throw new Error(
-                                `Incoming response body failed validation: (${validation})}`,
+                                `Incoming response body failed validation: (${validation})`,
                             );
                         }
                     });

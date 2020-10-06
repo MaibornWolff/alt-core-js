@@ -6,6 +6,8 @@ import {
     getInputFile,
     quote,
 } from './diagramDrawing';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const wrap = require('word-wrap');
 
 export const addRequest = (
     scenarioId: string,
@@ -99,9 +101,12 @@ export const addValidationFailureResponseBody = (
     validationError: { errorMsg: string; responseBody: unknown },
     diagramConfiguration: DiagramConfiguration,
 ): void => {
-    const note = `note left\n**${currentTimestamp()}**\n<size:18><color red>${
-        validationError.errorMsg
-    }</color></size>\n\nIncoming Response was: \n\n
+    const formattedErrorMsg = `<size:16><color red>${wrap(
+        validationError.errorMsg,
+        { newline: '</color></size>\n<size:16><color red>', indent: '' },
+    )}</color></size>`;
+
+    const note = `note left\n**${currentTimestamp()}**\n${formattedErrorMsg}\n\nIncoming Response was:\n\n
 ${formatPayload(
     validationError.responseBody,
     diagramConfiguration,

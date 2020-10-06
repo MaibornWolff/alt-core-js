@@ -59,6 +59,7 @@
     "request": "^2.83.0",
     "requestretry": "^1.13.0",
     "winston": "^3.2.1",
+    "word-wrap": "^1.2.3",
     "ws": "^4.0.0"
   },
   "directories": {
