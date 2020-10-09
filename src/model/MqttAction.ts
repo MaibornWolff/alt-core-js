@@ -5,7 +5,7 @@ import {
     addMqttMessage,
     DiagramConfiguration,
 } from '../diagramDrawing';
-import { getLogger } from '../logging';
+import { getLogger, LoggingContext } from '../logging';
 import { decodeProto } from '../protoParsing';
 import { injectEvalAndVarsToString } from '../variableInjection';
 import { Action } from './Action';
@@ -167,10 +167,15 @@ class MqttAction implements Action {
 
         const ctx = { scenario: scenario.name, action: this.topic };
 
+        const { topic, username, password } = this.expandParameters(
+            scenario.cache,
+            ctx,
+        );
+
         // https://www.npmjs.com/package/mqtt#client
         const client = connect(this.url, {
-            username: this.username,
-            password: this.password,
+            username,
+            password,
             keepalive: 60,
             clientId:
                 this.name +
@@ -187,12 +192,6 @@ class MqttAction implements Action {
             logDebug(
                 `MQTT connection to ${this.url} successfully opened for ${this.durationInSec}s`,
             );
-
-            const topic = injectEvalAndVarsToString(
-                this.topic,
-                scenario.cache,
-                ctx,
-            ).toString();
 
             client.subscribe(topic, (error, granted) => {
                 if (error) {
@@ -215,7 +214,7 @@ class MqttAction implements Action {
             setTimeout(() => client.end(), this.durationInSec * 1000);
         });
 
-        client.on('message', (topic, message: Buffer | string) => {
+        client.on('message', (_, message: Buffer | string) => {
             let msgObj = {};
 
             if (messageType === 'json') {
@@ -223,13 +222,9 @@ class MqttAction implements Action {
             } else if (messageType === 'proto') {
                 if (message instanceof Buffer)
                     msgObj = this.decodeProtoPayload(message);
-                else if (typeof message === 'string') {
+                else {
                     msgObj = this.decodeProtoPayload(
                         Buffer.from(message as string, this.messageEncoding),
-                    );
-                } else {
-                    logDebug(
-                        'Unrecognised proto message payload type. Either Buffer or "string" is supported.',
                     );
                 }
             }
@@ -293,6 +288,33 @@ class MqttAction implements Action {
             logError(`Error during connection: ${error}`);
             reject();
         });
+    }
+
+    private expandParameters(
+        scenarioVariables: Map<string, unknown>,
+        ctx: LoggingContext,
+    ): {
+        topic: string;
+        username: string;
+        password: string;
+    } {
+        const topic = injectEvalAndVarsToString(
+            this.topic,
+            scenarioVariables,
+            ctx,
+        ).toString();
+        const username = injectEvalAndVarsToString(
+            this.username,
+            scenarioVariables,
+            ctx,
+        ).toString();
+        const password = injectEvalAndVarsToString(
+            this.password,
+            scenarioVariables,
+            ctx,
+        ).toString();
+
+        return { topic, username, password };
     }
 }
 
