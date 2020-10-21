@@ -1,5 +1,5 @@
 import { Action } from './Action';
-import { getLogger } from '../logging';
+import { getLogger, LoggingContext } from '../logging';
 import { RestAction } from './RestAction';
 import { ActionType } from './ActionType';
 import { TimerAction } from './TimerAction';
@@ -8,6 +8,7 @@ import { MqttAction } from './MqttAction';
 import { MqttPublishAction } from './MqttPublishAction';
 import { AMQPListenAction } from './AMQPListenAction';
 import { NodeJSAction } from './NodeJSAction';
+import { injectEvalAndVarsToString } from '../variableInjection';
 
 class Scenario {
     /* retrieved from the file name */
@@ -123,9 +124,29 @@ class Scenario {
                 .forEach(s => s.actions.forEach(a => this.actions.push(a)));
         }
 
-        this.cache = new Map<string, unknown>(
-            yamlConfig.variables ? Object.entries(yamlConfig.variables) : [],
-        );
+        this.cache = new Map<string, unknown>();
+
+        if (yamlConfig.variables) {
+            const ctx: LoggingContext = { scenario: this.name };
+            const scenarioVariables = new Map<string, unknown>(
+                yamlConfig.variables
+                    ? Object.entries(yamlConfig.variables)
+                    : [],
+            );
+
+            scenarioVariables.forEach((val, key) => {
+                scenarioVariables.set(
+                    key,
+                    injectEvalAndVarsToString(
+                        val as string,
+                        scenarioVariables,
+                        ctx,
+                    ),
+                );
+            });
+
+            this.cache = scenarioVariables;
+        }
     }
 }
 
