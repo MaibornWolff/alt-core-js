@@ -124,6 +124,8 @@ class Scenario {
                 .forEach(s => s.actions.forEach(a => this.actions.push(a)));
         }
 
+        this.cache = new Map<string, unknown>();
+
         if (yamlConfig.variables) {
             const ctx: LoggingContext = { scenario: this.name };
             const scenarioVariables = new Map<string, unknown>(
@@ -144,8 +146,6 @@ class Scenario {
             });
 
             this.cache = scenarioVariables;
-        } else {
-            this.cache = new Map<string, unknown>();
         }
     }
 }
