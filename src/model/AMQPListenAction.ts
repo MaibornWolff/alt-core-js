@@ -217,7 +217,7 @@ export class AMQPListenAction implements Action {
                 );
                 channel.on('error', err => this.onError(scenario, reject, err));
                 channel.on('close', () =>
-                    this.onChannelClose(scenario, resolve),
+                    this.onChannelClose(scenario, resolve, reject),
                 );
             });
         } catch (e) {
@@ -301,11 +301,21 @@ export class AMQPListenAction implements Action {
     private onChannelClose(
         scenario: Scenario,
         resolve: (value?: unknown) => void,
+        reject: (reason?: Error) => void,
     ): void {
         const logger = getLogger(scenario.name);
         const ctx = { scenario: scenario.name, action: this.name };
         logger.debug(`Successfully closed AMQP channel.`, ctx);
-        resolve();
+        if (this.numberOfReceivedMessages !== this.expectedNumberOfMessages) {
+            reject(
+                new UnexpectedNumberOfMessagesError(
+                    this.numberOfReceivedMessages,
+                    this.expectedNumberOfMessages,
+                ),
+            );
+        } else {
+            resolve();
+        }
     }
 
     private onError(
