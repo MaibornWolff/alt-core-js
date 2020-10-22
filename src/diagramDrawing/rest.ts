@@ -101,12 +101,12 @@ export const addValidationFailureResponseBody = (
     validationError: { errorMsg: string; responseBody: unknown },
     diagramConfiguration: DiagramConfiguration,
 ): void => {
-    const formattedErrorMsg = `<size:16><color red>${wrap(
+    const formattedErrorMsg = `<size:16><color yellow>${wrap(
         validationError.errorMsg,
-        { newline: '</color></size>\n<size:16><color red>', indent: '' },
+        { newline: '</color></size>\n<size:16><color yellow>', indent: '' },
     )}</color></size>`;
 
-    const note = `note left\n**${currentTimestamp()}**\n${formattedErrorMsg}\n\nIncoming Response was:\n\n
+    const note = `note left #FF0000\n**${currentTimestamp()}**\n${formattedErrorMsg}\n\nIncoming Response was:\n\n
 ${formatPayload(
     validationError.responseBody,
     diagramConfiguration,
