@@ -213,11 +213,11 @@ export class AMQPListenAction implements Action {
                     this.onError(scenario, reject, err),
                 );
                 connection.on('close', () =>
-                    this.onClose(scenario, resolve, reject),
+                    this.onConnectionClose(scenario, resolve, reject),
                 );
                 channel.on('error', err => this.onError(scenario, reject, err));
                 channel.on('close', () =>
-                    this.onClose(scenario, resolve, reject),
+                    this.onChannelClose(scenario, resolve),
                 );
             });
         } catch (e) {
@@ -275,7 +275,7 @@ export class AMQPListenAction implements Action {
         }
     }
 
-    private onClose(
+    private onConnectionClose(
         scenario: Scenario,
         resolve: (value?: unknown) => void,
         reject: (reason?: Error) => void,
@@ -296,6 +296,16 @@ export class AMQPListenAction implements Action {
         } else {
             resolve();
         }
+    }
+
+    private onChannelClose(
+        scenario: Scenario,
+        resolve: (value?: unknown) => void,
+    ): void {
+        const logger = getLogger(scenario.name);
+        const ctx = { scenario: scenario.name, action: this.name };
+        logger.debug(`Successfully closed AMQP channel.`, ctx);
+        resolve();
     }
 
     private onError(
