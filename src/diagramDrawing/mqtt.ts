@@ -14,10 +14,7 @@ export const addMqttPublishMessage = (
     payload: any,
     diagramConfiguration: DiagramConfiguration,
 ): void => {
-    appendFileSync(
-        getInputFile(scenarioId),
-        `ALT -[#green]->o MQTT : ${topic}\n`,
-    );
+    appendFileSync(getInputFile(scenarioId), `ALT ->o MQTT : ${topic}\n`);
     const note = `note left #99FF99\n**${currentTimestamp()}**\n${formatPayload(
         JSON.parse(payload),
         diagramConfiguration,
@@ -31,10 +28,7 @@ export const addMqttMessage = (
     payload: unknown,
     diagramConfiguration: DiagramConfiguration,
 ): void => {
-    appendFileSync(
-        getInputFile(scenarioId),
-        `MQTT -[#green]->o ALT : ${topic}\n`,
-    );
+    appendFileSync(getInputFile(scenarioId), `MQTT -->o ALT : ${topic}\n`);
     const note = `note right #99FF99\n**${currentTimestamp()}**\n${formatPayload(
         payload,
         diagramConfiguration,

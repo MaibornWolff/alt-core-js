@@ -19,9 +19,9 @@ export const addAMQPReceivedMessage = (
     const quotedSource = quote(source);
     appendFileSync(
         getInputFile(scenarioId),
-        `${quotedSource} -[#FF6600]->o ALT : ${exchange}/${routingKey}\n`,
+        `${quotedSource} -->o ALT : ${exchange}/${routingKey}\n`,
     );
-    const note = `note left #FF6600\n**${currentTimestamp()}**\n${formatPayload(
+    const note = `note left #99FF99\n**${currentTimestamp()}**\n${formatPayload(
         payload,
         diagramConfiguration,
     )}\nend note\n`;

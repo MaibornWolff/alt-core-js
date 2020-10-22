@@ -18,7 +18,7 @@ export const addWsMessage = (
         getInputFile(scenarioId),
         `${quotedSource} -[#0000FF]->o ALT : [WS]\n`,
     );
-    const note = `note left #aqua\n**${currentTimestamp()}**\n${formatPayload(
+    const note = `note left #99FF99\n**${currentTimestamp()}**\n${formatPayload(
         payload,
         diagramConfiguration,
     )}\nend note\n`;

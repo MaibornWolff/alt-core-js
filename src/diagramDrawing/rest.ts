@@ -47,7 +47,7 @@ export const addSuccessfulResponseBody = (
     body: unknown,
     diagramConfiguration: DiagramConfiguration,
 ): void => {
-    const note = `note left\n**${currentTimestamp()}**\n${formatPayload(
+    const note = `note left #99FF99\n**${currentTimestamp()}**\n${formatPayload(
         body,
         diagramConfiguration,
     )}\nend note\n`;
