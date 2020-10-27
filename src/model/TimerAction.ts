@@ -3,7 +3,7 @@ import { Scenario } from './Scenario';
 import { ActionType } from './ActionType';
 import { getLogger } from '../logging';
 import { ActionCallback } from './ActionCallback';
-import { addDelay } from '../diagramDrawing';
+import { addDelay } from '../diagramDrawing/diagramDrawing';
 
 class TimerAction implements Action {
     public name: string;

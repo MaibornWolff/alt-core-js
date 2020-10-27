@@ -1,6 +1,6 @@
 import 'mocha';
 import { expect } from 'chai';
-import { formatPayload } from '../diagramDrawing';
+import { formatPayload } from '../diagramDrawing/diagramDrawing';
 
 describe('Diagram drawing', () => {
     describe('Payload formatting', () => {
