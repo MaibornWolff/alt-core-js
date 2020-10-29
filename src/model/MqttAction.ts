@@ -292,24 +292,30 @@ class MqttAction implements Action {
         ctx: LoggingContext,
     ): {
         topic: string;
-        username: string;
-        password: string;
+        username: string | undefined;
+        password: string | undefined;
     } {
         const topic = injectEvalAndVarsToString(
             this.topic,
             scenarioVariables,
             ctx,
         ).toString();
-        const username = injectEvalAndVarsToString(
-            this.username,
-            scenarioVariables,
-            ctx,
-        ).toString();
-        const password = injectEvalAndVarsToString(
-            this.password,
-            scenarioVariables,
-            ctx,
-        ).toString();
+        const username =
+            this.username !== undefined
+                ? injectEvalAndVarsToString(
+                      this.username,
+                      scenarioVariables,
+                      ctx,
+                  ).toString()
+                : undefined;
+        const password =
+            this.password !== undefined
+                ? injectEvalAndVarsToString(
+                      this.password,
+                      scenarioVariables,
+                      ctx,
+                  ).toString()
+                : undefined;
 
         return { topic, username, password };
     }
