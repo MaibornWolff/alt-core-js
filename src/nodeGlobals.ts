@@ -1,3 +1,5 @@
+import * as protoParsing from './protoParsing';
+
 export const nodeGlobals = {
     Buffer,
     __dirname,
@@ -14,4 +16,5 @@ export const nodeGlobals = {
     setImmediate,
     setInterval,
     setTimeout,
+    ...protoParsing,
 };

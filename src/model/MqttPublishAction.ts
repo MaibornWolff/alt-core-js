@@ -81,13 +81,6 @@ class MqttPublishAction implements Action {
         mqttPublishDefinition: any,
         template: MqttPublishAction,
     ): MqttPublishAction {
-        console.log(
-            new MqttPublishAction(
-                template.name,
-                mqttPublishDefinition.description || mqttPublishDefinition.name,
-                { ...template, ...mqttPublishDefinition },
-            ),
-        );
         return new MqttPublishAction(
             template.name,
             mqttPublishDefinition.description || mqttPublishDefinition.name,
@@ -121,7 +114,7 @@ class MqttPublishAction implements Action {
         ];
     }
 
-    private genrateJsonPayload(
+    private generateJsonPayload(
         scenarioVariables: Map<string, any>,
         ctx = {},
     ): [string, string] {
@@ -169,19 +162,17 @@ class MqttPublishAction implements Action {
             let [payload, dataString]: [string | Buffer, string] = ['', ''];
 
             if (this.variableAsPayload !== undefined) {
-                console.log('variableAsPayload: ', this.variableAsPayload);
-                if (typeof this.variableAsPayload !== 'string') {
-                    reject(new Error('variableAsPayload needs to be a string'));
-                } else {
+                const body = scenario.cache.get(this.variableAsPayload);
+                if (typeof body === 'string' || body instanceof Buffer) {
                     [payload, dataString] = [
-                        this.variableAsPayload,
-                        this.variableAsPayload,
+                        body,
+                        JSON.stringify(body.toString()),
                     ];
                 }
             } else {
                 [payload, dataString] = this.protoFile
                     ? this.encodeProtoPayload(scenario.cache, ctx)
-                    : this.genrateJsonPayload(scenario.cache, ctx);
+                    : this.generateJsonPayload(scenario.cache, ctx);
             }
 
             const topic = injectEvalAndVarsToString(
