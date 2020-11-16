@@ -42,6 +42,8 @@ class MqttPublishAction implements Action {
 
     private readonly diagramConfiguration: DiagramConfiguration;
 
+    private readonly variableAsPayload?: string;
+
     public constructor(
         name: string,
         desc = name,
@@ -57,6 +59,7 @@ class MqttPublishAction implements Action {
         invokeEvenOnFail = actionDef.invokeEvenOnFail,
         allowFailure = actionDef.allowFailure,
         diagramConfiguration = actionDef.diagramConfiguration ?? {},
+        variableAsPayload = actionDef.variableAsPayload,
     ) {
         this.name = name;
         this.url = url;
@@ -71,6 +74,7 @@ class MqttPublishAction implements Action {
         this.invokeEvenOnFail = invokeEvenOnFail;
         this.allowFailure = allowFailure;
         this.diagramConfiguration = diagramConfiguration;
+        this.variableAsPayload = variableAsPayload;
     }
 
     public static fromTemplate(
@@ -85,8 +89,8 @@ class MqttPublishAction implements Action {
     }
 
     public invoke(scenario: Scenario): ActionCallback {
-        const promise = new Promise(resolve => {
-            this.invokeAsync(scenario);
+        const promise = new Promise((resolve, reject) => {
+            this.invokeAsync(scenario, reject);
             resolve();
         });
         return { promise, cancel: () => console.log('TODO') };
@@ -110,7 +114,7 @@ class MqttPublishAction implements Action {
         ];
     }
 
-    private genrateJsonPayload(
+    private generateJsonPayload(
         scenarioVariables: Map<string, any>,
         ctx = {},
     ): [string, string] {
@@ -120,7 +124,7 @@ class MqttPublishAction implements Action {
         return [payload, payload];
     }
 
-    private invokeAsync(scenario: Scenario): void {
+    private invokeAsync(scenario: Scenario, reject): void {
         const logDebug = (debugMessage: string): void => {
             getLogger(scenario.name).debug(debugMessage, ctx);
         };
@@ -155,9 +159,21 @@ class MqttPublishAction implements Action {
         client.on('connect', () => {
             logDebug(`MQTT connection to ${this.url} successfully opened`);
 
-            const [payload, dataString] = this.protoFile
-                ? this.encodeProtoPayload(scenario.cache, ctx)
-                : this.genrateJsonPayload(scenario.cache, ctx);
+            let [payload, dataString]: [string | Buffer, string] = ['', ''];
+
+            if (this.variableAsPayload !== undefined) {
+                const body = scenario.cache.get(this.variableAsPayload);
+                if (typeof body === 'string' || body instanceof Buffer) {
+                    [payload, dataString] = [
+                        body,
+                        JSON.stringify(body.toString()),
+                    ];
+                }
+            } else {
+                [payload, dataString] = this.protoFile
+                    ? this.encodeProtoPayload(scenario.cache, ctx)
+                    : this.generateJsonPayload(scenario.cache, ctx);
+            }
 
             const topic = injectEvalAndVarsToString(
                 this.topic,

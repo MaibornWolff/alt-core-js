@@ -6,6 +6,7 @@ import { injectVariableAccessAndEvaluate } from '../variableInjection';
 
 export interface NodeJSActionDefinition extends ActionDefinition {
     variables?: { [key: string]: string };
+    data?: { [key: string]: string };
 }
 
 export function isValidNodeJSActionDefinition(
@@ -47,6 +48,8 @@ export class NodeJSAction implements Action {
 
     private readonly variables: { [key: string]: string };
 
+    private readonly data: { [key: string]: string };
+
     public constructor(
         name: string,
         {
@@ -54,6 +57,7 @@ export class NodeJSAction implements Action {
             invokeEvenOnFail = false,
             allowFailure = false,
             variables,
+            data,
         }: NodeJSActionDefinition,
     ) {
         this.name = name;
@@ -61,6 +65,7 @@ export class NodeJSAction implements Action {
         this.invokeEvenOnFail = invokeEvenOnFail;
         this.allowFailure = allowFailure;
         this.variables = variables || {};
+        this.data = data || {};
     }
 
     public static fromTemplate(
@@ -79,11 +84,15 @@ export class NodeJSAction implements Action {
                     ? nodeJSDefinition.allowFailure
                     : template.allowFailure,
             variables: nodeJSDefinition.variables || template.variables,
+            data: nodeJSDefinition.data || template.data,
         });
     }
 
     invoke(scenario: Scenario): ActionCallback {
         const scenarioVariables = scenario.cache;
+        Object.entries(this.data).forEach(([key, value]) => {
+            scenarioVariables.set(key, value);
+        });
 
         return {
             cancel: () => {},
