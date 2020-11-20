@@ -63,6 +63,11 @@ function formatPlaintextPayload(
     payload: string,
     diagramConfiguration: DiagramConfiguration,
 ): string {
+    if (payload.startsWith('<html>')) {
+        return quote(
+            hidePlaintextIfNeeded(payload, diagramConfiguration.hidePlaintext),
+        );
+    }
     return trim(
         hidePlaintextIfNeeded(payload, diagramConfiguration.hidePlaintext),
         30,
