@@ -64,10 +64,10 @@ export const addFailedResponse = (
     addFailedResponseArrow(scenarioId, source, status);
     appendFileSync(
         getInputFile(scenarioId),
-        `note right:  <color red>${formatPayload(
+        `note right\n<color red>${formatPayload(
             body,
             diagramConfiguration,
-        )}</color>\n||20||\n`,
+        )}</color>\nend note\n`,
     );
 };
 
