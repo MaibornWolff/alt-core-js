@@ -63,10 +63,15 @@ function formatPlaintextPayload(
     payload: string,
     diagramConfiguration: DiagramConfiguration,
 ): string {
-    return trim(
-        hidePlaintextIfNeeded(payload, diagramConfiguration.hidePlaintext),
-        30,
+    let textResult = hidePlaintextIfNeeded(
+        payload,
+        diagramConfiguration.hidePlaintext,
     );
+
+    if (payload.startsWith('<html>')) {
+        textResult = removeLineBreaks(textResult);
+    }
+    return trim(textResult, 30);
 }
 
 function formatObjectPayload(
@@ -103,6 +108,10 @@ export function getInputFile(scenario: string): string {
 
 export function quote(str: string): string {
     return `"${str}"`;
+}
+
+export function removeLineBreaks(str: string): string {
+    return str.replace(/(\r\n|\n|\r)/gm, '');
 }
 
 export const initDiagramCreation = (scenarioId: string): void => {
@@ -146,10 +155,14 @@ Expected Messages:${expectedMessages}\nReceived Messages: ${receivedMessages}\ne
     appendFileSync(getInputFile(scenarioId), note);
 };
 
-export const generateSequenceDiagram = (scenarioId: string): Promise<void> =>
+const generateFile = (inputFile: string, outputFile: string): Promise<void> =>
     new Promise<void>(resolve => {
-        appendFileSync(getInputFile(scenarioId), '\n@enduml');
-        const gen = generate(getInputFile(scenarioId));
-        gen.out.pipe(createWriteStream(getOutputFile(scenarioId)));
-        gen.out.on('end', () => resolve());
+        const gen = generate(inputFile);
+        gen.out.pipe(createWriteStream(outputFile));
+        gen.out.on('end', resolve);
     });
+
+export const generateSequenceDiagram = (scenarioId: string): Promise<void> => {
+    appendFileSync(getInputFile(scenarioId), '\n@enduml');
+    return generateFile(getInputFile(scenarioId), getOutputFile(scenarioId));
+};
