@@ -6,6 +6,7 @@
 ![GitHub](https://img.shields.io/github/license/MaibornWolff/alt-core-js.svg)
 [![Npm Version](http://img.shields.io/npm/v/@maibornwolff/alt-core-js.svg)](https://www.npmjs.com/package/@maibornwolff/alt-core-js)
 [![Docker Runner](https://img.shields.io/badge/Docker%20Runner-1.43-brightgreen.svg)](https://hub.docker.com/r/maibornwolff/alt-runner-image/tags/)
+[![Github Build & Test](https://github.com/MaibornWolff/alt-core-js/.github/workflows/npm-build-and-test.yml/badge.svg)
 
 </div>
 
