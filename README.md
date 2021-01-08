@@ -6,7 +6,6 @@
 ![GitHub](https://img.shields.io/github/license/MaibornWolff/alt-core-js.svg)
 [![Npm Version](http://img.shields.io/npm/v/@maibornwolff/alt-core-js.svg)](https://www.npmjs.com/package/@maibornwolff/alt-core-js)
 [![Docker Runner](https://img.shields.io/badge/Docker%20Runner-1.43-brightgreen.svg)](https://hub.docker.com/r/maibornwolff/alt-runner-image/tags/)
-[![CircleCI](https://circleci.com/gh/MaibornWolff/alt-core-js.svg?style=svg)](https://circleci.com/gh/MaibornWolff/alt-core-js)
 
 </div>
 
