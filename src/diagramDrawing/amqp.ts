@@ -5,21 +5,18 @@ import {
     DiagramConfiguration,
     formatPayload,
     getInputFile,
-    quote,
 } from './diagramDrawing';
 
 export const addAMQPReceivedMessage = (
     scenarioId: string,
-    source: string,
     exchange: string,
     routingKey: string,
     payload: unknown,
     diagramConfiguration: DiagramConfiguration,
 ): void => {
-    const quotedSource = quote(source);
     appendFileSync(
         getInputFile(scenarioId),
-        `${quotedSource} -->o ALT : ${exchange}/${routingKey}\n`,
+        `AMQP -->o ALT : ${exchange}/${routingKey}\n`,
     );
     const note = `note left #99FF99\n**${currentTimestamp()}**\n${formatPayload(
         payload,

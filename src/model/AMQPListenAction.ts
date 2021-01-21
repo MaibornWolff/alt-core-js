@@ -259,7 +259,6 @@ export class AMQPListenAction implements Action {
             );
             addAMQPReceivedMessage(
                 scenario.name,
-                this.broker,
                 exchange,
                 routingKey,
                 parsedMessage,
