@@ -37,6 +37,7 @@ export interface RestActionDefinition extends ActionDefinition {
     readonly variableAsPayload?: string;
     readonly responseValidation?: string[];
     readonly variables?: { [key: string]: string };
+    readonly expectedStatusCodes?: number[];
     readonly clientCertificate?: string;
     readonly clientKey?: string;
     readonly expectBinaryResponse?: boolean;
@@ -79,6 +80,8 @@ class RestAction implements Action {
 
     readonly variables?: { [key: string]: string };
 
+    readonly expectedStatusCodes: number[];
+
     readonly invokeEvenOnFail: boolean;
 
     readonly allowFailure: boolean;
@@ -106,6 +109,7 @@ class RestAction implements Action {
         variableAsPayload = actionDef.variableAsPayload,
         validators = actionDef.responseValidation ?? [],
         vars = actionDef.variables,
+        expectedStatusCodes = actionDef.expectedStatusCodes ?? [200, 201, 204],
         invokeOnFail = actionDef.invokeEvenOnFail ?? false,
         allowFailure = actionDef.allowFailure ?? false,
         clientCertificate = actionDef.clientCertificate,
@@ -126,6 +130,7 @@ class RestAction implements Action {
         this.variableAsPayload = variableAsPayload;
         this.responseValidation = [...validators];
         this.variables = vars;
+        this.expectedStatusCodes = expectedStatusCodes;
         this.invokeEvenOnFail = invokeOnFail;
         this.allowFailure = allowFailure;
         this.clientCertificate = clientCertificate;
@@ -159,6 +164,7 @@ class RestAction implements Action {
                   )
                 : actionDef.responseValidation,
             { ...template.variables, ...actionDef.variables },
+            actionDef.expectedStatusCodes ?? template.expectedStatusCodes,
             actionDef.invokeEvenOnFail ?? template.invokeEvenOnFail,
             actionDef.allowFailure ?? template.allowFailure,
             actionDef.clientCertificate ?? template.clientCertificate,
@@ -207,6 +213,8 @@ class RestAction implements Action {
         const scenarioVariables = this.variables;
         const registeredValidations = this.responseValidation;
         const targetService = this.serviceName;
+        // eslint-disable-next-line
+        const expectedStatusCodes = this.expectedStatusCodes;
 
         const logError = (errorMessage: string): void => {
             getLogger(ctx.scenario).error(errorMessage, ctx);
@@ -215,6 +223,8 @@ class RestAction implements Action {
         const logDebug = (debugMessage: string): void => {
             getLogger(ctx.scenario).debug(debugMessage, ctx);
         };
+
+        logDebug(`Expected status codes: ${expectedStatusCodes}`);
 
         // TODO: Split in 2 seperate functions for res and head
         const updateScenarioCache = ({
@@ -409,10 +419,7 @@ class RestAction implements Action {
                         this.diagramConfiguration,
                     );
 
-                    if (
-                        response.statusCode === 200 ||
-                        response.statusCode === 201
-                    ) {
+                    if (expectedStatusCodes.includes(response.statusCode)) {
                         logDebug(
                             `Response: ${response.statusCode} (${response.statusMessage}): ${response.body}`,
                         );
@@ -475,18 +482,6 @@ class RestAction implements Action {
                             );
                         }
 
-                        resolve();
-                    } else if (response.statusCode === 204) {
-                        logDebug(
-                            `Response: ${response.statusCode} (${response.statusMessage})`,
-                        );
-                        addSuccessfulResponse(
-                            scenario.name,
-                            targetService,
-                            `${response.statusMessage} (${response.statusCode})`,
-                            undefined,
-                            this.diagramConfiguration,
-                        );
                         resolve();
                     } else {
                         logError(
